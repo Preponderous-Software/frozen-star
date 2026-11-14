@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{width:640px;height:360px;display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+import { BlackHoleView, lookBasis, hoverVelocity, fallerVelocity } from '../src/render/raytracer.js';
+const q = new URLSearchParams(location.search);
+const cam = JSON.parse(q.get('cam') || '[0,3,-30]');
+const v = new BlackHoleView(document.getElementById('c'), { preserve: true, scale: 1 });
+const mode = q.get('v') || 'hover';
+const V = mode === 'hover' ? hoverVelocity(cam) : mode === 'fall' ? fallerVelocity(cam, Math.sqrt(1 - 2 / 20)) : [0,0,0];
+const target = JSON.parse(q.get('target') || '[0,0,0]');
+v.set({ cam, basis: lookBasis(cam, target), V, disk: q.get('disk') !== '0', grid: q.get('grid') === '1', fov: +(q.get('fov') || 1.0), exposure: +(q.get('exp') || 1.2), shift: q.get('shift') !== '0' });
+v.render(); document.title = 'done';
+</script>
