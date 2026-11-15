@@ -1,0 +1,37 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794724896842, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794724896843, "from": null, "to": "WORLD"}
+{"type": "objective_started", "tick": 0, "wallTimeMs": 1794724896843, "number": 1, "title": "Drop the beacon probe (probe console, left)"}
+{"type": "dialogue", "tick": 467, "wallTimeMs": 1794724928169, "who": "WREN", "text": "First item on today's plan: drop beacon probe K-1 and log its signal."}
+{"type": "dialogue", "tick": 2403, "wallTimeMs": 1794725008578, "who": "WREN", "text": "The probe console is the one on the left, by the window. Walk up to it and use it."}
+{"type": "screen", "tick": 5830, "wallTimeMs": 1794725255842, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 5977, "wallTimeMs": 1794725282342, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 6015, "wallTimeMs": 1794725287842, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 6666, "wallTimeMs": 1794725353342, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 6873, "wallTimeMs": 1794725377692, "who": "WREN", "text": "K-1 pings every ten M of its own time, about six seconds. Its beacon is on the speakers. Listen to the pitch."}
+{"type": "objective_completed", "tick": 6879, "wallTimeMs": 1794725377796, "number": 1, "title": "Drop the beacon probe (probe console, left)"}
+{"type": "objective_started", "tick": 6879, "wallTimeMs": 1794725377796, "number": 2, "title": "Watch the probe fall"}
+{"type": "screen", "tick": 6970, "wallTimeMs": 1794725392842, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 7000, "wallTimeMs": 1794725396842, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 9213, "wallTimeMs": 1794725519187, "who": "WREN", "text": "Notice the gaps between pings growing."}
+{"type": "screen", "tick": 9662, "wallTimeMs": 1794725540342, "from": "WORLD", "to": "CHOICE"}
+{"type": "screen", "tick": 10061, "wallTimeMs": 1794725557345, "from": "CHOICE", "to": "WORLD"}
+{"type": "dialogue", "tick": 10737, "wallTimeMs": 1794725614191, "who": "WREN", "text": "Ping 9, at 64 seconds."}
+{"type": "dialogue", "tick": 10839, "wallTimeMs": 1794725617183, "who": "WREN", "text": "By its own clock, K-1 crossed the horizon 58 seconds after release, and reached the centre less than a second later."}
+{"type": "dialogue", "tick": 11320, "wallTimeMs": 1794725637862, "who": "INES", "text": "Then what am I looking at? It's still there on the screen, right at the edge."}
+{"type": "dialogue", "tick": 11672, "wallTimeMs": 1794725651158, "who": "WREN", "text": "Old light. Each moment of the fall reaches us later than the one before. The picture slows, reddens and fades, but the probe itself is gone."}
+{"type": "dialogue", "tick": 12470, "wallTimeMs": 1794725692205, "who": "INES", "text": "...and now it's gone from the screen too. And the tone slid right down into nothing."}
+{"type": "dialogue", "tick": 12846, "wallTimeMs": 1794725708977, "who": "WREN", "text": "I have drawn the whole fall on the spacetime map, on the port wall."}
+{"type": "checkpoint", "tick": 13169, "wallTimeMs": 1794725723834, "checkpoint": "probe-done"}
+{"type": "objective_completed", "tick": 13169, "wallTimeMs": 1794725723842, "number": 2, "title": "Watch the probe fall"}
+{"type": "card", "tick": 13774, "wallTimeMs": 1794725743986, "title": "II \u00b7 The rescue", "subtitle": "Ines takes the capsule out."}
+{"type": "dialogue", "tick": 13774, "wallTimeMs": 1794725743988, "who": "INES", "text": "My turn. I'm taking the capsule out to sample the disk light. Back in twenty minutes."}
+{"type": "dialogue", "tick": 14154, "wallTimeMs": 1794725757074, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "dialogue", "tick": 14587, "wallTimeMs": 1794725778128, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 14713, "wallTimeMs": 1794725787429, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 14713, "wallTimeMs": 1794725787431, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 14719, "wallTimeMs": 1794725787842, "number": 3, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 14785, "wallTimeMs": 1794725792552, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 15007, "wallTimeMs": 1794725810097, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "dialogue", "tick": 15037, "wallTimeMs": 1794725811848, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 15438, "wallTimeMs": 1794725847215, "who": "WREN", "text": "The recall beam is on the comms console, to the right of the helm."}
+{"type": "dialogue", "tick": 15444, "wallTimeMs": 1794725847576, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}

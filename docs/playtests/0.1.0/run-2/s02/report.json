@@ -1,0 +1,95 @@
+{
+  "session": "s02",
+  "goal": "Graphics hunt, second pass after fixes. Walk every room (bridge, corridor, quarters, lab) and look in every direction: ceiling, floor and out of every window, turning slowly while looking at the black hole so you can see whether the ring around it ever breaks, shows hard cut edges, slivers or flicker. Also check the wall screens and console panels for clipped or overlapping text. Screenshot and describe anything that looks wrong.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "d654778"
+  },
+  "seed": null,
+  "durationSec": 980,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Quarters porthole: hard-edged dark rectangle cuts across the lensed disk band",
+      "detail": "Looking out of the quarters porthole, the left third of the view has a dark rectangle with a straight vertical right edge and a straight horizontal bottom edge about two thirds of the way down. The accretion-disk band runs into it and carries on below it. It is a hard cut, not blur. Seen head-on (a thin vertical seam) and more clearly from a slight angle. I expected continuous sky and disk across the whole porthole, the way the bridge windows show it.",
+      "repro": "pt start --checkpoint bridge; walk bridge -> corridor -> quarters door (bearing ~-127 from the lab door); in quarters, pt walkto item, face the porthole (bearing ~-6), then turn a little so the porthole is on the left of the screen; pt shot",
+      "screenshot": "shots/port_black_block.png",
+      "tick": 15109
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Lab: ARCHIVE console screen floats in the middle of the lab window",
+      "detail": "The archive's wall screen sits in front of the lab window and covers the centre mullion and parts of both panes, so it looks pasted onto the glass. Every other wall screen (map, camera feed) is on solid wall. I expected it to be mounted on the wall, or the window to be framed around it.",
+      "repro": "pt start --checkpoint bridge; walk to lab (door off the corridor); face the archive console from ~3.5 m back; pt shot",
+      "screenshot": "shots/lab_archive_over_window.png",
+      "tick": 11696
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Quarters: 'E Look out of the porthole' prompt and use-brackets stay up while aiming at the bookshelf",
+      "detail": "With the crosshair clearly on the bookshelf and wall to the right of the porthole, the 'E Look out of the porthole' prompt stays on and the orange use-brackets are drawn inside the porthole, away from the crosshair. Pressing E at the porthole only plays a WREN line (the view does not zoom), so it is unclear what the brackets mean. I expected the prompt to go away when the crosshair leaves the porthole.",
+      "repro": "in quarters, stand ~1.8 m from the porthole, pt face -54 then pt look 400 0 so the crosshair moves to the bookshelf; pt shot",
+      "screenshot": "shots/port_prompt_stale.png",
+      "tick": 15216
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Chapter card 'II \u00b7 The rescue' line is unreadable over the quarters bookshelf",
+      "detail": "The chapter title card is drawn straight over the 3D view with no backing plate. Its small sub-line ('Ines takes the capsule out') landed on the coloured book spines and was hard to read. A dark backing, or the same plate the subtitles use, would fix it.",
+      "repro": "after the probe objective completes, stand in quarters facing the desk and bookshelf when chapter II starts",
+      "screenshot": "shots/q3.png",
+      "tick": 14000
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Ping-9 prediction question vanished without an answer while I was turning in the lab",
+      "detail": "The 'Ping 7 arrived late. Log a prediction: when will ping 9 arrive?' choice (options 1-3) opened at tick 9662 while I was turning with the arrow keys in the lab. It closed at tick 10061 (about 6.6 game s) with no answer from me and no event saying what happened. Mouse capture was also released ('Click to look around'). Either it timed out or the arrow keys answered it. Either way the player is not told.",
+      "repro": "launch K-1, walk to the lab, keep turning with pt face (arrow keys) until the CHOICE appears; keep turning and do not press 1-3",
+      "screenshot": "shots/lab2.png",
+      "tick": 9662
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Opening a console hides the in-world screen behind the side panel; mouse wheel does not scroll the panel",
+      "detail": "At the probe console, the camera move puts the in-world PROBE screen half behind the right-hand panel ('BEACON K-1 \u00b7 as seen from the ship' and 'its cl...' are cut off by the panel edge). The live readout panel runs below the fold, and pt scroll 5 over it did not scroll it; only the scrollbar suggests there is more.",
+      "repro": "pt start --checkpoint bridge; use the probe console; click Launch Beacon K-1; pt move 1000 400; pt scroll 5; pt shot",
+      "screenshot": "shots/panel_scroll.png",
+      "tick": 7000
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Drop the beacon probe (probe console, left)": 114.65,
+      "Watch the probe fall": 219.48
+    },
+    "roomsVisited": 4,
+    "ringBreaksSeen": 0,
+    "ringFlickerSeen": 0,
+    "fps": 10
+  },
+  "fun": 3,
+  "verdict": "On the bridge the black hole held up: panning in 8-10 degree steps across all three front panes and both side windows, I saw no breaks, slivers, misaligned mullion seams or flicker, and four still frames in a row were identical. The photon ring does draw as a dotted or dashed arc rather than a solid line, but that matches the software-render resolution. The one real rendering defect left is a hard-edged dark rectangle in the quarters porthole. The rest is layout polish: the archive screen sits on the lab window, the porthole prompt stays up after the crosshair leaves, and the chapter-card text has no backing plate.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That time and light behave differently near a black hole: a probe dropped from the ship keeps its own clock steadily, but from the ship its pings arrive further and further apart, redder and dimmer, while by its own clock it crosses the horizon in under a minute. The black disk you see is the hole's shadow, about two and a half times wider than the horizon, and the bright ring is starlight bent all the way around it."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The ping-9 prediction question appeared while I was exploring the lab and then disappeared a few seconds later without my answering, with nothing to say whether it had timed out or recorded an answer. Second: the quarters porthole showed 'E Look out of the porthole', but pressing E only played a WREN line, and the prompt stayed up after I looked away."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "1) Quarters, facing the porthole and slightly to its right: a dark rectangle with hard straight edges covers the left third of the porthole view and cuts across the lensed disk band. 2) Lab, facing the archive console: its screen floats over the middle of the lab window, covering the mullion. 3) Quarters, facing the bookshelf: the chapter-card sub-line was unreadable over the coloured books. 4) Probe console: the in-world screen text is cut off behind the side panel. The bridge front and side windows looked fine while turning slowly: the ring never broke and nothing flickered; the photon ring is a dotted arc at this resolution. Ceilings and floors in all four rooms looked clean."
+    }
+  ]
+}

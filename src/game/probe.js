@@ -57,7 +57,7 @@ export function startProbe() {
       if (screen !== lastScreen) { event('screen', { from: lastScreen, to: screen }); lastScreen = screen; }
       const objText = g ? document.querySelector('.fp-objective:not([hidden]) b')?.textContent || null : null;
       if (objText !== lastObjective) {
-        if (lastObjective) event('objective_completed', { number: objNumber, title: lastObjective });
+        if (lastObjective && g) event('objective_completed', { number: objNumber, title: lastObjective });
         if (objText) { objNumber++; event('objective_started', { number: objNumber, title: objText }); }
         lastObjective = objText;
       }

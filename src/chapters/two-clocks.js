@@ -30,6 +30,7 @@ export default {
       ['never: it is too close to the horizon', false],
     ];
     const quiz = h('div.quiz',
+      h('p.fine', 'Times here are in M, the natural time unit of a black hole: the time light takes to cross half its horizon radius (GM/c³). For Erebus, the hole in the story, 1 M is 0.59 seconds.'),
       h('p', 'The probe sends a ping every ', h('b', '10 M'), ' of its own time and sends nine before it reaches the horizon. When will ping 9 reach the station?'),
       h('div.choices', options.map(([label, ok], i) => h('button.choice', { id: `tc-q${i}`, onclick: (e) => { guess = ok; quiz.querySelectorAll('.choice').forEach((b) => b.classList.remove('picked')); e.currentTarget.classList.add('picked'); } }, label))),
       h('p.fine', 'Pick an answer, then drop. You can also drop without guessing.'));

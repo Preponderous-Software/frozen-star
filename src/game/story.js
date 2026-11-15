@@ -39,8 +39,8 @@ export async function runStory(g, cp) {
 // ---------- always-on things ----------
 function baseScreens(g) {
   g.screenDraw.clocks = (ctx, w, h) => drawClocks(ctx, w, h, g);
-  g.screenDraw.probe = (ctx, w, h) => { if (g.beacon || g.orpheus) drawRunOnScreen(ctx, w, h, g.orpheus || g.beacon, g.orpheus ? 'ORPHEUS · as seen from the ship' : 'BEACON K-1 · as seen from the ship'); else { screenFrame(ctx, w, h, 'PROBE', 'bay 1: beacon K-1 · bay 2: Orpheus'); screenLines(ctx, w, h, ['K-1     ready', 'ORPHEUS ' + (g.flags.orpheusReady ? 'ready' : 'locked')]); } };
-  g.screenDraw.comms = (ctx, w, h) => { if (g.capsule) drawRunOnScreen(ctx, w, h, g.capsule, 'CAPSULE · as seen from the ship'); else { screenFrame(ctx, w, h, 'COMMS', 'channel: Ines Okafor (capsule)'); screenLines(ctx, w, h, [g.flags.inesHome ? 'Capsule docked.' : 'Capsule in bay.', 'Recall beam: armed']); } };
+  g.screenDraw.probe = (ctx, w, h) => { if (g.beacon || g.orpheus) drawRunOnScreen(ctx, w, h, g.orpheus || g.beacon, g.orpheus ? 'ORPHEUS · as seen from the ship' : 'BEACON K-1 · as seen from the ship'); else { screenFrame(ctx, w, h, 'PROBE', 'bay 1: beacon K-1 · bay 2: Orpheus'); screenLines(ctx, w, h, [g.flags.beaconDone ? 'K-1     spent' : 'K-1     ready', 'ORPHEUS ' + (g.flags.orpheusReady ? 'ready' : 'locked')]); } };
+  g.screenDraw.comms = (ctx, w, h) => { if (g.capsule) drawRunOnScreen(ctx, w, h, g.capsule, 'CAPSULE · as seen from the ship'); else { screenFrame(ctx, w, h, 'COMMS', 'channel: Ines Okafor (capsule)'); screenLines(ctx, w, h, [g.flags.inesHome ? 'Capsule docked.' : 'Capsule in bay.', g.flags.inesHome ? 'Recall beam: standing by' : 'Recall beam: armed']); } };
   g.screenDraw.helm = (ctx, w, h) => {
     if (g.rear && g.shipR < 6) { drawRear(ctx, w, h, g); return; }
     screenFrame(ctx, w, h, 'HELM', 'station-keeping field'); screenLines(ctx, w, h, [`altitude  ${(g.shipR / 2).toFixed(3)} rs`, `relay     x${(1 / hoverRate(g.shipR)).toFixed(3)}`, g.flags.helmUnlocked ? 'descent:  authorised' : 'descent:  locked']); };
@@ -154,7 +154,7 @@ async function toBridge(g) {
   await g.until(() => g.inRoom('corridor') || g.inRoom('bridge'));
   g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
-  g.waypoint = null;
+  g.waypoint = null; g.hud.hint(null);
   g.save('bridge');
 }
 
@@ -318,9 +318,13 @@ async function rescueAttempt(g) {
     run.saved = { tau: result.tau, r: result.r, seenAt: f.messageArrival(result.tau) };
     g.alarm(false); g.objective(null);
     g.flags.stats.margin = secs(D - run.fired); g.flags.stats.seenAt = f.seenAt(run.fired).r / 2;
-    await g.say('INES', 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!');
+    // her reply can only reach us with the light of the burn, after everything she sent before it
+    await g.say('WREN', 'Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.');
+    await g.until(() => run.S() >= run.saved.seenAt);
+    const lit = 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!';
+    run.log.push({ text: lit }); g.audio.radio();
+    await g.say('INES', lit);
     await g.say('WREN', `You fired ${Math.round(secs(D - run.fired))} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
-    await g.say('WREN', 'Her picture on the comms screen will keep falling for a while, and a few of her older messages are still on their way. That is old light: she is already climbing.');
     g.ticks.delete(tick);
     await g.hud.fade(1, 1.5);
     g.hud.clearSubs();
@@ -353,24 +357,26 @@ async function helmAct(g) {
   g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
   await g.until(() => 1 / hoverRate(g.shipR) >= 2);
   g.waypoint = null;
-  g.say('WREN', 'Relay clock at double speed. Hold here for twenty seconds.');
-  g.objective('Hold for 20 seconds');
+  g.objective('Hold at twice the relay rate for 20 seconds (helm)');
+  // the windows go black down here: explain it while the player holds, not after
+  (async () => {
+    await g.say('WREN', 'Relay clock at double speed. Hold here for twenty seconds.');
+    await g.say('INES', 'The window\'s gone completely black. WREN, is the camera broken?');
+    await g.say('WREN', 'No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera.');
+  })().catch(() => {});
   const ship0 = g.clocks.ship, relay0 = g.clocks.relay;
   let held = 0;
   let shown = -1;
   const tick = (dt) => {
     held = 1 / hoverRate(g.shipR) >= 2 ? held + dt : Math.max(0, held - dt * 0.5);
     const left = Math.max(0, Math.ceil(20 - held));
-    if (left !== shown) { shown = left; g.objective(left > 0 ? `Hold at twice the relay rate: ${left} s to go` : 'Held for 20 seconds'); }
+    if (left !== shown) { shown = left; g.hud.objectiveNote(left > 0 ? `${left} s to go` : 'Held'); }
   };
   g.ticks.add(tick);
   await g.until(() => held >= 20);
   g.ticks.delete(tick);
-  g.objective(null);
-  await g.say('INES', 'The window\'s gone completely black. WREN, is the camera broken?');
-  await g.say('WREN', 'No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera.');
-  await g.say('INES', 'Okay. That\'s enough. Take us back up.');
   g.objective('Return to 10 rₛ (helm)');
+  await g.say('INES', 'Okay. That\'s enough. Take us back up.');
   await g.until(() => g.shipR > R_STATION - 0.05);
   const lost = (g.clocks.relay - relay0) - (g.clocks.ship - ship0);
   g.flags.stats.lost = lost;
@@ -430,6 +436,7 @@ async function orpheusAct(g) {
   await g.wait(4);
   g.say('YOU', '(That view. That\'s what I dreamt.)', { style: { fontStyle: 'italic' } });
   await g.wait(6);
+  await g.until(() => !isFinite(g.feedState().nextIn)); // only once the last frame is in
   g.say('WREN', 'No more frames are coming. Everything Orpheus sent after that last one is still trying to climb out, and never will. Its marker in the window is fading the same way.');
   await g.until(() => run.seen().lnz > 9);
   await g.wait(2);

@@ -1,0 +1,116 @@
+{
+  "session": "s03",
+  "goal": "The whole second half in one go: rescue Ines from the comms console, then take the ship down at the helm and back up, launch Orpheus, watch its feed to the end, make the final choice and read the logbook. Note whether each step was clear, whether the aftermath of the rescue made sense, and screenshot any visual problems.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "d654778"
+  },
+  "seed": null,
+  "durationSec": 1564,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "After the engine burn is reported, the in-world comms monitor shows Ines still falling deeper while the panel is frozen at 4.56 rs",
+      "detail": "Once the comms panel said 'Engine burn seen at 4.56 rs. She is climbing out and coming home.', the panel readout froze (ship clock 98.5 M / 58.2 s, 1+z 1.572, appears at 4.56 rs) for 200+ ticks, and its status line still read 'Falling. It looks almost normal from here.' Meanwhile the 3D comms monitor on the bridge kept counting down: 'seen at 3.51 rs, 1+z 1.83', then 'seen at 2.49 rs, 1+z 2.46'. The two displays of the same capsule disagree, and the monitor shows her falling below the point where her burn was supposedly seen. Expected: both displays agree, freeze or reverse at the burn point, and the status line changes from 'Falling'.",
+      "repro": "pt start --checkpoint probe-done; wait for objective 'Save Ines'; walk to comms, e; fire recall beam at ship clock ~44 s; wait until panel says 'Engine burn seen'; Esc and look at the comms monitor",
+      "screenshot": "shots/comms_screen_keeps_falling.png",
+      "tick": 5202
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Rescue aftermath: 'Engine's lit, I'm climbing' arrives before 'The black fills most of the window', and is missing from the received log",
+      "detail": "Ines's 'Engine's lit! I felt that. I'm climbing. I'm coming home!' (tick 3951) was followed by 'The black fills most of the window now.' (tick 4071), so it sounds as if she went on falling after she started climbing. Radio light arrives in the order it was sent, so this order is confusing. The 'INES, AS RECEIVED' log on the comms panel then listed 'black fills', 'overhead bright' and '[You fired...]', but not the 'Engine's lit' line. WREN's later line ('a few of her older messages are still on their way') half explains it, but it comes 800 ticks later.",
+      "repro": "as above; read subtitles and the comms panel log after firing",
+      "screenshot": "shots/rescue_dialogue_order.png",
+      "tick": 4071
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms panel gives no sense of how long the rescue window has left; 'Wait as long as you dare' is a blind guess",
+      "detail": "While I waited, the panel showed slowly changing redshift, brightness and 'appears at' values, and always said 'Falling. It looks almost normal from here.' Nothing hinted at how close the deadline was. I fired at a guess, and WREN then said I had fired 5 seconds before the last possible moment. That is good drama, but with no gauge a first-time player has nothing to judge 'dare' by. That may be the lesson (she looked fine the whole time), but a felt cue such as rising tension music or WREN warnings would help.",
+      "repro": "pt start --checkpoint probe-done; open comms after the objective appears; watch the panel",
+      "screenshot": "shots/before_fire.png",
+      "tick": 3570
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "In-world comms monitor reads 'Capsule docked. Recall beam: armed' after the rescue",
+      "detail": "After Ines docked, the bridge comms monitor showed 'Recall beam: armed'. The beam was already fired and spent. Expected: 'fired' or 'spent'.",
+      "repro": "complete the rescue; look at the comms monitor after 'Docked. Hands still shaking.'",
+      "screenshot": "shots/comms_armed_after_dock.png",
+      "tick": 6040
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No cue to climb back after the 20 s hold; 'Take us back up' and the Return objective arrive after the player already did it",
+      "detail": "'Held for 20 seconds' completed at tick 9518, then the HUD was empty for ~700 ticks apart from WREN's explanation of the black window. I clicked 'Return to 10 rs' at ~10200 on my own. Ines's 'Okay. That's enough. Take us back up.' arrived at ~10370, and the objective 'Return to 10 rs (helm)' only appeared at 10592, when the ship was already at ~9.9 rs. It then stayed incomplete until tick 11054, ~380 ticks after arrival ('Back at station' was said at 10670).",
+      "repro": "pt start --checkpoint rescue-done; helm: drag slider to ~1.05 rs; hold 20 s; wait",
+      "screenshot": "shots/return_objective_stuck.png",
+      "tick": 10856
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm shows a 'Helm 2 m' marker with the crosshair on it, but the use prompt only appears at ~0.9 m",
+      "detail": "Standing 1.8 m from the helm and looking straight at its screen, with the 'Helm 2 m' marker under the crosshair, showed no prompt. Other consoles prompt at ~1.9 m. I had to walk up to 0.9 m before 'E Use the helm console' showed.",
+      "repro": "pt start --checkpoint rescue-done; stand ~1.8 m in front of the helm, crosshair on its screen; observe no prompt",
+      "screenshot": "shots/s12.png",
+      "tick": 7562
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "The 20 s hold countdown is emitted as 21 separate objectives",
+      "detail": "Each second of 'Hold at twice the relay rate: N s to go' is logged as its own objective_started/objective_completed with a new number (3..23). The HUD looks fine, but objective counts and telemetry are inflated, which could matter for analytics or achievements.",
+      "repro": "pt events after the hold",
+      "screenshot": "shots/hold_objective_spam.png",
+      "tick": 8516
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at ~3-17 ticks/s in this session, so story beats took 3-20x longer in real time",
+      "detail": "The second half's real-time waits (capsule fall, helm hold, dialogue gaps) at this tick rate meant I ran out of the 30 min budget at the start of Chapter IV (Orpheus), before launching it. Turning with the arrow keys gave ~10 degrees per second held. This is most likely the shared software renderer, but the long scripted gaps (e.g. ~1100 ticks between dock and the Chapter III card) add up even at full speed.",
+      "repro": "pt status / pt state tick deltas during play",
+      "screenshot": "shots/final.png",
+      "tick": 11480
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 4,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Save Ines: fire the recall beam from the comms console": 65.85,
+      "Take the Tern down until the relay clock runs twice as fast (helm)": 138.63,
+      "Held for 20 seconds": 158.63,
+      "Return to 10 rs (helm)": 184.23
+    },
+    "firedSecondsBeforeDeadline": 5,
+    "inesScreenAltitudeAtFireRs": 6.9,
+    "lowestAltitudeRs": 1.052,
+    "relayExtraSecondsFromDescent": 104,
+    "orpheusLaunched": 0
+  },
+  "fun": 4,
+  "verdict": "The rescue is a strong scene: Ines's 'On your screen I looked fine the whole time' and WREN's 'fired 5 seconds before the last possible moment' land the light-delay lesson well, and the helm's rear-camera view at 1.1 rs is striking. But the aftermath confuses: the bridge monitor keeps showing her falling past the reported burn point while the panel freezes and still says 'Falling', and some messages arrive in an odd order. The second half also has long stretches with no objective (after docking, after the hold). I reached Chapter IV (Orpheus) but ran out of time before launching it, mostly because of the low tick rate in this run.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That what you see of something falling toward a black hole is old, delayed and increasingly redshifted light. Ines looked almost normal on screen even though the real deadline was seconds away, so you cannot wait until she looks in trouble. Then, at the helm, that hovering low near the horizon slows your clock compared with the rest of the universe (relay clock x2 below 1.33 rs; the universe aged 104 s more), that the field holding you feels like nothing (equivalence principle), and that from very low the black shadow fills the forward sky while every star is squeezed into a bright patch behind."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The rescue aftermath. The panel said her engine burn was seen at 4.56 rs and she was climbing, but its status still said 'Falling. It looks almost normal', its numbers froze, and the bridge monitor kept showing her going deeper (3.51 rs, then 2.49 rs). Her radio lines also arrived as 'I'm climbing' and then 'the black fills the window'. WREN's explanation about old light helped, but it came later. Choosing when to fire was also a pure guess, with no cue for how long was left."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "(1) At the comms console on the bridge (starboard-forward, facing the console and forward windows), the in-world monitor showed the capsule falling below the reported burn point while the panel was frozen at 4.56 rs. (2) The same monitor later read 'Recall beam: armed' after she docked. (3) Standing in front of the helm facing forward, with the crosshair on the helm screen and the 'Helm 2 m' marker shown, there was no use prompt until about 0.9 m. Beyond software-render blur, I saw no rendering glitches in the black hole or windows. At 1.1 rs the forward windows went almost fully black, which WREN explains as intended. While the mouse was captured, a black bar briefly covered the top-centre of the screen (likely the browser's pointer-lock notice)."
+    }
+  ]
+}

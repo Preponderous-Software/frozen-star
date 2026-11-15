@@ -9,7 +9,7 @@ const SPEAKERS = {
 
 export function createHud(root) {
   const subs = h('div.fp-subs', { 'aria-live': 'polite' });
-  const objective = h('div.fp-objective', { hidden: true }, h('span', 'Objective'), h('b'));
+  const objective = h('div.fp-objective', { hidden: true }, h('span', 'Objective'), h('b'), h('small.fp-obj-note', { hidden: true }));
   const prompt = h('div.fp-prompt', { hidden: true });
   const cross = h('div.fp-cross');
   const fade = h('div.fp-fade');
@@ -41,14 +41,16 @@ export function createHud(root) {
     /** Finish the current line now (Space, or a tap on the subtitles). */
     skip() { pending?.done(); },
     /** Advance subtitle timers by dt seconds of game time (0 while paused). */
-    tick(dt) { for (const p of [...timers]) { p.remain -= dt; if (p.remain <= 0) p.done(); } },
+    tick(dt) { for (const p of [...timers]) { p.remain -= dt; p.onTick?.(); if (p.remain <= 0) p.done(); } },
     lookHint(on) { look.hidden = !on; },
     toast(text) {
       const t = h('div.fp-toast', text); root.append(t);
       setTimeout(() => t.classList.add('out'), 1800); setTimeout(() => t.remove(), 2600);
     },
     choosing: false,
-    objective(text) { objective.hidden = !text; if (text) objective.querySelector('b').textContent = text; objective.classList.remove('flash'); void objective.offsetWidth; objective.classList.add('flash'); },
+    /** A line under the objective that updates quietly (a countdown), without making a new objective. */
+    objectiveNote(text) { const n = objective.querySelector('.fp-obj-note'); n.hidden = !text; n.textContent = text || ''; },
+    objective(text) { this.objectiveNote(null); objective.hidden = !text; if (text) objective.querySelector('b').textContent = text; objective.classList.remove('flash'); void objective.offsetWidth; objective.classList.add('flash'); },
     prompt(text) { prompt.hidden = !text; if (text) prompt.innerHTML = text; },
     crosshair(on) { cross.hidden = !on; },
     hint(text) { hint.hidden = !text; if (text) hint.innerHTML = text; },
@@ -69,13 +71,19 @@ export function createHud(root) {
         let done = false;
         const api = this;
         api.choosing = true;
-        const finish = (i) => { if (done) return; done = true; api.choosing = false; box.remove(); res(i); };
-        const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${i + 1}. ${o}`))));
+        let finish = (i) => { if (done) return; done = true; api.choosing = false; box.remove(); res(i); };
+        const bar = timeout ? h('div.fp-choice-time', h('i')) : null;
+        const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${i + 1}. ${o}`))), bar);
         root.append(box);
         const key = (e) => { const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
         addEventListener('keydown', key);
         if (document.pointerLockElement) document.exitPointerLock?.();
-        if (timeout) setTimeout(() => { removeEventListener('keydown', key); finish(null); }, timeout * 1000);
+        // the time limit runs on game time (it stops while paused), with a bar that shows what is left
+        if (timeout) {
+          const p = { remain: timeout, done: () => { timers.delete(p); removeEventListener('keydown', key); finish(null); }, onTick: () => { bar.firstChild.style.width = `${Math.max(0, p.remain / timeout) * 100}%`; } };
+          timers.add(p);
+          const fin = finish; finish = (i) => { timers.delete(p); fin(i); };
+        }
       });
     },
     dispose() { for (const e of [subs, objective, prompt, cross, fade, card, hint, look]) e.remove(); },

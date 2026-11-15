@@ -56,7 +56,10 @@ export function screenLines(ctx, w, hh, lines, y0 = 0.32, color = '#ece8f4') {
 const fieldViews = new WeakMap();
 export function drawRunOnScreen(ctx, w, hh, run, title) {
   let fv = fieldViews.get(ctx.canvas); if (!fv) { fv = new FieldView(ctx.canvas, { R0: R_STATION }); fieldViews.set(ctx.canvas, fv); }
-  const s = run.seen(), z = Math.exp(s.lnz);
+  // after a rescue, once the light of the engine burn arrives, the picture stops falling
+  const climbing = run.saved && run.S() >= run.saved.seenAt;
+  const s = climbing ? run.f.seenAt(run.saved.seenAt) : run.seen(), z = Math.exp(s.lnz);
+  if (climbing) title = title.replace('as seen from the ship', 'engine burn seen, climbing home');
   fv.begin().hole().station().glow(s.r, { nm: 470 * z, flux: Math.exp(-4 * s.lnz) });
   ctx.fillStyle = '#ffc882'; ctx.font = `500 ${hh * 0.06}px ${MONO}`; ctx.fillText(title, w * 0.04, hh * 0.1);
   ctx.fillStyle = '#ece8f4'; ctx.font = `400 ${hh * 0.05}px ${MONO}`;
@@ -107,7 +110,7 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
       if (!wrap.firstChild) {
         wrap.append(
           h('p.eyebrow', 'Probe console'), h('h3', name),
-          h('p', 'Released from rest beside the ship, 10 rₛ from Erebus. It carries a clock and a beacon.'),
+          h('p', `Released from rest beside the ship, 10 rₛ from Erebus. It carries a clock and a beacon${/orpheus/i.test(name) ? ', and a camera that sends a frame home every few seconds of its own time' : ''}.`),
           h('button.primary.big#fp-launch', { disabled: !canLaunch(), onclick: () => { onLaunch(); } }, `Launch ${name}`));
       }
       return;
@@ -166,6 +169,7 @@ export function commsApp(body, g, { run, onFire, showMap }) {
       else { if (frozenAt == null) frozenAt = r.saved.seenAt; after.textContent = `Engine burn seen at ${(r.saved.r / 2).toFixed(2)} rₛ. She is climbing out and coming home.`; after.className = 'fp-gap'; }
     }
     st.update(frozenAt ?? S, { mass: HOLE.mass });
+    if (frozenAt != null) st.status.set('Climbing. Her engine burn has reached you: from here on the picture shows her coming home.');
     while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.text)); }
     if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
   });

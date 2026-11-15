@@ -1,0 +1,1632 @@
+{
+  "runDir": "/tmp/playtest-frozen-star/20261114-2340",
+  "generated": "2026-11-15 00:16",
+  "sessions": [
+    {
+      "session": "s01",
+      "profile": "frozen-star",
+      "goal": "The descent and Orpheus: take the ship down at the helm, come back up, then launch Orpheus and watch its feed to the end. Note whether you understood what you saw, and screenshot any visual problems, especially in the window and on the screens.",
+      "outcome": "achieved",
+      "fun": 4,
+      "durationSec": 1224,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "d654778"
+      },
+      "verdict": "The descent and Orpheus land. Watching the helm's rear camera squeeze the sky into a ring, then Orpheus's frames arrive further apart, noisier and finally 'never' at 1.211 rs, made the time-dilation and horizon ideas click without a lecture. The main problems are bookkeeping and pacing: 20 per-second hold objectives, an objective gap while every window is black, WREN announcing the end one frame early, and a feed objective that never closed. A smaller one: the helm chair blocks a straight approach to the helm.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 24,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Take the Tern down until the relay clock runs twice as fast (helm)": 52.3,
+          "Held for 20 seconds": 72.5,
+          "Return to 10 rₛ (helm)": 99.5
+        },
+        "lowestAltitudeRs": 1.217,
+        "maxRelayRate": 2.369,
+        "orpheusFramesReceived": 65,
+        "orpheusLastFrameAltitudeRs": 1.211,
+        "orpheusLastFrameTauM": 97.5,
+        "typicalTps": 12
+      },
+      "derived": {
+        "objectivesCompleted": 24,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Take the Tern down until the relay clock runs twice as fast (helm)",
+            "seconds": 52.3,
+            "wallSeconds": 281.0,
+            "tick": 3136
+          },
+          {
+            "number": 2,
+            "title": "Hold for 20 seconds",
+            "seconds": 52.4,
+            "wallSeconds": 281.5,
+            "tick": 3142
+          },
+          {
+            "number": 3,
+            "title": "Hold at twice the relay rate: 20 s to go",
+            "seconds": 53.3,
+            "wallSeconds": 290.0,
+            "tick": 3196
+          },
+          {
+            "number": 4,
+            "title": "Hold at twice the relay rate: 19 s to go",
+            "seconds": 54.3,
+            "wallSeconds": 300.5,
+            "tick": 3256
+          },
+          {
+            "number": 5,
+            "title": "Hold at twice the relay rate: 18 s to go",
+            "seconds": 55.3,
+            "wallSeconds": 313.0,
+            "tick": 3316
+          },
+          {
+            "number": 6,
+            "title": "Hold at twice the relay rate: 17 s to go",
+            "seconds": 56.3,
+            "wallSeconds": 321.5,
+            "tick": 3376
+          },
+          {
+            "number": 7,
+            "title": "Hold at twice the relay rate: 16 s to go",
+            "seconds": 57.5,
+            "wallSeconds": 332.5,
+            "tick": 3448
+          },
+          {
+            "number": 8,
+            "title": "Hold at twice the relay rate: 15 s to go",
+            "seconds": 58.4,
+            "wallSeconds": 341.5,
+            "tick": 3502
+          },
+          {
+            "number": 9,
+            "title": "Hold at twice the relay rate: 14 s to go",
+            "seconds": 59.4,
+            "wallSeconds": 350.0,
+            "tick": 3562
+          },
+          {
+            "number": 10,
+            "title": "Hold at twice the relay rate: 13 s to go",
+            "seconds": 60.4,
+            "wallSeconds": 362.0,
+            "tick": 3622
+          },
+          {
+            "number": 11,
+            "title": "Hold at twice the relay rate: 12 s to go",
+            "seconds": 61.3,
+            "wallSeconds": 371.5,
+            "tick": 3678
+          },
+          {
+            "number": 12,
+            "title": "Hold at twice the relay rate: 11 s to go",
+            "seconds": 62.3,
+            "wallSeconds": 380.5,
+            "tick": 3738
+          },
+          {
+            "number": 13,
+            "title": "Hold at twice the relay rate: 10 s to go",
+            "seconds": 63.3,
+            "wallSeconds": 389.0,
+            "tick": 3798
+          },
+          {
+            "number": 14,
+            "title": "Hold at twice the relay rate: 9 s to go",
+            "seconds": 64.3,
+            "wallSeconds": 395.5,
+            "tick": 3858
+          },
+          {
+            "number": 15,
+            "title": "Hold at twice the relay rate: 8 s to go",
+            "seconds": 65.3,
+            "wallSeconds": 404.5,
+            "tick": 3918
+          },
+          {
+            "number": 16,
+            "title": "Hold at twice the relay rate: 7 s to go",
+            "seconds": 66.4,
+            "wallSeconds": 411.5,
+            "tick": 3984
+          },
+          {
+            "number": 17,
+            "title": "Hold at twice the relay rate: 6 s to go",
+            "seconds": 67.3,
+            "wallSeconds": 418.0,
+            "tick": 4038
+          },
+          {
+            "number": 18,
+            "title": "Hold at twice the relay rate: 5 s to go",
+            "seconds": 68.3,
+            "wallSeconds": 429.0,
+            "tick": 4098
+          },
+          {
+            "number": 19,
+            "title": "Hold at twice the relay rate: 4 s to go",
+            "seconds": 69.3,
+            "wallSeconds": 439.0,
+            "tick": 4161
+          },
+          {
+            "number": 20,
+            "title": "Hold at twice the relay rate: 3 s to go",
+            "seconds": 70.3,
+            "wallSeconds": 448.5,
+            "tick": 4221
+          },
+          {
+            "number": 21,
+            "title": "Hold at twice the relay rate: 2 s to go",
+            "seconds": 71.3,
+            "wallSeconds": 460.0,
+            "tick": 4281
+          },
+          {
+            "number": 22,
+            "title": "Hold at twice the relay rate: 1 s to go",
+            "seconds": 72.3,
+            "wallSeconds": 469.0,
+            "tick": 4341
+          },
+          {
+            "number": 23,
+            "title": "Held for 20 seconds",
+            "seconds": 72.5,
+            "wallSeconds": 470.0,
+            "tick": 4347
+          },
+          {
+            "number": 24,
+            "title": "Return to 10 rₛ (helm)",
+            "seconds": 99.5,
+            "wallSeconds": 736.5,
+            "tick": 5971
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "screen": 11,
+          "dialogue": 11,
+          "objective_started": 25,
+          "objective_completed": 24,
+          "checkpoint": 1,
+          "card": 1
+        },
+        "lastTick": 10771
+      },
+      "ticksPerSecond": 60,
+      "notes": 6,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "Gravitational time dilation and the event horizon as seen from outside. Lower in the hole's gravity your clock runs slow compared with the far-away relay (x2 below 1.33 rs, 'the universe aged 45 seconds more than we did'). Hovering close, the black hole's shadow covers most of the sky and all the stars get squeezed into a patch behind you. And something falling in never visibly crosses the horizon for an outside watcher: its camera frames arrive ever further apart, redder/fainter and noisier, and the last ones never arrive, while the probe's own clock says it crosses in finite time (tau ~98 M). Also the equivalence principle: the field pushes every atom equally, so you feel nothing."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "Just after the 20-second hold. Every window on the bridge had gone solid black, the objective box was empty, and the only hint was Ines asking whether the camera was broken. For several seconds I could not tell if the renderer had failed or this was the physics. WREN's explanation and the 'take us back up' objective came later. Also confusing: the objective count racing up one per second during the hold, and WREN saying 'no more frames' while the panel still said 'next frame due 1.3 s'."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "(1) Bridge at 1.22 rs, standing by the helm facing forward and then turning right through the comms console to the starboard wall (yaw about -30 to -165): all windows pure black. Probably correct physics, but it looks broken until explained. (2) Helm panel, after the rear camera appeared: the scrolled 'Hold station at' slider row shows garbled through the translucent Step back header at the top of the panel. (3) Probe console in-world screen (facing it from the left of the helm): it reads 'K-1 ready' when only Orpheus is left. (4) The black hole in the forward windows at 10 rs and on the Orpheus feed was blurry but otherwise looked right: no flicker, holes or colour garbage. Pointer-lock briefly drew a black bar across the top of the view right after clicking to capture the mouse."
+        }
+      ]
+    },
+    {
+      "session": "s02",
+      "profile": "frozen-star",
+      "goal": "Graphics hunt, second pass after fixes. Walk every room (bridge, corridor, quarters, lab) and look in every direction: ceiling, floor and out of every window, turning slowly while looking at the black hole so you can see whether the ring around it ever breaks, shows hard cut edges, slivers or flicker. Also check the wall screens and console panels for clipped or overlapping text. Screenshot and describe anything that looks wrong.",
+      "outcome": "achieved",
+      "fun": 3,
+      "durationSec": 980,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "d654778"
+      },
+      "verdict": "On the bridge the black hole held up: panning in 8-10 degree steps across all three front panes and both side windows, I saw no breaks, slivers, misaligned mullion seams or flicker, and four still frames in a row were identical. The photon ring does draw as a dotted or dashed arc rather than a solid line, but that matches the software-render resolution. The one real rendering defect left is a hard-edged dark rectangle in the quarters porthole. The rest is layout polish: the archive screen sits on the lab window, the porthole prompt stays up after the crosshair leaves, and the chapter-card text has no backing plate.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 2,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Drop the beacon probe (probe console, left)": 114.65,
+          "Watch the probe fall": 219.48
+        },
+        "roomsVisited": 4,
+        "ringBreaksSeen": 0,
+        "ringFlickerSeen": 0,
+        "fps": 10
+      },
+      "derived": {
+        "objectivesCompleted": 2,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Drop the beacon probe (probe console, left)",
+            "seconds": 114.7,
+            "wallSeconds": 481.0,
+            "tick": 6879
+          },
+          {
+            "number": 2,
+            "title": "Watch the probe fall",
+            "seconds": 219.5,
+            "wallSeconds": 827.0,
+            "tick": 13169
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "screen": 9,
+          "objective_started": 3,
+          "dialogue": 20,
+          "objective_completed": 2,
+          "checkpoint": 1,
+          "card": 1
+        },
+        "lastTick": 15444
+      },
+      "ticksPerSecond": 60,
+      "notes": 4,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That time and light behave differently near a black hole: a probe dropped from the ship keeps its own clock steadily, but from the ship its pings arrive further and further apart, redder and dimmer, while by its own clock it crosses the horizon in under a minute. The black disk you see is the hole's shadow, about two and a half times wider than the horizon, and the bright ring is starlight bent all the way around it."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "The ping-9 prediction question appeared while I was exploring the lab and then disappeared a few seconds later without my answering, with nothing to say whether it had timed out or recorded an answer. Second: the quarters porthole showed 'E Look out of the porthole', but pressing E only played a WREN line, and the prompt stayed up after I looked away."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "1) Quarters, facing the porthole and slightly to its right: a dark rectangle with hard straight edges covers the left third of the porthole view and cuts across the lensed disk band. 2) Lab, facing the archive console: its screen floats over the middle of the lab window, covering the mullion. 3) Quarters, facing the bookshelf: the chapter-card sub-line was unreadable over the coloured books. 4) Probe console: the in-world screen text is cut off behind the side panel. The bridge front and side windows looked fine while turning slowly: the ring never broke and nothing flickered; the photon ring is a dotted arc at this resolution. Ceilings and floors in all four rooms looked clean."
+        }
+      ]
+    },
+    {
+      "session": "s03",
+      "profile": "frozen-star",
+      "goal": "The whole second half in one go: rescue Ines from the comms console, then take the ship down at the helm and back up, launch Orpheus, watch its feed to the end, make the final choice and read the logbook. Note whether each step was clear, whether the aftermath of the rescue made sense, and screenshot any visual problems.",
+      "outcome": "partial",
+      "fun": 4,
+      "durationSec": 1564,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "d654778"
+      },
+      "verdict": "The rescue is a strong scene: Ines's 'On your screen I looked fine the whole time' and WREN's 'fired 5 seconds before the last possible moment' land the light-delay lesson well, and the helm's rear-camera view at 1.1 rs is striking. But the aftermath confuses: the bridge monitor keeps showing her falling past the reported burn point while the panel freezes and still says 'Falling', and some messages arrive in an odd order. The second half also has long stretches with no objective (after docking, after the hold). I reached Chapter IV (Orpheus) but ran out of time before launching it, mostly because of the low tick rate in this run.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 4,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Save Ines: fire the recall beam from the comms console": 65.85,
+          "Take the Tern down until the relay clock runs twice as fast (helm)": 138.63,
+          "Held for 20 seconds": 158.63,
+          "Return to 10 rs (helm)": 184.23
+        },
+        "firedSecondsBeforeDeadline": 5,
+        "inesScreenAltitudeAtFireRs": 6.9,
+        "lowestAltitudeRs": 1.052,
+        "relayExtraSecondsFromDescent": 104,
+        "orpheusLaunched": 0
+      },
+      "derived": {
+        "objectivesCompleted": 24,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+            "seconds": 65.8,
+            "wallSeconds": 432.5,
+            "tick": 3951
+          },
+          {
+            "number": 2,
+            "title": "Take the Tern down until the relay clock runs twice as fast (helm)",
+            "seconds": 138.6,
+            "wallSeconds": 1002.5,
+            "tick": 8318
+          },
+          {
+            "number": 3,
+            "title": "Hold at twice the relay rate: 20 s to go",
+            "seconds": 139.5,
+            "wallSeconds": 1009.0,
+            "tick": 8372
+          },
+          {
+            "number": 4,
+            "title": "Hold at twice the relay rate: 19 s to go",
+            "seconds": 140.5,
+            "wallSeconds": 1016.0,
+            "tick": 8432
+          },
+          {
+            "number": 5,
+            "title": "Hold at twice the relay rate: 18 s to go",
+            "seconds": 141.5,
+            "wallSeconds": 1024.0,
+            "tick": 8492
+          },
+          {
+            "number": 6,
+            "title": "Hold at twice the relay rate: 17 s to go",
+            "seconds": 142.5,
+            "wallSeconds": 1032.0,
+            "tick": 8552
+          },
+          {
+            "number": 7,
+            "title": "Hold at twice the relay rate: 16 s to go",
+            "seconds": 143.6,
+            "wallSeconds": 1039.5,
+            "tick": 8618
+          },
+          {
+            "number": 8,
+            "title": "Hold at twice the relay rate: 15 s to go",
+            "seconds": 144.6,
+            "wallSeconds": 1045.5,
+            "tick": 8678
+          },
+          {
+            "number": 9,
+            "title": "Hold at twice the relay rate: 14 s to go",
+            "seconds": 145.6,
+            "wallSeconds": 1052.0,
+            "tick": 8738
+          },
+          {
+            "number": 10,
+            "title": "Hold at twice the relay rate: 13 s to go",
+            "seconds": 146.6,
+            "wallSeconds": 1060.0,
+            "tick": 8798
+          },
+          {
+            "number": 11,
+            "title": "Hold at twice the relay rate: 12 s to go",
+            "seconds": 147.6,
+            "wallSeconds": 1066.5,
+            "tick": 8858
+          },
+          {
+            "number": 12,
+            "title": "Hold at twice the relay rate: 11 s to go",
+            "seconds": 148.6,
+            "wallSeconds": 1073.0,
+            "tick": 8918
+          },
+          {
+            "number": 13,
+            "title": "Hold at twice the relay rate: 10 s to go",
+            "seconds": 149.6,
+            "wallSeconds": 1080.5,
+            "tick": 8978
+          },
+          {
+            "number": 14,
+            "title": "Hold at twice the relay rate: 9 s to go",
+            "seconds": 150.6,
+            "wallSeconds": 1087.0,
+            "tick": 9038
+          },
+          {
+            "number": 15,
+            "title": "Hold at twice the relay rate: 8 s to go",
+            "seconds": 151.6,
+            "wallSeconds": 1093.5,
+            "tick": 9098
+          },
+          {
+            "number": 16,
+            "title": "Hold at twice the relay rate: 7 s to go",
+            "seconds": 152.6,
+            "wallSeconds": 1101.0,
+            "tick": 9158
+          },
+          {
+            "number": 17,
+            "title": "Hold at twice the relay rate: 6 s to go",
+            "seconds": 153.6,
+            "wallSeconds": 1109.0,
+            "tick": 9218
+          },
+          {
+            "number": 18,
+            "title": "Hold at twice the relay rate: 5 s to go",
+            "seconds": 154.6,
+            "wallSeconds": 1117.5,
+            "tick": 9278
+          },
+          {
+            "number": 19,
+            "title": "Hold at twice the relay rate: 4 s to go",
+            "seconds": 155.6,
+            "wallSeconds": 1127.0,
+            "tick": 9338
+          },
+          {
+            "number": 20,
+            "title": "Hold at twice the relay rate: 3 s to go",
+            "seconds": 156.6,
+            "wallSeconds": 1136.0,
+            "tick": 9398
+          },
+          {
+            "number": 21,
+            "title": "Hold at twice the relay rate: 2 s to go",
+            "seconds": 157.5,
+            "wallSeconds": 1143.5,
+            "tick": 9452
+          },
+          {
+            "number": 22,
+            "title": "Hold at twice the relay rate: 1 s to go",
+            "seconds": 158.5,
+            "wallSeconds": 1150.0,
+            "tick": 9512
+          },
+          {
+            "number": 23,
+            "title": "Held for 20 seconds",
+            "seconds": 158.6,
+            "wallSeconds": 1151.5,
+            "tick": 9518
+          },
+          {
+            "number": 24,
+            "title": "Return to 10 rₛ (helm)",
+            "seconds": 184.2,
+            "wallSeconds": 1430.5,
+            "tick": 11054
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "screen": 7,
+          "dialogue": 27,
+          "objective_started": 24,
+          "objective_completed": 24,
+          "card": 3,
+          "checkpoint": 2
+        },
+        "lastTick": 11342
+      },
+      "ticksPerSecond": 60,
+      "notes": 8,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That what you see of something falling toward a black hole is old, delayed and increasingly redshifted light. Ines looked almost normal on screen even though the real deadline was seconds away, so you cannot wait until she looks in trouble. Then, at the helm, that hovering low near the horizon slows your clock compared with the rest of the universe (relay clock x2 below 1.33 rs; the universe aged 104 s more), that the field holding you feels like nothing (equivalence principle), and that from very low the black shadow fills the forward sky while every star is squeezed into a bright patch behind."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "The rescue aftermath. The panel said her engine burn was seen at 4.56 rs and she was climbing, but its status still said 'Falling. It looks almost normal', its numbers froze, and the bridge monitor kept showing her going deeper (3.51 rs, then 2.49 rs). Her radio lines also arrived as 'I'm climbing' and then 'the black fills the window'. WREN's explanation about old light helped, but it came later. Choosing when to fire was also a pure guess, with no cue for how long was left."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "(1) At the comms console on the bridge (starboard-forward, facing the console and forward windows), the in-world monitor showed the capsule falling below the reported burn point while the panel was frozen at 4.56 rs. (2) The same monitor later read 'Recall beam: armed' after she docked. (3) Standing in front of the helm facing forward, with the crosshair on the helm screen and the 'Helm 2 m' marker shown, there was no use prompt until about 0.9 m. Beyond software-render blur, I saw no rendering glitches in the black hole or windows. At 1.1 rs the forward windows went almost fully black, which WREN explains as intended. While the mouse was captured, a black bar briefly covered the top-centre of the screen (likely the browser's pointer-lock notice)."
+        }
+      ]
+    },
+    {
+      "session": "s04",
+      "profile": "frozen-star",
+      "goal": "Menus and options. From the title menu, try everything that is not the story: Settings (change sensitivity, field of view, volume, subtitle size, quality, invert Y and check each one actually takes effect in game), Chapters, Training, Observatory and About. Then start the game, open the pause menu with Escape, browse its tabs, resume, and quit back to the title and use Continue. Note anything confusing, broken, unlabeled or that does not respond.",
+      "outcome": "partial",
+      "fun": 4,
+      "durationSec": 534,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "d654778"
+      },
+      "verdict": "The menus are clean and responsive. Every setting I could check works: look speed scales exactly (29.7 vs 4.4 degrees per 100 px at 2.35x vs 0.35x), invert look flips the pitch, field of view changes live behind the pause menu, subtitle size changes the subtitles, settings are kept between title and game, and Continue resumes at the Beacon K-1 checkpoint. Volume could not be checked because the headless run has no audio. The main gaps: there is no Chapters menu anywhere, Main menu throws away progress before the first checkpoint without asking, the Controls page has small mistakes, and the use prompt does not follow the crosshair.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 1,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Go to the bridge": 40.15
+        },
+        "settingsVerifiedInGame": 5,
+        "settingsUnverifiable": 1,
+        "lookDegPer100pxAt2_35x": 29.7,
+        "lookDegPer100pxAt0_35x": 4.4
+      },
+      "derived": {
+        "objectivesCompleted": 3,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Go to the bridge",
+            "seconds": 33.5,
+            "wallSeconds": 163.4,
+            "tick": 2007
+          },
+          {
+            "number": 2,
+            "title": "Go to the bridge",
+            "seconds": 40.1,
+            "wallSeconds": 183.1,
+            "tick": 2409
+          },
+          {
+            "number": 3,
+            "title": "Drop the beacon probe (probe console, left)",
+            "seconds": 41.0,
+            "wallSeconds": 191.4,
+            "tick": 2463
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "screen": 20,
+          "world": 3,
+          "dialogue": 11,
+          "card": 3,
+          "objective_started": 4,
+          "objective_completed": 3,
+          "checkpoint": 1
+        },
+        "lastTick": 5584
+      },
+      "ticksPerSecond": 60,
+      "notes": 9,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "Time dilation near a black hole. The training lesson compares a falling probe's own clock with the station's clock: pings sent every 10 units of the probe's time reach the station further and further apart. The Observatory shows how the black hole bends light, with the warped sky grid and the disk image wrapped over and under the shadow. The story opening sets you ten Schwarzschild radii above the hole. I only saw the start of the story, so I could not tell more than that."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "Looking for Chapters: no menu item with that name exists, before or after reaching chapter I, so I could not tell whether it is locked, removed or somewhere else. Close behind: quitting to the main menu from the quarters silently threw away my progress (Wake up again, no Continue). A smaller one: the 'M' time unit in the Two Clocks lesson is never explained."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "1) Title > Settings: opening the Subtitles or Graphics dropdown showed an empty black box instead of the option list. 2) Quarters, just after waking, facing the porthole (yaw about -6): the orange target brackets overlapped the 'E Look out of the porthole' prompt text. 3) Quarters, facing the bookshelf (yaw about -35): the prompt still offered the porthole, with the brackets on the porthole to the left of the crosshair. 4) After capturing the mouse, a black bar appeared at the top centre of the view for a moment, probably the browser's pointer-lock notice. 5) The WASD/E/Esc hint stayed on screen the whole time in the quarters and corridor. Apart from software-render blur, the ray-traced black hole looked correct in the dream, the portholes, the bridge windows and the Observatory."
+        }
+      ]
+    }
+  ],
+  "severityCounts": {
+    "blocker": 0,
+    "major": 1,
+    "minor": 20,
+    "polish": 12
+  },
+  "findingReports": 33,
+  "findings": [
+    {
+      "title": "After the engine burn is reported, the in-world comms monitor shows Ines still falling deeper while the panel is frozen at 4.56 rs",
+      "severity": "major",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "Once the comms panel said 'Engine burn seen at 4.56 rs. She is climbing out and coming home.', the panel readout froze (ship clock 98.5 M / 58.2 s, 1+z 1.572, appears at 4.56 rs) for 200+ ticks, and its status line still read 'Falling. It looks almost normal from here.' Meanwhile the 3D comms monitor on the bridge kept counting down: 'seen at 3.51 rs, 1+z 1.83', then 'seen at 2.49 rs, 1+z 2.46'. The two displays of the same capsule disagree, and the monitor shows her falling below the point where her burn was supposedly seen. Expected: both displays agree, freeze or reverse at the burn point, and the status line changes from 'Falling'.",
+      "repro": "pt start --checkpoint probe-done; wait for objective 'Save Ines'; walk to comms, e; fire recall beam at ship clock ~44 s; wait until panel says 'Engine burn seen'; Esc and look at the comms monitor",
+      "screenshots": [
+        "s03/shots/comms_screen_keeps_falling.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "'Watch the Orpheus feed' objective never completes after the feed ends",
+      "severity": "minor",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "The feed reached 'Next frame due: never' (frame 65, tick ~11900) and WREN delivered the closing line, but objective #25 'Watch the Orpheus feed (starboard screen)' was still open at tick 12103 when I stopped. It may complete later, but nothing on screen said what to do next or how long to wait.",
+      "repro": "As above; pt state at tick ~12000",
+      "screenshots": [
+        "s01/shots/feed-final.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "20 s hold creates a new objective every second (objectives #2 to #23)",
+      "severity": "minor",
+      "categories": [
+        "bug",
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 2,
+      "detail": "Reaching 1.29 rs completes objective 1, then 'Hold for 20 seconds' (#2) starts and completes 6 ticks later, followed by 'Hold at twice the relay rate: 20 s to go' (#3), '19 s to go' (#4) ... '1 s to go' (#22), 'Held for 20 seconds' (#23). Each countdown second is logged as a separate objective_started/objective_completed pair, so the objective counter jumps from 1 to 24 in one chapter. On screen it reads like a countdown, which is fine; the bookkeeping is not (any objective counter, achievement or analytics will be inflated). Expected one objective with a countdown in its text.",
+      "repro": "pt start --checkpoint rescue-done; walk around the helm chair to the helm; E; drag the 'Hold station at' slider to ~1.2 rs; pt events 30",
+      "screenshots": [
+        "s01/shots/hold-objective.png",
+        "s01/shots/no-objective-after-hold.png"
+      ],
+      "alsoTitled": [
+        "Objective box disappears for ~11 game seconds after the hold ends"
+      ]
+    },
+    {
+      "title": "Comms panel gives no sense of how long the rescue window has left; 'Wait as long as you dare' is a blind guess",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "While I waited, the panel showed slowly changing redshift, brightness and 'appears at' values, and always said 'Falling. It looks almost normal from here.' Nothing hinted at how close the deadline was. I fired at a guess, and WREN then said I had fired 5 seconds before the last possible moment. That is good drama, but with no gauge a first-time player has nothing to judge 'dare' by. That may be the lesson (she looked fine the whole time), but a felt cue such as rising tension music or WREN warnings would help.",
+      "repro": "pt start --checkpoint probe-done; open comms after the objective appears; watch the panel",
+      "screenshots": [
+        "s03/shots/before_fire.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Game ran at ~3-17 ticks/s in this session, so story beats took 3-20x longer in real time",
+      "severity": "minor",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "The second half's real-time waits (capsule fall, helm hold, dialogue gaps) at this tick rate meant I ran out of the 30 min budget at the start of Chapter IV (Orpheus), before launching it. Turning with the arrow keys gave ~10 degrees per second held. This is most likely the shared software renderer, but the long scripted gaps (e.g. ~1100 ticks between dock and the Chapter III card) add up even at full speed.",
+      "repro": "pt status / pt state tick deltas during play",
+      "screenshots": [
+        "s03/shots/final.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Helm chair blocks a straight approach to the helm; no use prompt from behind it",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Walking straight forward from the spawn, the player stops at 2.6 m from the helm against the helm chair, looking at the helm with no 'E Use' prompt. E does nothing, and pt walkto console reports 'stuck'. You have to strafe left and come round the chair (prompt appears at ~0.7 m). The objective tells you to go to the helm, so the first approach most players make is the one that fails.",
+      "repro": "pt start --checkpoint rescue-done; pt hold w 6; pt key e (nothing); pt walkto console -> stuck at 2.58 m",
+      "screenshots": [
+        "s01/shots/e2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Helm panel overflows once the rear camera appears; scrolled text shows through the Step back header, and a click missed",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Below ~2.6 rs a REAR CAMERA image is added to the helm panel, which then scrolls. In the scrolled state the 'Hold station at' slider row and value show garbled behind the translucent 'Step back' header. My first click on 'Return to 10 rs' at (810,262) did nothing because the panel had moved under the pointer; a second click at (810,188) worked. Expected an opaque sticky header, or a layout that keeps the Return button and slider where they were.",
+      "repro": "At the helm, descend below 2.6 rs, scroll or wait; pt shot",
+      "screenshots": [
+        "s01/shots/panel-scroll-overlap.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Helm shows a 'Helm 2 m' marker with the crosshair on it, but the use prompt only appears at ~0.9 m",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "Standing 1.8 m from the helm and looking straight at its screen, with the 'Helm 2 m' marker under the crosshair, showed no prompt. Other consoles prompt at ~1.9 m. I had to walk up to 0.9 m before 'E Use the helm console' showed.",
+      "repro": "pt start --checkpoint rescue-done; stand ~1.8 m in front of the helm, crosshair on its screen; observe no prompt",
+      "screenshots": [
+        "s03/shots/s12.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "In-world comms monitor reads 'Capsule docked. Recall beam: armed' after the rescue",
+      "severity": "minor",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "After Ines docked, the bridge comms monitor showed 'Recall beam: armed'. The beam was already fired and spent. Expected: 'fired' or 'spent'.",
+      "repro": "complete the rescue; look at the comms monitor after 'Docked. Hands still shaking.'",
+      "screenshots": [
+        "s03/shots/comms_armed_after_dock.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "No Chapters entry on the title menu, fresh or after reaching chapter I",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "The goal lists Chapters as a menu item, but the title menu only offers Wake up/Continue, New game, Settings, Training simulations, Observatory and About, both on a fresh save and after the bridge checkpoint (Continue: Beacon K-1). No chapter select was found anywhere, including the pause menu. If it unlocks later, nothing on screen says so.",
+      "repro": "pt start ...; pt shot title; reach the bridge; Esc; click Main menu; pt shot title_continue",
+      "screenshots": [
+        "s04/shots/title_continue.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "No cue to climb back after the 20 s hold; 'Take us back up' and the Return objective arrive after the player already did it",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "'Held for 20 seconds' completed at tick 9518, then the HUD was empty for ~700 ticks apart from WREN's explanation of the black window. I clicked 'Return to 10 rs' at ~10200 on my own. Ines's 'Okay. That's enough. Take us back up.' arrived at ~10370, and the objective 'Return to 10 rs (helm)' only appeared at 10592, when the ship was already at ~9.9 rs. It then stayed incomplete until tick 11054, ~380 ticks after arrival ('Back at station' was said at 10670).",
+      "repro": "pt start --checkpoint rescue-done; helm: drag slider to ~1.05 rs; hold 20 s; wait",
+      "screenshots": [
+        "s03/shots/return_objective_stuck.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Pause > Controls says arrows walk; key turning and 1/2/3 answers are missing",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Controls lists 'Walk: W A S D or arrows', but Left/Right arrows turn the view. Turning on the keyboard is not listed, and neither is 1/2/3 for answering questions.",
+      "repro": "in WORLD: pt key Escape; pt click 1077 319; pt shot pause_controls",
+      "screenshots": [
+        "s04/shots/pause_controls.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Pause > Main menu throws away progress before the first checkpoint without asking",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "After the dream and about 15 s in the quarters, Pause > Main menu went straight back to the title with no confirmation. The title showed 'Wake up' again with no Continue, so the dream had to be replayed. The pause panel's footnote says progress saves at each chapter, but the button itself gives no warning that unsaved progress will be lost.",
+      "repro": "pt start ...; pt key Return; skip dream; pt await WORLD; pt key Escape; pt click 1077 364; pt shot no_continue",
+      "screenshots": [
+        "s04/shots/no_continue.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Ping-9 prediction question vanished without an answer while I was turning in the lab",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The 'Ping 7 arrived late. Log a prediction: when will ping 9 arrive?' choice (options 1-3) opened at tick 9662 while I was turning with the arrow keys in the lab. It closed at tick 10061 (about 6.6 game s) with no answer from me and no event saying what happened. Mouse capture was also released ('Click to look around'). Either it timed out or the arrow keys answered it. Either way the player is not told.",
+      "repro": "launch K-1, walk to the lab, keep turning with pt face (arrow keys) until the CHOICE appears; keep turning and do not press 1-3",
+      "screenshots": [
+        "s02/shots/lab2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Quarters porthole: hard-edged dark rectangle cuts across the lensed disk band",
+      "severity": "minor",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Looking out of the quarters porthole, the left third of the view has a dark rectangle with a straight vertical right edge and a straight horizontal bottom edge about two thirds of the way down. The accretion-disk band runs into it and carries on below it. It is a hard cut, not blur. Seen head-on (a thin vertical seam) and more clearly from a slight angle. I expected continuous sky and disk across the whole porthole, the way the bridge windows show it.",
+      "repro": "pt start --checkpoint bridge; walk bridge -> corridor -> quarters door (bearing ~-127 from the lab door); in quarters, pt walkto item, face the porthole (bearing ~-6), then turn a little so the porthole is on the left of the screen; pt shot",
+      "screenshots": [
+        "s02/shots/port_black_block.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Quarters: 'E Look out of the porthole' prompt and use-brackets stay up while aiming at the bookshelf",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "With the crosshair clearly on the bookshelf and wall to the right of the porthole, the 'E Look out of the porthole' prompt stays on and the orange use-brackets are drawn inside the porthole, away from the crosshair. Pressing E at the porthole only plays a WREN line (the view does not zoom), so it is unclear what the brackets mean. I expected the prompt to go away when the crosshair leaves the porthole.",
+      "repro": "in quarters, stand ~1.8 m from the porthole, pt face -54 then pt look 400 0 so the crosshair moves to the bookshelf; pt shot",
+      "screenshots": [
+        "s02/shots/port_prompt_stale.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Quitting to title logs a false objective_completed for 'Go to the bridge'",
+      "severity": "minor",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Quitting from the quarters via Pause > Main menu emitted objective_completed number 1 'Go to the bridge' at tick 2007, although the bridge was never reached. The next new game then numbered the same objective 2, and after Continue the probe objective was 4. Probe/telemetry only, but it would skew any objective metrics.",
+      "repro": "pt start ...; Wake up; skip dream; Esc; Main menu; pt events 10",
+      "screenshots": [
+        "s04/shots/no_continue.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Rescue aftermath: 'Engine's lit, I'm climbing' arrives before 'The black fills most of the window', and is missing from the received log",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "Ines's 'Engine's lit! I felt that. I'm climbing. I'm coming home!' (tick 3951) was followed by 'The black fills most of the window now.' (tick 4071), so it sounds as if she went on falling after she started climbing. Radio light arrives in the order it was sent, so this order is confusing. The 'INES, AS RECEIVED' log on the comms panel then listed 'black fills', 'overhead bright' and '[You fired...]', but not the 'Engine's lit' line. WREN's later line ('a few of her older messages are still on their way') half explains it, but it comes 800 ticks later.",
+      "repro": "as above; read subtitles and the comms panel log after firing",
+      "screenshots": [
+        "s03/shots/rescue_dialogue_order.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Use prompt and target brackets follow the porthole, not the crosshair",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 2,
+      "detail": "With the centre dot on the bookshelf, the prompt still read 'E Look out of the porthole' and the orange brackets sat on the porthole well to the left of centre. It is unclear what E will act on.",
+      "repro": "quarters: click the game; pt look 100 0; pt shot prompt_mismatch",
+      "screenshots": [
+        "s04/shots/prompt_mismatch.png",
+        "s04/shots/crosshair_prompt.png"
+      ],
+      "alsoTitled": [
+        "Crosshair brackets cover the use-prompt text"
+      ]
+    },
+    {
+      "title": "WREN says 'No more frames are coming' one frame before the last frame arrives",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "At tick 10771 WREN says no more frames are coming, but the feed panel still reads 'Next frame due: 1.2 s / 1.3 s' with 64 frames received. Frame 65 (sent at tau 97.50 M from 1.211 rs) then arrives, and only after that does the panel read 'Next frame due: never'. The line should come after the final frame, or the panel should agree with it.",
+      "repro": "Launch Orpheus at the probe console, open the feed console (starboard screen), wait ~4000 ticks; compare subtitles with the panel text",
+      "screenshots": [
+        "s01/shots/feed-next-frame-contradiction.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "'WASD to walk, E to use, Esc to pause' hint never goes away",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "The control hint stays mid-screen through the whole quarters and corridor section, even after walking, pausing and using a door, and it covers the view of the corridor.",
+      "repro": "Wake up; skip dream; walk to the corridor; pt shot corridor",
+      "screenshots": [
+        "s04/shots/corridor.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "About is subtitled 'Credits' but names no people",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "The About panel has physics notes, references and libraries, but no credits for the people who made the game.",
+      "repro": "title: click About; pt shot about",
+      "screenshots": [
+        "s04/shots/about.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Chapter card 'II · The rescue' line is unreadable over the quarters bookshelf",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The chapter title card is drawn straight over the 3D view with no backing plate. Its small sub-line ('Ines takes the capsule out') landed on the coloured book spines and was hard to read. A dark backing, or the same plate the subtitles use, would fix it.",
+      "repro": "after the probe objective completes, stand in quarters facing the desk and bookshelf when chapter II starts",
+      "screenshots": [
+        "s02/shots/q3.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Console panels render ~3 s after E; the game ran at 8-15 tps",
+      "severity": "polish",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "After E at the helm and probe consoles, state.json already shows screen CONSOLE and the panel text, but the panel does not show in screenshots for 2-3 s. The game ran at about 8-15 ticks a second on this shared machine (fps reported 10), so the story's real-time waits (the 20 s hold, the asymptotic last 0.5 rs of the climb back, Orpheus's ~60 s fall) took several wall-clock minutes. Possibly just the harness load.",
+      "repro": "pt key e at a console; pt shot immediately",
+      "screenshots": [
+        "s01/shots/helmopen.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Every bridge window is solid black at 1.2 rs; the explanation comes late",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Facing forward and to the side (about yaw -30 to -165) at 1.22 rs, every window is pure black with at most one or two stars. This looks physically right (the shadow fills more than half the sky), and the helm's rear-camera caption plus WREN's later line explain it. But you only see the caption if you stay at the helm, and WREN's explanation comes ~20 game seconds after the windows go black, so on the walkabout it looked like a rendering failure. Ines asking 'is the camera broken?' shows the designer expected this; it could come sooner.",
+      "repro": "Descend to 1.217 rs, Esc, turn around the bridge; pt shot",
+      "screenshots": [
+        "s01/shots/window-side.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Lab: ARCHIVE console screen floats in the middle of the lab window",
+      "severity": "polish",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The archive's wall screen sits in front of the lab window and covers the centre mullion and parts of both panes, so it looks pasted onto the glass. Every other wall screen (map, camera feed) is on solid wall. I expected it to be mounted on the wall, or the window to be framed around it.",
+      "repro": "pt start --checkpoint bridge; walk to lab (door off the corridor); face the archive console from ~3.5 m back; pt shot",
+      "screenshots": [
+        "s02/shots/lab_archive_over_window.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Opening a console hides the in-world screen behind the side panel; mouse wheel does not scroll the panel",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "At the probe console, the camera move puts the in-world PROBE screen half behind the right-hand panel ('BEACON K-1 · as seen from the ship' and 'its cl...' are cut off by the panel edge). The live readout panel runs below the fold, and pt scroll 5 over it did not scroll it; only the scrollbar suggests there is more.",
+      "repro": "pt start --checkpoint bridge; use the probe console; click Launch Beacon K-1; pt move 1000 400; pt scroll 5; pt shot",
+      "screenshots": [
+        "s02/shots/panel_scroll.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Probe console screen says 'K-1 ready' when Orpheus is the only probe left",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Ines: 'One probe left. Orpheus.' The in-world probe console screen still lists 'K-1 ready' and 'ORPHEUS ready'. The panel describes Orpheus as carrying 'a clock and a beacon' and does not mention the camera that this chapter is about.",
+      "repro": "After helm-done, walk to the probe console; pt shot",
+      "screenshots": [
+        "s01/shots/probe-k1-ready.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Subtitles/Graphics dropdown opens as an empty black box",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Clicking the Subtitles or Graphics select in Settings opens a black popup with no option labels. Options could only be picked blind with Up/Down + Return. This may be the headless native-popup renderer, but a custom list or segmented buttons would avoid it. Also, 'Wake up' stays filled orange while the Settings panel is open, so two items look selected.",
+      "repro": "title: click Settings; click 1000 434; pt shot subsel",
+      "screenshots": [
+        "s04/shots/dropdown_black.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "The 20 s hold countdown is emitted as 21 separate objectives",
+      "severity": "polish",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "Each second of 'Hold at twice the relay rate: N s to go' is logged as its own objective_started/objective_completed with a new number (3..23). The HUD looks fine, but objective counts and telemetry are inflated, which could matter for analytics or achievements.",
+      "repro": "pt events after the hold",
+      "screenshots": [
+        "s03/shots/hold_objective_spam.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Training 'Two Clocks' uses the unit 'M' without explaining it",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "The lesson says a ping is sent every '10 M', playback runs at '8 M/s', and the answers are 'about 109 M' and so on. Nothing on screen says what M is. The About page explains the unit only indirectly ('one unit of black-hole time is 0.59 seconds').",
+      "repro": "title: Training simulations; click lesson 1; pt shot lesson1_units",
+      "screenshots": [
+        "s04/shots/lesson1_units.png"
+      ],
+      "alsoTitled": []
+    }
+  ],
+  "objectiveTimings": [
+    {
+      "number": 1,
+      "title": "Drop the beacon probe (probe console, left)",
+      "seconds": {
+        "s02": 114.7,
+        "s04": 41.0
+      },
+      "sessions": 2,
+      "min": 41.0,
+      "median": 77.85,
+      "max": 114.7
+    },
+    {
+      "number": 1,
+      "title": "Go to the bridge",
+      "seconds": {
+        "s04": 33.5
+      },
+      "sessions": 1,
+      "min": 33.5,
+      "median": 33.5,
+      "max": 33.5
+    },
+    {
+      "number": 1,
+      "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+      "seconds": {
+        "s03": 65.8
+      },
+      "sessions": 1,
+      "min": 65.8,
+      "median": 65.8,
+      "max": 65.8
+    },
+    {
+      "number": 1,
+      "title": "Take the Tern down until the relay clock runs twice as fast (helm)",
+      "seconds": {
+        "s01": 52.3,
+        "s03": 138.6
+      },
+      "sessions": 2,
+      "min": 52.3,
+      "median": 95.44999999999999,
+      "max": 138.6
+    },
+    {
+      "number": 2,
+      "title": "Go to the bridge",
+      "seconds": {
+        "s04": 33.5
+      },
+      "sessions": 1,
+      "min": 33.5,
+      "median": 33.5,
+      "max": 33.5
+    },
+    {
+      "number": 2,
+      "title": "Hold for 20 seconds",
+      "seconds": {
+        "s01": 52.4
+      },
+      "sessions": 1,
+      "min": 52.4,
+      "median": 52.4,
+      "max": 52.4
+    },
+    {
+      "number": 2,
+      "title": "Take the Tern down until the relay clock runs twice as fast (helm)",
+      "seconds": {
+        "s01": 52.3,
+        "s03": 138.6
+      },
+      "sessions": 2,
+      "min": 52.3,
+      "median": 95.44999999999999,
+      "max": 138.6
+    },
+    {
+      "number": 2,
+      "title": "Watch the probe fall",
+      "seconds": {
+        "s02": 219.5
+      },
+      "sessions": 1,
+      "min": 219.5,
+      "median": 219.5,
+      "max": 219.5
+    },
+    {
+      "number": 3,
+      "title": "Drop the beacon probe (probe console, left)",
+      "seconds": {
+        "s02": 114.7,
+        "s04": 41.0
+      },
+      "sessions": 2,
+      "min": 41.0,
+      "median": 77.85,
+      "max": 114.7
+    },
+    {
+      "number": 3,
+      "title": "Hold at twice the relay rate: 20 s to go",
+      "seconds": {
+        "s01": 53.3,
+        "s03": 139.5
+      },
+      "sessions": 2,
+      "min": 53.3,
+      "median": 96.4,
+      "max": 139.5
+    },
+    {
+      "number": 4,
+      "title": "Hold at twice the relay rate: 19 s to go",
+      "seconds": {
+        "s01": 54.3,
+        "s03": 140.5
+      },
+      "sessions": 2,
+      "min": 54.3,
+      "median": 97.4,
+      "max": 140.5
+    },
+    {
+      "number": 5,
+      "title": "Hold at twice the relay rate: 18 s to go",
+      "seconds": {
+        "s01": 55.3,
+        "s03": 141.5
+      },
+      "sessions": 2,
+      "min": 55.3,
+      "median": 98.4,
+      "max": 141.5
+    },
+    {
+      "number": 6,
+      "title": "Hold at twice the relay rate: 17 s to go",
+      "seconds": {
+        "s01": 56.3,
+        "s03": 142.5
+      },
+      "sessions": 2,
+      "min": 56.3,
+      "median": 99.4,
+      "max": 142.5
+    },
+    {
+      "number": 7,
+      "title": "Hold at twice the relay rate: 16 s to go",
+      "seconds": {
+        "s01": 57.5,
+        "s03": 143.6
+      },
+      "sessions": 2,
+      "min": 57.5,
+      "median": 100.55,
+      "max": 143.6
+    },
+    {
+      "number": 8,
+      "title": "Hold at twice the relay rate: 15 s to go",
+      "seconds": {
+        "s01": 58.4,
+        "s03": 144.6
+      },
+      "sessions": 2,
+      "min": 58.4,
+      "median": 101.5,
+      "max": 144.6
+    },
+    {
+      "number": 9,
+      "title": "Hold at twice the relay rate: 14 s to go",
+      "seconds": {
+        "s01": 59.4,
+        "s03": 145.6
+      },
+      "sessions": 2,
+      "min": 59.4,
+      "median": 102.5,
+      "max": 145.6
+    },
+    {
+      "number": 10,
+      "title": "Hold at twice the relay rate: 13 s to go",
+      "seconds": {
+        "s01": 60.4,
+        "s03": 146.6
+      },
+      "sessions": 2,
+      "min": 60.4,
+      "median": 103.5,
+      "max": 146.6
+    },
+    {
+      "number": 11,
+      "title": "Hold at twice the relay rate: 12 s to go",
+      "seconds": {
+        "s01": 61.3,
+        "s03": 147.6
+      },
+      "sessions": 2,
+      "min": 61.3,
+      "median": 104.44999999999999,
+      "max": 147.6
+    },
+    {
+      "number": 12,
+      "title": "Hold at twice the relay rate: 11 s to go",
+      "seconds": {
+        "s01": 62.3,
+        "s03": 148.6
+      },
+      "sessions": 2,
+      "min": 62.3,
+      "median": 105.44999999999999,
+      "max": 148.6
+    },
+    {
+      "number": 13,
+      "title": "Hold at twice the relay rate: 10 s to go",
+      "seconds": {
+        "s01": 63.3,
+        "s03": 149.6
+      },
+      "sessions": 2,
+      "min": 63.3,
+      "median": 106.44999999999999,
+      "max": 149.6
+    },
+    {
+      "number": 14,
+      "title": "Hold at twice the relay rate: 9 s to go",
+      "seconds": {
+        "s01": 64.3,
+        "s03": 150.6
+      },
+      "sessions": 2,
+      "min": 64.3,
+      "median": 107.44999999999999,
+      "max": 150.6
+    },
+    {
+      "number": 15,
+      "title": "Hold at twice the relay rate: 8 s to go",
+      "seconds": {
+        "s01": 65.3,
+        "s03": 151.6
+      },
+      "sessions": 2,
+      "min": 65.3,
+      "median": 108.44999999999999,
+      "max": 151.6
+    },
+    {
+      "number": 16,
+      "title": "Hold at twice the relay rate: 7 s to go",
+      "seconds": {
+        "s01": 66.4,
+        "s03": 152.6
+      },
+      "sessions": 2,
+      "min": 66.4,
+      "median": 109.5,
+      "max": 152.6
+    },
+    {
+      "number": 17,
+      "title": "Hold at twice the relay rate: 6 s to go",
+      "seconds": {
+        "s01": 67.3,
+        "s03": 153.6
+      },
+      "sessions": 2,
+      "min": 67.3,
+      "median": 110.44999999999999,
+      "max": 153.6
+    },
+    {
+      "number": 18,
+      "title": "Hold at twice the relay rate: 5 s to go",
+      "seconds": {
+        "s01": 68.3,
+        "s03": 154.6
+      },
+      "sessions": 2,
+      "min": 68.3,
+      "median": 111.44999999999999,
+      "max": 154.6
+    },
+    {
+      "number": 19,
+      "title": "Hold at twice the relay rate: 4 s to go",
+      "seconds": {
+        "s01": 69.3,
+        "s03": 155.6
+      },
+      "sessions": 2,
+      "min": 69.3,
+      "median": 112.44999999999999,
+      "max": 155.6
+    },
+    {
+      "number": 20,
+      "title": "Hold at twice the relay rate: 3 s to go",
+      "seconds": {
+        "s01": 70.3,
+        "s03": 156.6
+      },
+      "sessions": 2,
+      "min": 70.3,
+      "median": 113.44999999999999,
+      "max": 156.6
+    },
+    {
+      "number": 21,
+      "title": "Hold at twice the relay rate: 2 s to go",
+      "seconds": {
+        "s01": 71.3,
+        "s03": 157.5
+      },
+      "sessions": 2,
+      "min": 71.3,
+      "median": 114.4,
+      "max": 157.5
+    },
+    {
+      "number": 22,
+      "title": "Hold at twice the relay rate: 1 s to go",
+      "seconds": {
+        "s01": 72.3,
+        "s03": 158.5
+      },
+      "sessions": 2,
+      "min": 72.3,
+      "median": 115.4,
+      "max": 158.5
+    },
+    {
+      "number": 23,
+      "title": "Held for 20 seconds",
+      "seconds": {
+        "s01": 72.5,
+        "s03": 158.6
+      },
+      "sessions": 2,
+      "min": 72.5,
+      "median": 115.55,
+      "max": 158.6
+    },
+    {
+      "number": 24,
+      "title": "Return to 10 rₛ (helm)",
+      "seconds": {
+        "s01": 99.5,
+        "s03": 184.2
+      },
+      "sessions": 2,
+      "min": 99.5,
+      "median": 141.85,
+      "max": 184.2
+    }
+  ],
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "Gravitational time dilation and the event horizon as seen from outside. Lower in the hole's gravity your clock runs slow compared with the far-away relay (x2 below 1.33 rs, 'the universe aged 45 seconds more than we did'). Hovering close, the black hole's shadow covers most of the sky and all the stars get squeezed into a patch behind you. And something falling in never visibly crosses the horizon for an outside watcher: its camera frames arrive ever further apart, redder/fainter and noisier, and the last ones never arrive, while the probe's own clock says it crosses in finite time (tau ~98 M). Also the equivalence principle: the field pushes every atom equally, so you feel nothing."
+        },
+        {
+          "session": "s02",
+          "answer": "That time and light behave differently near a black hole: a probe dropped from the ship keeps its own clock steadily, but from the ship its pings arrive further and further apart, redder and dimmer, while by its own clock it crosses the horizon in under a minute. The black disk you see is the hole's shadow, about two and a half times wider than the horizon, and the bright ring is starlight bent all the way around it."
+        },
+        {
+          "session": "s03",
+          "answer": "That what you see of something falling toward a black hole is old, delayed and increasingly redshifted light. Ines looked almost normal on screen even though the real deadline was seconds away, so you cannot wait until she looks in trouble. Then, at the helm, that hovering low near the horizon slows your clock compared with the rest of the universe (relay clock x2 below 1.33 rs; the universe aged 104 s more), that the field holding you feels like nothing (equivalence principle), and that from very low the black shadow fills the forward sky while every star is squeezed into a bright patch behind."
+        },
+        {
+          "session": "s04",
+          "answer": "Time dilation near a black hole. The training lesson compares a falling probe's own clock with the station's clock: pings sent every 10 units of the probe's time reach the station further and further apart. The Observatory shows how the black hole bends light, with the warped sky grid and the disk image wrapped over and under the shadow. The story opening sets you ten Schwarzschild radii above the hole. I only saw the start of the story, so I could not tell more than that."
+        }
+      ]
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "Just after the 20-second hold. Every window on the bridge had gone solid black, the objective box was empty, and the only hint was Ines asking whether the camera was broken. For several seconds I could not tell if the renderer had failed or this was the physics. WREN's explanation and the 'take us back up' objective came later. Also confusing: the objective count racing up one per second during the hold, and WREN saying 'no more frames' while the panel still said 'next frame due 1.3 s'."
+        },
+        {
+          "session": "s02",
+          "answer": "The ping-9 prediction question appeared while I was exploring the lab and then disappeared a few seconds later without my answering, with nothing to say whether it had timed out or recorded an answer. Second: the quarters porthole showed 'E Look out of the porthole', but pressing E only played a WREN line, and the prompt stayed up after I looked away."
+        },
+        {
+          "session": "s03",
+          "answer": "The rescue aftermath. The panel said her engine burn was seen at 4.56 rs and she was climbing, but its status still said 'Falling. It looks almost normal', its numbers froze, and the bridge monitor kept showing her going deeper (3.51 rs, then 2.49 rs). Her radio lines also arrived as 'I'm climbing' and then 'the black fills the window'. WREN's explanation about old light helped, but it came later. Choosing when to fire was also a pure guess, with no cue for how long was left."
+        },
+        {
+          "session": "s04",
+          "answer": "Looking for Chapters: no menu item with that name exists, before or after reaching chapter I, so I could not tell whether it is locked, removed or somewhere else. Close behind: quitting to the main menu from the quarters silently threw away my progress (Wake up again, no Continue). A smaller one: the 'M' time unit in the Two Clocks lesson is never explained."
+        }
+      ]
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "(1) Bridge at 1.22 rs, standing by the helm facing forward and then turning right through the comms console to the starboard wall (yaw about -30 to -165): all windows pure black. Probably correct physics, but it looks broken until explained. (2) Helm panel, after the rear camera appeared: the scrolled 'Hold station at' slider row shows garbled through the translucent Step back header at the top of the panel. (3) Probe console in-world screen (facing it from the left of the helm): it reads 'K-1 ready' when only Orpheus is left. (4) The black hole in the forward windows at 10 rs and on the Orpheus feed was blurry but otherwise looked right: no flicker, holes or colour garbage. Pointer-lock briefly drew a black bar across the top of the view right after clicking to capture the mouse."
+        },
+        {
+          "session": "s02",
+          "answer": "1) Quarters, facing the porthole and slightly to its right: a dark rectangle with hard straight edges covers the left third of the porthole view and cuts across the lensed disk band. 2) Lab, facing the archive console: its screen floats over the middle of the lab window, covering the mullion. 3) Quarters, facing the bookshelf: the chapter-card sub-line was unreadable over the coloured books. 4) Probe console: the in-world screen text is cut off behind the side panel. The bridge front and side windows looked fine while turning slowly: the ring never broke and nothing flickered; the photon ring is a dotted arc at this resolution. Ceilings and floors in all four rooms looked clean."
+        },
+        {
+          "session": "s03",
+          "answer": "(1) At the comms console on the bridge (starboard-forward, facing the console and forward windows), the in-world monitor showed the capsule falling below the reported burn point while the panel was frozen at 4.56 rs. (2) The same monitor later read 'Recall beam: armed' after she docked. (3) Standing in front of the helm facing forward, with the crosshair on the helm screen and the 'Helm 2 m' marker shown, there was no use prompt until about 0.9 m. Beyond software-render blur, I saw no rendering glitches in the black hole or windows. At 1.1 rs the forward windows went almost fully black, which WREN explains as intended. While the mouse was captured, a black bar briefly covered the top-centre of the screen (likely the browser's pointer-lock notice)."
+        },
+        {
+          "session": "s04",
+          "answer": "1) Title > Settings: opening the Subtitles or Graphics dropdown showed an empty black box instead of the option list. 2) Quarters, just after waking, facing the porthole (yaw about -6): the orange target brackets overlapped the 'E Look out of the porthole' prompt text. 3) Quarters, facing the bookshelf (yaw about -35): the prompt still offered the porthole, with the brackets on the porthole to the left of the crosshair. 4) After capturing the mouse, a black bar appeared at the top centre of the view for a moment, probably the browser's pointer-lock notice. 5) The WASD/E/Esc hint stayed on screen the whole time in the quarters and corridor. Apart from software-render blur, the ray-traced black hole looked correct in the dream, the portholes, the bridge windows and the Observatory."
+        }
+      ]
+    }
+  ],
+  "problems": []
+}

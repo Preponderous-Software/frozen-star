@@ -67,11 +67,11 @@ function titleScreen() {
       if (!confirming) { confirming = true; e.currentTarget.querySelector('span').textContent = 'Click again to erase your progress'; return; }
       startAt(null, true);
     }) : null,
-    finished ? item('Chapters', 'Replay any part of the story', () => showPanel('acts')) : null,
+    save ? item('Chapters', finished ? 'Replay any part of the story' : 'Replay the parts you have reached', () => showPanel('acts')) : null,
     item('Settings', null, () => showPanel('settings')),
     item('Training simulations', 'Seven short lessons', () => { location.hash = '#training'; }),
     item('Observatory', 'A free camera around a black hole', () => { location.hash = '#observatory'; }),
-    item('About', 'Credits and the physics behind it', () => showPanel('about')),
+    item('About', 'The physics and references behind it', () => showPanel('about')),
     isDesktop ? item('Quit', null, () => window.close()) : null,
   ].filter(Boolean);
   function showPanel(which) {
@@ -83,7 +83,15 @@ function titleScreen() {
       h('p.fine', 'References: Misner, Thorne & Wheeler, Gravitation (1973); Hamilton & Lisle, The river model of black holes (2008); Page, Particle emission rates from a black hole (1976).'),
       h('p.fine', 'Built with three.js (MIT). The desktop app runs on Electron.'),
       h('button', { type: 'button', onclick: () => { panel.hidden = true; } }, 'Back'));
-    else panel.replaceChildren(h('p.eyebrow', 'Chapters'), ...ACTS.map(([cp, name, sub]) => item(name, sub, () => startAt(cp))), h('button', { type: 'button', onclick: () => { panel.hidden = true; } }, 'Back'));
+    else {
+      // Acts unlock as the story reaches them; the rest are listed, locked, so players know what lies ahead.
+      const reached = finished ? ACTS.length - 1 : Math.max(0, ACTS.findIndex((a) => a[0] === save?.cp));
+      panel.replaceChildren(h('p.eyebrow', 'Chapters'), ...ACTS.map(([cp, name, sub], i) => {
+        const b = item(name, i <= reached ? sub : 'Reach it in the story to unlock', () => startAt(cp));
+        if (i > reached) b.disabled = true;
+        return b;
+      }), h('button', { type: 'button', onclick: () => { panel.hidden = true; } }, 'Back'));
+    }
     panel.querySelector('button, input, select')?.focus();
   }
   const el = h('div.title-screen.menu-screen',
