@@ -153,8 +153,10 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   const fire = h('button.danger.big#fp-fire', { onclick: () => { onFire(); fire.disabled = true; fire.textContent = 'Recall beam fired'; } }, 'Fire recall beam');
   if (r.fired != null) { fire.disabled = true; fire.textContent = 'Recall beam fired'; }
   const msgs = h('div.fp-msgs');
+  // the deadline is a calculation, not something you can see: show it as a plain clock
+  const clock = h('p.fp-deadline');
   let diag = null, diagCanvas = null;
-  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, after, st.el, h('p.fp-legend', 'rₛ is the horizon\'s radius; the ship holds at 10 rₛ. M is black-hole time: 1 M = 0.59 s.'), h('p.who', 'Ines, as received'), msgs);
+  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, clock, after, st.el, h('p.fp-legend', 'rₛ is the horizon\'s radius; the ship holds at 10 rₛ. M is black-hole time: 1 M = 0.59 s.'), h('p.who', 'Ines, as received'), msgs);
   if (showMap) {
     diagCanvas = h('canvas.diagram.small'); diag = new SpacetimeDiagram(diagCanvas, r.f); diag.showDeadline = true;
     body.append(h('p.who', 'Spacetime map'), diagCanvas, h('p.fine', 'The red dashed line is the last inward light ray that meets her outside the horizon.'));
@@ -163,6 +165,10 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   let frozenAt = null;
   const stop = loop(() => {
     const S = r.S();
+    const since = S * SEC_PER_M, left = (r.f.rescueDeadline - (r.fired ?? S)) * SEC_PER_M;
+    clock.textContent = r.fired != null ? `Beam fired ${Math.round(since - (S - r.fired) * SEC_PER_M)} s after her mayday, ${left >= 0 ? `${Math.round(left)} s before the deadline` : `${Math.round(-left)} s after the deadline`}.`
+      : left > 0 ? `Since her mayday: ${Math.floor(since)} s. The beam must leave within ${Math.ceil(left)} s.` : `Since her mayday: ${Math.floor(since)} s. The deadline has passed.`;
+    clock.classList.toggle('late', r.fired == null && left < 10);
     if (r.saved) {
       after.hidden = false;
       if (S < r.saved.seenAt) { after.textContent = 'Beam delivered. The picture below is old light from before it reached her: it will keep falling until the light of her engine burn arrives.'; after.className = 'fp-gap warn'; }
