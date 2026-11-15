@@ -1,0 +1,176 @@
+# Builds the two downloads of Frozen Star and attaches them to a GitHub release:
+#
+#   frozen-star-<tag>-web.zip       the static site (unzip, serve, play)
+#   frozen-star-<tag>-win-x64.zip   the Windows desktop app (unzip, double-click "Frozen Star.exe")
+#
+# each with a .sha256 file. tools/build-release.sh does the building.
+#
+#   - Publishing a release (gh release create <tag> ...) builds that tag and uploads to it.
+#   - workflow_dispatch with a tag builds that tag and uploads to its existing release;
+#     without a tag it is a dry run that keeps the zips as workflow artifacts.
+#   - A pull request that changes this workflow, the build script or docs/playtests/ runs the
+#     same build as a dry run, so a packaging change is checked before it merges.
+#
+# Tags are bare version numbers (0.1.0, no "v"). See docs/RELEASING.md.
+name: Release
+
+on:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - "tools/build-release.sh"
+      - "docs/README-download.txt"
+      - "docs/playtests/**"
+      - "desktop/**"
+      - "package.json"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build and attach to (empty = dry run: workflow artifacts only)"
+        required: false
+        default: ""
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the downloads
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write # gh release upload
+    steps:
+      - name: Resolve the tag
+        id: resolve
+        env:
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          case "$EVENT" in
+            release)           tag="$RELEASE_TAG" ;;
+            workflow_dispatch) tag="$INPUT_TAG" ;;
+            *)                 tag="" ;;
+          esac
+          if [ -n "$tag" ]; then
+            if ! [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Release tags are bare version numbers such as 0.1.0, not '$tag'."
+              exit 1
+            fi
+            echo "ref=refs/tags/$tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve.outputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The web package, the desktop package and the version the game reports (the playtest
+      # probe's "version" in src/game/probe.js) must all be the version it is released as.
+      - name: Check the version against the tag
+        id: version
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          desktop=$(node -p "require('./desktop/package.json').version")
+          probe=$(sed -n "s/^const VERSION = '\([^']*\)';.*/\1/p" src/game/probe.js)
+          echo "package.json $version, desktop/package.json $desktop, probe.js $probe, tag ${TAG:-none (dry run)}"
+          bad=0
+          if [ "$desktop" != "$version" ]; then
+            echo "::error::desktop/package.json says $desktop but package.json says $version."; bad=1
+          fi
+          if [ "$probe" != "$version" ]; then
+            echo "::error::src/game/probe.js reports '$probe' but package.json says $version."; bad=1
+          fi
+          if [ -n "$TAG" ] && [ "$version" != "$TAG" ]; then
+            echo "::error::package.json says $version but the tag is $TAG. Set the version first (docs/RELEASING.md)."; bad=1
+          fi
+          [ "$bad" = 0 ] || exit 1
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # A release needs its playtest evidence in docs/playtests/<version>/ (docs/RELEASING.md).
+      - name: Check the playtest evidence
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [ ! -d "docs/playtests/$VERSION" ] || [ -z "$(ls -A "docs/playtests/$VERSION")" ]; then
+            echo "::error::docs/playtests/$VERSION/ is missing or empty. A release needs its playtest evidence."
+            exit 1
+          fi
+          echo "Playtest evidence: $(find "docs/playtests/$VERSION" -type f | wc -l) files in docs/playtests/$VERSION/"
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build the downloads
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.version.outputs.sha }}
+        run: tools/build-release.sh "$VERSION" "$SHA" dist
+
+      # The web download is played as a player would: unzipped, served, smoke-tested.
+      # The desktop download's layout is checked; the runner cannot run its Windows executable.
+      - name: Check the downloads
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          (cd dist && sha256sum -c ./*.sha256)
+          mkdir -p check
+          unzip -q "dist/frozen-star-$VERSION-win-x64.zip" -d check/win
+          for f in "Frozen Star.exe" README.txt LICENSE-frozen-star.txt \
+                   resources/app/main.cjs resources/app/package.json resources/app/icon.png \
+                   resources/app/game/index.html resources/app/game/version.txt \
+                   resources/app/game/vendor/three/three.module.min.js; do
+            [ -f "check/win/Frozen Star/$f" ] || { echo "::error::The Windows zip has no 'Frozen Star/$f'."; exit 1; }
+          done
+          [ ! -e "check/win/Frozen Star/electron.exe" ] || { echo "::error::electron.exe was not renamed."; exit 1; }
+          unzip -q "dist/frozen-star-$VERSION-web.zip" -d check/web
+          cat "check/web/frozen-star-$VERSION-web/version.txt"
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright@1.61.1
+          npx playwright install --with-deps chromium
+
+      - name: Smoke-test the unzipped web download
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 --directory "check/web/frozen-star-$VERSION-web" > http.log 2>&1 &
+          sleep 1
+          node tools/smoke.cjs http://127.0.0.1:8080/index.html smoke-out
+
+      - name: Keep the downloads as workflow artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frozen-star-downloads
+          path: |
+            dist/
+            smoke-out/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Attach the downloads to the release
+        if: steps.resolve.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          gh release upload "$TAG" dist/*.zip dist/*.sha256 --clobber --repo "$GITHUB_REPOSITORY"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name'
