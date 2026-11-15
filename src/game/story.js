@@ -6,6 +6,7 @@ import { hoverRate, hoverAccel, tidalStretch, maxTimeInside } from '../physics/b
 import { formatDuration, formatAccel, G_EARTH } from '../physics/units.js';
 import { SEC_PER_M, R_STATION, shipPosition, HOLE } from './world.js';
 import { EYE } from './walk.js';
+import { controlsHintHtml } from './settings.js';
 import {
   createRun, runMarker, carrierState, screenFrame, screenLines, drawRunOnScreen, drawMap, drawClocks,
   datapadApp, probeApp, commsApp, mapApp, helmApp, createFeed, drawFeed, feedApp, archiveApp, createRearCam, drawRear,
@@ -222,7 +223,7 @@ async function wake(g) {
   g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
   g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
   g.say('WREN', 'We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.');
-  g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, mouse or <kbd>←</kbd><kbd>→</kbd> to look, <kbd>E</kbd> to use things, <kbd>Esc</kbd> to pause.');
+  g.hud.hint(controlsHintHtml({ touch: g.controls.isTouch() }));
   await g.wait(4.5);
   await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
   g.wait(8).then(() => g.hud.hint(null)).catch(() => {});
@@ -354,7 +355,7 @@ async function rescueAct(g) {
 function alarmFn(g) {
   const L = g.ship.lights.bridge, base = L.color.clone();
   let on = false;
-  const tick = () => { if (on) { const k = 0.5 + 0.5 * Math.sin(g.time * 5); L.color.setRGB(1, 0.25 + 0.2 * k, 0.2 + 0.15 * k); } };
+  const tick = () => { if (on) { const k = g.settings?.reduceFlash ? 0.5 : 0.5 + 0.5 * Math.sin(g.time * 5); L.color.setRGB(1, 0.25 + 0.2 * k, 0.2 + 0.15 * k); } };
   g.ticks.add(tick);
   return (v) => { on = v; g.audio.alarm(v); if (!v) L.color.copy(base); };
 }
@@ -384,8 +385,8 @@ async function rescueAttempt(g) {
     for (const q of queue) if (!q.done && S >= q.at) {
       q.done = true;
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
-      const style = inesStyle(f, q.tau);
-      run.log.push({ text: q.text, style }); g.audio.radio(f.onePlusZ(f.rOfTau(q.tau)), q.text.length); g.say('INES', q.text, { style });
+      const style = inesStyle(f, q.tau), z = f.onePlusZ(f.rOfTau(q.tau));
+      run.log.push({ text: q.text, style }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag: z >= 1.1 ? `stretched ×${z < 10 ? z.toFixed(1) : Math.round(z)}` : null });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);

@@ -1,5 +1,7 @@
 // Gamepad navigation for menus and panels: the d-pad or left stick moves focus, left/right adjusts a
 // focused slider, choice row or tab row, A activates, B goes back. Holding a direction repeats.
+// Choose (A), back (B) and Start follow the player's gamepad bindings (Settings > Controls).
+import { padFor, capture } from '../game/settings.js';
 
 const FOCUSABLE = 'button:not([disabled]):not([hidden]), a.button, a.chapter-card, input:not([disabled]), select:not([disabled])';
 // rows whose items sit side by side: left/right picks within the row, up/down leaves it
@@ -34,14 +36,14 @@ export function padNav({ container, onBack, onStart }) {
       const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
       const dir = b(12) || ay < -0.6 ? 'up' : b(13) || ay > 0.6 ? 'down' : b(14) || ax < -0.6 ? 'left' : b(15) || ax > 0.6 ? 'right' : null;
       if ((dir || gp.buttons.some((x) => x.pressed)) && document.body.dataset.input !== 'pad') document.body.dataset.input = 'pad';
-      const root = container();
+      const root = capture.on ? null : container(); // a gamepad button being bound does nothing else
       if (root) {
         if (dir && dir !== holdDir) { move(dir); holdT = now + 380; } else if (dir && now > holdT) { move(dir); holdT = now + 110; }
-        if (b(0) && !prev.a) { const a = document.activeElement; if (a && root.contains(a) && a !== document.body) { if (a.type === 'checkbox') { a.checked = !a.checked; a.dispatchEvent(new Event('change', { bubbles: true })); } else a.click(); } else move('down'); }
-        if (b(1) && !prev.b) onBack?.();
+        if (b(padFor('use')) && !prev.a) { const a = document.activeElement; if (a && root.contains(a) && a !== document.body) { if (a.type === 'checkbox') { a.checked = !a.checked; a.dispatchEvent(new Event('change', { bubbles: true })); } else a.click(); } else move('down'); }
+        if (b(padFor('back')) && !prev.b) onBack?.();
       }
-      if (b(9) && !prev.start) onStart?.();
-      holdDir = dir; prev = { a: b(0), b: b(1), start: b(9) };
+      if (b(padFor('pause')) && !prev.start && !capture.on) onStart?.();
+      holdDir = dir; prev = { a: b(padFor('use')), b: b(padFor('back')), start: b(padFor('pause')) };
     }
     raf = requestAnimationFrame(tick);
   }
