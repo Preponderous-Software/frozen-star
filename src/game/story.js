@@ -181,7 +181,8 @@ async function dream(g) {
   skip.onclick = () => { skipped = true; tau = f.tauEnd; };
   g.el.append(skip);
   const tick = (dt) => {
-    tau = skipped ? f.tauEnd : Math.min(f.tauEnd, tau + dt * speed);
+    // past the horizon the dream slows, so its last line can be read before the white-out
+    tau = skipped ? f.tauEnd : Math.min(f.tauEnd, tau + dt * speed * (tau >= f.tauH ? 0.3 : 1));
     beat -= dt; if (beat <= 0 && tau < f.tauH) { g.audio.heartbeat(); beat = 1.1; }
   };
   g.ticks.add(tick);
@@ -190,6 +191,8 @@ async function dream(g) {
   g.hud.fade(0, 3);
   await g.wait(2);
   g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
+  await g.until(() => f.rOfTau(tau) < 14 || skipped);
+  if (!skipped) g.say('YOU', '(It grows. The stars around its edge are bending, crowding into a ring.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 7 || skipped);
   g.say('YOU', '(The black is spreading. The light is all overhead now.)', { style: { fontStyle: 'italic' } });
   await g.until(() => tau >= f.tauH);
@@ -217,7 +220,7 @@ async function wake(g) {
   g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
   g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
   g.say('WREN', 'We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.');
-  g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>E</kbd> to use things, <kbd>Esc</kbd> to pause.');
+  g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, mouse or <kbd>←</kbd><kbd>→</kbd> to look, <kbd>E</kbd> to use things, <kbd>Esc</kbd> to pause.');
   await g.wait(4.5);
   await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
   g.wait(8).then(() => g.hud.hint(null)).catch(() => {});
@@ -225,7 +228,8 @@ async function wake(g) {
 
 async function toBridge(g) {
   if (!g.inRoom('corridor') && !g.inRoom('bridge')) g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
-  await g.until(() => g.inRoom('corridor') || g.inRoom('bridge'));
+  // hand over to the bridge marker as soon as the door is reached, so the marker never vanishes in the doorway
+  await g.until(() => g.inRoom('corridor') || g.inRoom('bridge') || Math.hypot(g.me.x - 1, g.me.z - 4.1) < 1.0);
   g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
   g.waypoint = null; g.hud.hint(null); g.flags.seenBridge = true;
