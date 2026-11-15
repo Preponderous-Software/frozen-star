@@ -465,6 +465,7 @@ export function mountGame(root, { checkpoint } = {}) {
   if (/[?&]debug\b/.test(location.search)) window.__fs = g;
   if (/[?&]probe\b/.test(location.search)) window.__fsGame = g;
   if (saved?.flags) Object.assign(g.flags, saved.flags);
+  ship.bay.attach(g); // the capsule bay follows the story: Ines in pre-flight, out in the capsule, docked
   runStory(g, start).catch((e) => { if (!g.aborted) console.error(e); });
 
   return () => {

@@ -4,7 +4,9 @@
 //   Corridor   x −1…1,     z −5…8     windows to port, doors to the lab and your quarters
 //   Quarters   x 1…5,      z 2…6.5    bunk, desk, a porthole facing the hole
 //   Lab        x −5…−1,    z −3.5…1.5 the archive terminal
+//   Bay        x −5…−1,    z 1.5…8    Ines's capsule on its cradle; sealed, seen through the corridor's port windows
 import * as THREE from 'three';
+import { buildBay, BAY_COLOR } from './bay.js';
 
 const T = 0.12; // wall thickness
 
@@ -36,7 +38,7 @@ function labelTexture(text, { w = 512, h = 128, fg = '#ece8f4', bg = 'rgba(0,0,0
 // ---- palette ----
 // Structure is cool off-white with deep-navy trim; amber marks doors and safety; each room has its own
 // accent so a sign or a floor marking says where it leads at a glance.
-const PAL = { bridge: '#8fb8ff', corridor: '#ffb45c', lab: '#5ed6c0', quarters: '#ff9a6b', eng: '#ff5b4f', plate: '#1d2132', ink: '#2a3350', paper: '#f4f2ec' };
+const PAL = { bridge: '#8fb8ff', corridor: '#ffb45c', lab: '#5ed6c0', quarters: '#ff9a6b', eng: '#ff5b4f', bay: BAY_COLOR, plate: '#1d2132', ink: '#2a3350', paper: '#f4f2ec' };
 const MONO = '"IBM Plex Mono", ui-monospace, monospace', SANS = '"Bricolage Grotesque", system-ui, sans-serif', HAND = '"Segoe Print", "Bradley Hand", "Comic Sans MS", cursive';
 
 /** A canvas texture drawn once at load. */
@@ -258,6 +260,7 @@ function deckPlanTexture() {
     rect(-3.4, -13, 3.4, -5, PAL.bridge, 'BRIDGE', 'helm · probe · comms');
     rect(-1, -5, 1, 8, PAL.corridor, '');
     rect(-5, -3.5, -1, 1.5, PAL.lab, 'LAB', 'archive');
+    rect(-5, 1.5, -1, 8, PAL.bay, 'CAPSULE BAY', 'capsule C-1');
     rect(1, 2, 5, 6.5, PAL.quarters, 'QUARTERS');
     rect(-1.6, 8, 1.6, 10.3, PAL.eng, 'ENG', 'sealed');
     g.fillStyle = 'rgba(238,240,246,0.6)'; g.font = `500 13px ${MONO}`; g.fillText('CORRIDOR', X(6.8), Y(0) + 5);
@@ -395,7 +398,7 @@ export function buildShip() {
         piece(o.a, o.b, o.y1, height, false);
         const w = o.b - o.a, hh = o.y1 - o.y0, cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2;
         const glass = axis === 'x' ? box(w, hh, 0.02, M.glass, cx, cy, at) : box(0.02, hh, w, M.glass, at, cy, cx);
-        glass.renderOrder = 10; windows.push(glass);
+        glass.renderOrder = 10; if (!o.interior) windows.push(glass); // an interior window looks into the ship, not at the sky
         // frame
         const f = 0.07;
         for (const [fw, fh, fx, fy] of [[w + f, f, cx, o.y0], [w + f, f, cx, o.y1], [f, hh, o.a, cy], [f, hh, o.b, cy]]) {
@@ -439,7 +442,7 @@ export function buildShip() {
       along ? box(0.22, 0.02, 1.4, M.lightStrip, cx, height - 0.035, cz) : box(1.4, 0.02, 0.22, M.lightStrip, cx, height - 0.035, cz);
       along ? box(0.34, 0.03, 1.52, M.trim, cx, height - 0.012, cz) : box(1.52, 0.03, 0.34, M.trim, cx, height - 0.012, cz);
     }
-    const pl = new THREE.PointLight(light, 7, Math.max(w, d) * 1.7, 1.3); pl.position.set((x0 + x1) / 2, height - 0.4, (z0 + z1) / 2); group.add(pl); lights[id] = pl;
+    if (light != null) { const pl = new THREE.PointLight(light, 7, Math.max(w, d) * 1.7, 1.3); pl.position.set((x0 + x1) / 2, height - 0.4, (z0 + z1) / 2); group.add(pl); lights[id] = pl; }
     // floor trim
     box(w, 0.06, 0.04, M.amber, (x0 + x1) / 2, 0.03, z0 + 0.08).material = M.trim;
   }
@@ -449,6 +452,7 @@ export function buildShip() {
   room('corridor', -1, -5, 1, 8, 2.5, 0xffe9cf);
   room('quarters', 1, 2, 5, 6.5, 2.5, 0xffe2c0);
   room('lab', -5, -3.5, -1, 1.5, 2.5, 0xe6f0ff);
+  room('bay', -5, 1.5, -1, 8, 2.5, null); // no lamp of its own: the corridor's light reaches it, and its strips glow
 
   // ---- Walls ----
   // Bridge
@@ -457,7 +461,9 @@ export function buildShip() {
   wall('z', 3.4, -13, -5, 3.2, [{ type: 'window', a: -12.5, b: -9.2, y0: 0.9, y1: 2.6, mullions: 2 }]);
   wall('x', -5, -3.4, 3.4, 3.2, [{ type: 'door', id: 'bridge', a: -0.7, b: 0.7, label: 'Bridge' }]);
   // Corridor
-  wall('z', -1, -5, 8, 2.5, [{ type: 'door', id: 'lab', a: -1.6, b: -0.4, label: 'Lab' }, { type: 'window', a: 3.2, b: 4.4, y0: 0.9, y1: 1.9 }, { type: 'window', a: 5.4, b: 6.6, y0: 0.9, y1: 1.9 }]);
+  // the port wall's two windows look into the capsule bay; its hatch is sealed (the bay cycles to vacuum for launch)
+  wall('z', -1, -5, 8, 2.5, [{ type: 'door', id: 'lab', a: -1.6, b: -0.4, label: 'Lab' }, { type: 'door', id: 'bay', a: 1.85, b: 2.95, locked: true, label: 'Capsule bay' },
+    { type: 'window', a: 3.2, b: 4.4, y0: 0.9, y1: 1.9, interior: true }, { type: 'window', a: 5.4, b: 6.6, y0: 0.9, y1: 1.9, interior: true }]);
   wall('z', 1, -5, 8, 2.5, [{ type: 'door', id: 'quarters', a: 3.5, b: 4.7, label: 'Quarters' }]);
   wall('x', 8, -1, 1, 2.5, [{ type: 'door', id: 'engineering', a: -0.6, b: 0.6, locked: true, label: 'Engineering' }]);
   // Quarters
@@ -468,6 +474,11 @@ export function buildShip() {
   wall('x', -3.5, -5, -1, 2.5);
   wall('x', 1.5, -5, -1, 2.5);
   wall('z', -5, -3.5, 1.5, 2.5, [{ type: 'window', a: -2.6, b: 0.6, y0: 0.9, y1: 2.0, mullions: 2 }], { exterior: true });
+  // Capsule bay: the lab's aft wall is its forward wall; the launch door (bay.js) fills the gap in the port wall
+  wall('z', -5, 1.5, 3.0, 2.5, [], { exterior: true });
+  wall('z', -5, 6.8, 8, 2.5, [], { exterior: true });
+  box(T, 0.2, 3.8, M.wall, -5, 2.4, 4.9);
+  wall('x', 8, -5, -1, 2.5, [], { exterior: true });
 
   // ---- Signs ----
   // each plate is lettered in its room's colour, so the same colour marks the floor arrows toward it
@@ -479,8 +490,9 @@ export function buildShip() {
   sign('BRIDGE ↑', null, 0.925, 1.7, 2.2, -Math.PI / 2, 0.6, PAL.bridge);
   sign('QUARTERS', 'Dr. — science', 0.925, 2.36, 4.1, -Math.PI / 2, 0.8, PAL.quarters);
   sign('LAB', 'archive', -0.925, 2.36, -1.0, Math.PI / 2, 0.6, PAL.lab);
+  sign('CAPSULE BAY', 'sealed · crew only', -0.925, 2.36, 2.4, Math.PI / 2, 0.8, PAL.bay);
   sign('ENGINEERING', 'sealed · crew only', 0, 2.36, 7.925, Math.PI, 0.9, PAL.eng);
-  sign('CORRIDOR', 'lab · quarters · aft', 0, 2.42, -5.075, Math.PI, 0.8);
+  sign('CORRIDOR', 'lab · capsule bay · quarters', 0, 2.42, -5.075, Math.PI, 0.8);
   sign('CORRIDOR', 'bridge · forward', -1.075, 2.36, -1.0, -Math.PI / 2, 0.7);
   sign('CORRIDOR', 'bridge · forward', 1.075, 2.36, 4.1, Math.PI / 2, 0.7);
   { const t = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.3), new THREE.MeshBasicMaterial({ map: labelTexture('TERN', { sub: 'research vessel' }), transparent: true })); t.position.set(-2.3, 2.75, -5.075); t.rotation.y = Math.PI; group.add(t); }
@@ -590,8 +602,8 @@ export function buildShip() {
     group.add(m); return m;
   };
   // corridor handrails and ceiling pipes
-  // handrails stop at the doorways: lab door on the port side (z -1.6..-0.4), quarters to starboard (z 3.5..4.7)
-  const railRuns = { [-0.9]: [[-4.8, -1.7], [-0.3, 7.8]], [0.9]: [[-4.8, 3.4], [4.8, 7.8]] };
+  // handrails stop at the doorways: lab door and bay hatch on the port side (z -1.6..-0.4, 1.85..2.95), quarters to starboard (z 3.5..4.7)
+  const railRuns = { [-0.9]: [[-4.8, -1.7], [-0.3, 1.75], [3.05, 7.8]], [0.9]: [[-4.8, 3.4], [4.8, 7.8]] };
   for (const sx of [-0.9, 0.9]) {
     for (const [a, b] of railRuns[sx]) {
       cyl(0.025, b - a, M.rail, sx, 1.0, (a + b) / 2, 'z');
@@ -642,7 +654,7 @@ export function buildShip() {
   };
 
   // contact shadows along the foot of every wall, and under the furniture
-  for (const [x0, z0, x1, z1] of [[-3.4, -13, 3.4, -5], [-1, -5, 1, 8], [1, 2, 5, 6.5], [-5, -3.5, -1, 1.5]]) {
+  for (const [x0, z0, x1, z1] of [[-3.4, -13, 3.4, -5], [-1, -5, 1, 8], [1, 2, 5, 6.5], [-5, -3.5, -1, 1.5], [-5, 1.5, -1, 8]]) {
     shade(x1 - x0, 0.7, (x0 + x1) / 2, z0); shade(x1 - x0, 0.7, (x0 + x1) / 2, z1);
     shade(0.7, z1 - z0, x0, (z0 + z1) / 2); shade(0.7, z1 - z0, x1, (z0 + z1) / 2);
   }
@@ -674,7 +686,8 @@ export function buildShip() {
     floorMark(floorArrowTexture('QUARTERS', PAL.quarters), 0.6, 0.6, 0.4, 4.1, -Math.PI / 2);
     floorMark(hazardTexture(PAL.eng, '#1a1d28', 'SEALED'), 1.3, 0.32, 0, 7.72, Math.PI);
     const amber = hazardTexture();
-    floorMark(amber, 1.2, 0.14, -0.86, -1.0, Math.PI / 2); floorMark(amber, 1.2, 0.14, 0.86, 4.1, -Math.PI / 2); floorMark(amber, 1.4, 0.14, 0, -4.86, 0); }
+    floorMark(amber, 1.2, 0.14, -0.86, -1.0, Math.PI / 2); floorMark(amber, 1.2, 0.14, 0.86, 4.1, -Math.PI / 2); floorMark(amber, 1.4, 0.14, 0, -4.86, 0);
+    floorMark(hazardTexture(PAL.bay, '#1a1d28'), 1.1, 0.14, -0.86, 2.4, Math.PI / 2); floorMark(floorArrowTexture('BAY', PAL.bay), 0.55, 0.55, -0.4, 2.4, Math.PI / 2); }
   // starboard wall: the deck plan (you are here), the emergency locker and an extinguisher
   plane(1.0, 0.75, decalMat(deckPlanTexture()), 0.92, 1.62, 0.0, -Math.PI / 2);
   box(0.03, 0.81, 1.06, M.trim, 0.94, 1.62, 0.0);
@@ -739,7 +752,9 @@ export function buildShip() {
 
   // ---- hull: the outside faces of walls that a window can see, so no wall shows its inside to space ----
   const skin = (w, hh, x, y, z, ry) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), M.hull); m.position.set(x, y, z); m.rotation.y = ry; group.add(m); };
-  skin(4.2, 2.6, -3.0, 1.25, 1.58, 0);            // lab's aft wall, seen from the corridor windows
+  // the capsule bay's outside: port wall either side of the launch door, the lintel, its aft wall and roof
+  skin(1.62, 2.6, -5.08, 1.25, 2.19, -Math.PI / 2); skin(1.32, 2.6, -5.08, 1.25, 7.46, -Math.PI / 2); skin(3.8, 0.2, -5.08, 2.4, 4.9, -Math.PI / 2);
+  skin(4.2, 2.6, -3.0, 1.25, 8.08, 0);
   skin(2.5, 3.3, -2.25, 1.6, -4.92, 0);           // bridge back wall, port of the corridor
   skin(2.5, 3.3, 2.25, 1.6, -4.92, 0);            // bridge back wall, starboard (seen from the porthole)
   // running lights on the bridge's aft corner, so from the porthole it reads as the ship's bow
@@ -753,13 +768,23 @@ export function buildShip() {
     skin(3.3, 0.9, sx * 3.48, 0.45, -10.85, sx * Math.PI / 2);   // below the window
     skin(3.3, 0.6, sx * 3.48, 2.9, -10.85, sx * Math.PI / 2);    // above it
   }
-  const roof = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 5.1), M.hull); roof.rotation.x = -Math.PI / 2; roof.position.set(-3.0, 2.56, -1.0); group.add(roof);
+  const roof = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 11.6), M.hull); roof.rotation.x = -Math.PI / 2; roof.position.set(-3.0, 2.56, 2.25); group.add(roof); // lab and bay
   const roofB = new THREE.Mesh(new THREE.PlaneGeometry(6.9, 8.1), M.hull); roofB.rotation.x = -Math.PI / 2; roofB.position.set(0, 3.26, -9.0); group.add(roofB);
+
+  // ---- capsule bay: the cradle, the fuel line and a kit crate (static); the capsule, Ines and the door move (bay.js) ----
+  for (const z of [4.2, 5.5]) { box(1.3, 0.28, 0.32, M.trim, -3.2, 0.14, z); box(1.0, 0.04, 0.34, M.amber, -3.2, 0.3, z).material = M.rail; }
+  box(0.16, 0.05, 3.6, M.trim, -3.2, 0.025, 4.85); // the rail the cradle rides out on
+  floorMark(hazardTexture(PAL.bay, '#1a1d28'), 4.2, 0.16, -3.2, 2.75, 0); floorMark(hazardTexture(PAL.bay, '#1a1d28'), 4.2, 0.16, -3.2, 6.95, 0);
+  floorMark(stencilTexture('C-1', 'keep clear of the cradle', 'rgba(180,156,255,0.6)'), 1.6, 0.4, -1.95, 4.85, -Math.PI / 2);
+  cyl(0.05, 1.2, M.pipe, -4.3, 2.3, 7.4, 'z'); { const hose = cyl(0.04, 1.3, M.navy, -3.75, 1.65, 6.9); hose.rotation.z = 0.9; }
+  box(0.5, 0.5, 0.5, M.navy, -1.62, 0.25, 6.9); box(0.52, 0.04, 0.52, M.trim, -1.62, 0.51, 6.9);
+  floorMark(stencilTexture('CAPSULE BAY', 'deck 1 · port', 'rgba(180,156,255,0.5)'), 2.2, 0.55, -4.4, 4.85, Math.PI / 2);
+  const bay = buildBay({ group, M, interactables, blinkers });
 
   const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30333f, 0.9); group.add(hemi);
 
   mergeStatic(group, new Set([M.glass, M.door]), rooms);
-  return { group, colliders, walls, windows, interactables, doors, rooms, screens, lights, blinkers, materials: M };
+  return { group, colliders, walls, windows, interactables, doors, rooms, screens, lights, blinkers, bay, materials: M };
 }
 
 /** Bake the group's loose static meshes into one mesh per shared material. Moving parts (doors), glass and
