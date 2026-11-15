@@ -436,10 +436,13 @@ async function helmAct(g) {
   let rearT = 0;
   const rearTick = (dt) => { rearT += dt; if (g.shipR < 6 && rearT > 0.25) { rearT = 0; g.rear.render(g.shipR, g.time); } };
   g.ticks.add(rearTick);
-  await g.say('INES', 'I want to see that again. Without dying this time.');
-  await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
+  // the objective comes first, so there is never a stretch with nothing to do; the talk runs alongside
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
   g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
+  (async () => {
+    await g.say('INES', 'I want to see that again. Without dying this time.');
+    await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
+  })().catch(() => {});
   await g.until(() => 1 / hoverRate(g.shipR) >= 2);
   g.waypoint = null;
   g.objective('Hold at twice the relay rate for 20 seconds (helm)');
