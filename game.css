@@ -109,3 +109,4 @@ canvas.fp-feed { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius:
 .fp-toast.out { opacity: 0; }
 .fp-skip { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: rgba(7,8,18,.6); font-size: 13px; }
 .fp-look { top: calc(50% + 64px); }
+.fp-card h2 { font-size: clamp(36px, 6vw, 64px); }

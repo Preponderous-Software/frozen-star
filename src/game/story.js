@@ -28,10 +28,11 @@ export async function runStory(g, cp) {
   baseHandlers(g);
   if (at === 0) { await dream(g); await wake(g); await toBridge(g); }
   else spawnOnBridge(g);
-  if (at <= 1) await beaconAct(g);
-  if (at <= 2) await rescueAct(g);
-  if (at <= 3) await helmAct(g);
-  if (at <= 4) await orpheusAct(g);
+  const chapter = (n, name, sub) => { g.hud.card(`${n} · ${name}`, sub, 3); };
+  if (at <= 1) { chapter('I', 'Beacon K-1', 'Drop a probe. Watch it fall.'); await beaconAct(g); }
+  if (at <= 2) { chapter('II', 'The rescue', 'Ines takes the capsule out.'); await rescueAct(g); }
+  if (at <= 3) { chapter('III', 'The descent', 'Closer to the edge.'); await helmAct(g); }
+  if (at <= 4) { chapter('IV', 'Orpheus', 'The last probe has a camera.'); await orpheusAct(g); }
   await epilogue(g);
 }
 
