@@ -25,8 +25,8 @@
   "probe": {
     "flag": "--playtest-out",
     "ticks_per_second": 60,
-    "world_screens": ["WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK"],
-    "screens": ["TITLE", "TRAINING", "OBSERVATORY", "LESSON", "WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK"],
+    "world_screens": ["WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK", "PHOTO", "DISCOVERIES"],
+    "screens": ["TITLE", "TRAINING", "OBSERVATORY", "LESSON", "WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK", "PHOTO", "DISCOVERIES"],
     "since": "Frozen Star 0.1.0 (?probe)"
   },
   "movement": {

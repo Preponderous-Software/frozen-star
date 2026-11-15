@@ -46,7 +46,7 @@ export function mountGame(root, { checkpoint } = {}) {
   mark('renderer'); const ship = buildShip(); mark('ship built');
   scene.add(ship.group);
   let sky = null;
-  try { sky = new BlackHoleView(skyCanvas, { scale: LOW_GPU ? 0.2 : 0.45 }); sky.set({ diskOuter: DISK_OUTER, steps: 520, exposure: 1.6 }); }
+  try { sky = new BlackHoleView(skyCanvas, { scale: LOW_GPU ? 0.2 : 0.45, parallel: true }); sky.set({ diskOuter: DISK_OUTER, steps: 520, exposure: 1.6 }); }
   catch (e) { skyCanvas.replaceWith(h('div.fp-nosky', 'The view outside needs WebGL 2.')); }
 
   // ---- markers: points of light seen through the windows (a falling probe, a capsule) ----
@@ -68,7 +68,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const hud = createHud(el);
   g.hud = hud;
   const audio = createAudio(); g.audio = audio;
-  const controls = createControls(el, { onBack: () => { if (g.photo) g.photo.exit(); else if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (!g.paused && !g.photo) hud.skip(); } });
+  const controls = createControls(el, { onBack: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (g.photo) g.photo.exit(); else if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (!g.paused && !g.photo) hud.skip(); } });
   // ---- settings ----
   let settings = loadSettings();
   function applySettings() {
@@ -84,7 +84,9 @@ export function mountGame(root, { checkpoint } = {}) {
   g.until = (fn) => new Promise((res, rej) => waiters.push({ fn, res, rej }));
   g.say = (who, text, opts) => (g.aborted ? Promise.reject(new Error('aborted')) : hud.say(who, text, opts));
   let objState = null;
-  g.objective = (t, opts = {}) => { hud.objective(t); objState = t && opts.hint ? { hint: opts.hint, after: opts.after ?? 40, since: g.time, hinted: false } : null; };
+  // an objective's idle hint: it fires only while that objective stands (and opts.when() holds), and a new
+  // objective takes the old hint off the screen
+  g.objective = (t, opts = {}) => { hud.unsay('objhint'); hud.objective(t); objState = t && opts.hint ? { hint: opts.hint, after: opts.after ?? 40, since: g.time, hinted: false, when: opts.when } : null; };
   g.on = (id, fn) => { g.handlers[id] = fn; };
   g.enable = (id, on = true) => { const it = ship.interactables.find((i) => i.id === id); if (it) it.disabled = !on; };
   g.unlockDoor = (id, on = true) => { const d = ship.doors.find((x) => x.id === id); if (d) d.locked = !on; };
@@ -116,7 +118,9 @@ export function mountGame(root, { checkpoint } = {}) {
     if (innerWidth > 760) a.yaw -= Math.atan((Math.min(560, innerWidth * 0.48) / innerWidth) * tv * camera.aspect);
     else a.pitch -= Math.atan(0.62 * tv);
     const tween = g.tweenTo(fpos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
-    await Promise.race([tween, g.wait(0.25)]); // the panel opens while the camera is still settling
+    // the panel opens while the camera is still settling: a quarter second of real time, so it opens promptly
+    // however slow the frames are (game time crawls when frames are slow)
+    await Promise.race([tween, new Promise((r) => setTimeout(r, 250))]);
     panel.replaceChildren(); panel.hidden = false; audio.open();
     const close = h('button.fp-close', { type: 'button', onclick: () => closeApp() }, '← Step back');
     const body = h('div.fp-app');
@@ -127,6 +131,8 @@ export function mountGame(root, { checkpoint } = {}) {
   async function closeApp() {
     if (g.mode !== 'console') return;
     appDispose?.(); appDispose = null; panel.hidden = true; panel.replaceChildren(); audio.close();
+    // stepping back with a click: take the mouse back for looking at once (a key press cannot; the hint says to click)
+    if (!controls.isTouch() && !g.paused && navigator.userActivation?.isActive) el.requestPointerLock?.()?.catch?.(() => {});
     g.mode = 'tweening';
     await g.tweenTo(new THREE.Vector3(walkPose.x, g.eye, walkPose.z), walkPose.yaw, walkPose.pitch, 0.5);
     g.me = { ...walkPose, vx: 0, vz: 0 }; g.mode = 'walk'; controls.setEnabled(true); hud.crosshair(true);
@@ -188,7 +194,7 @@ export function mountGame(root, { checkpoint } = {}) {
   g.paused = false;
   const isDesktop = /Electron/.test(navigator.userAgent);
   function setPaused(p) {
-    g.paused = p; menu.hidden = !p; audio.duck(p);
+    g.paused = p; menu.hidden = !p; audio.duck(p); el.classList.toggle('fp-paused', p);
     if (p) { controls.unlock(); renderMenu('main'); }
   }
   function togglePause() { setPaused(!g.paused); }
@@ -199,7 +205,7 @@ export function mountGame(root, { checkpoint } = {}) {
   g.pause = setPaused;
   const stopPad = padNav({
     container: () => (g.paused ? menu : hud.choosing ? el.querySelector('.fp-choice') : el.querySelector('.fp-logbook') || (g.mode === 'console' ? panel : null)),
-    onBack: () => { if (g.paused) resume(); else if (g.mode === 'console') closeApp(); },
+    onBack: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (g.paused) resume(); else if (g.mode === 'console') closeApp(); },
     onStart: () => { if (g.photo) g.photo.exit(); else if (g.paused) resume(); else if (g.mode === 'walk' || g.mode === 'console') setPaused(true); },
   });
   menuBtn.addEventListener('click', () => (g.paused ? resume() : setPaused(true)));
@@ -213,6 +219,7 @@ export function mountGame(root, { checkpoint } = {}) {
   document.addEventListener('pointerlockchange', onLockChange);
 
   function renderMenu(view) {
+    g.menuView = view;
     const btn = (label, fn, id) => h('button', { type: 'button', id, onclick: fn }, label);
     if (view === 'main') {
       menu.replaceChildren(...[
@@ -243,12 +250,13 @@ export function mountGame(root, { checkpoint } = {}) {
 
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
-  let skyRect = null, lastLockedAt = 0;
+  let skyRect = null;
   // sky render scale: [lowest, highest, GPU budget per frame in ms] for each graphics setting
   const QUALITY = { low: [0.2, 0.3, 5], auto: [0.2, 0.85, 12], high: [0.5, 1, 22] };
   const skyStart = LOW_GPU ? 0.2 : 0.45;
   const skyScale = { win: new AdaptiveScale({ scale: skyStart }), full: new AdaptiveScale({ scale: skyStart }) };
   let skyMode = null;
+  let stillFrames = 0;
   let last = performance.now(), raf = 0, alive = true, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
@@ -258,7 +266,14 @@ export function mountGame(root, { checkpoint } = {}) {
   const brackets = new Map();
   const focusBox = h('div.fp-focus', { hidden: true }, h('i'));
   el.append(focusBox);
+  // toggle-run: a small chip while running is switched on
+  const runChip = h('div.fp-run', { hidden: true, 'aria-hidden': 'true' }, 'RUN');
+  el.append(runChip);
+  // the controls hint stays until the player has both walked and looked around, then fades
+  let ctlHint = null;
+  g.controlsHint = (html) => { hud.hint(html); ctlHint = html ? { html: el.querySelector('.fp-hint').innerHTML, moved: 0, looked: 0, fading: false } : null; };
   function resize() {
+    stillFrames = 0; // a resized canvas is cleared: draw it again
     const w = el.clientWidth, hh = el.clientHeight;
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, hh, false);
@@ -277,7 +292,9 @@ export function mountGame(root, { checkpoint } = {}) {
   function frame(now) {
     if (!alive) return;
     if (frameN < 3) mark('frame ' + frameN); frameN++;
-    const realDt = Math.min(0.1, (now - last) / 1000) * TIME_SCALE; last = now;
+    // never negative: after a long synchronous start (shader link, ship build) the first rAF timestamp can
+    // predate `last` by seconds, and a negative step used to push game time below zero
+    const realDt = Math.max(0, Math.min(0.1, (now - last) / 1000)) * TIME_SCALE; last = now;
     photo.pollPad();
     const dt = g.paused || photo.on ? 0 : realDt; // photo mode stops world time
     hud.tick(dt);
@@ -290,11 +307,14 @@ export function mountGame(root, { checkpoint } = {}) {
       if ((w.t != null && g.time >= w.t) || (w.fn && w.fn())) { waiters.splice(i, 1); w.res(); }
     }
     for (const t of g.ticks) t(dt);
-    if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after) { objState.hinted = true; hud.say('WREN', objState.hint); }
+    if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after && (!objState.when || objState.when())) { objState.hinted = true; hud.say('WREN', objState.hint, { key: 'objhint' }); }
+    else if (objState?.hinted && objState.when && !objState.when()) hud.unsay('objhint');
     const inp = controls.read(photo.on ? realDt : dt);
-    if (controls.locked) lastLockedAt = g.time;
-    hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && g.time - lastLockedAt < 12);
+    // without pointer lock the mouse does not turn the view: say so whenever that is the case, so a lost lock
+    // never leaves the view looking stuck
+    hud.lookHint(g.mode === 'walk' && !g.paused && !photo.on && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && !el.querySelector('.fp-logbook'));
     if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
+    runChip.hidden = !(settings.runMode === 'toggle' && controls.running && g.mode === 'walk' && !g.paused && !photo.on);
     if (photo.on) photo.update(realDt, inp);
     else if (g.mode === 'walk' && g.paused) {
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
@@ -304,6 +324,15 @@ export function mountGame(root, { checkpoint } = {}) {
       const px = g.me.x, pz = g.me.z;
       g.me = step(g.me, inp, dt, ship.colliders);
       stepDist += Math.hypot(g.me.x - px, g.me.z - pz);
+      if (ctlHint && !ctlHint.fading) {
+        ctlHint.moved += Math.hypot(g.me.x - px, g.me.z - pz); ctlHint.looked += Math.abs(inp.lookDX) + Math.abs(inp.lookDY);
+        const hintEl = el.querySelector('.fp-hint');
+        if (hintEl.hidden || hintEl.innerHTML !== ctlHint.html) ctlHint = null; // something else took the hint line
+        else if (ctlHint.moved > 2 && ctlHint.looked > 0.6) {
+          ctlHint.fading = true; hintEl.classList.add('out');
+          setTimeout(() => { if (hintEl.innerHTML === ctlHint?.html) hud.hint(null); hintEl.classList.remove('out'); ctlHint = null; }, 900);
+        }
+      }
       if (stepDist > (inp.run ? 0.95 : 0.75)) { stepDist = 0; audio.step(inp.run ? 1.2 : 0.8); }
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
       focusIt = findInteractable();
@@ -395,7 +424,12 @@ export function mountGame(root, { checkpoint } = {}) {
       }
     }
     // sky: only when a window is in view (or the story owns the view)
-    if (sky) {
+    // behind the pause menu or the logbook the view holds still: after a couple of frames stop drawing it, so
+    // the page stays responsive (wheel scrolling, clicks) even where each frame is slow
+    const still = (g.paused || !!el.querySelector('.fp-logbook')) && !photo.on;
+    stillFrames = still ? stillFrames + 1 : 0;
+    const idle = stillFrames > 2;
+    if (sky && !g.skyHold && !idle) {
       let need = !!g.skyOverride;
       if (!need) {
         projM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); frustum.setFromProjectionMatrix(projM);
@@ -416,6 +450,12 @@ export function mountGame(root, { checkpoint } = {}) {
         skyRect = need ? rects : null;
       }
       if (need) {
+        // the full-screen views (dream, epilogue) start at the lowest scale and grow: the first frame of the
+        // dream must come fast, even on a weak or busy machine
+        const mode = g.skyOverride ? 'full' : 'win';
+        const ctl = skyScale[mode], [lo, hi, budgetMs] = QUALITY[settings.quality] || QUALITY.auto;
+        Object.assign(ctl, { lo, hi, budgetMs });
+        if (mode !== skyMode) { skyMode = mode; ctl.reset(); if (mode === 'full') ctl.scale = lo; sky.set({ scale: ctl.scale }); }
         if (g.skyOverride) sky.set(g.skyOverride(g));
         else {
           const q = camera.quaternion;
@@ -423,20 +463,16 @@ export function mountGame(root, { checkpoint } = {}) {
           const pos = shipPosition(g.shipR);
           sky.set({ cam: pos, basis: [r, u, f], V: hoverVelocity(pos), fov: THREE.MathUtils.degToRad(camera.fov), time: g.time, disk: true });
         }
-        sky.render(g.skyOverride ? null : skyRect);
+        if (sky.render(g.skyOverride ? null : skyRect)) g.skyFrames = (g.skyFrames || 0) + 1;
         // adapt the sky's resolution. The window rectangles and the full-screen views (dream, epilogue)
         // trace very different numbers of pixels, so each keeps its own scale.
-        const mode = g.skyOverride ? 'full' : 'win';
-        const ctl = skyScale[mode], [lo, hi, budgetMs] = QUALITY[settings.quality] || QUALITY.auto;
-        Object.assign(ctl, { lo, hi, budgetMs });
-        if (mode !== skyMode) { skyMode = mode; ctl.reset(); }
         const fresh = sky.gpuMs != null && performance.now() - sky.gpuAt < 1000;
         sky.set({ scale: ctl.update((realDt / TIME_SCALE) * 1000, fresh ? sky.gpuMs : null) });
       }
     }
     threeCanvas.style.visibility = g.skyOverride && g.hideShip ? 'hidden' : 'visible';
     if (frameN <= 3) mark('pre-render');
-    if (!(g.skyOverride && g.hideShip)) renderer.render(scene, camera);
+    if (!(g.skyOverride && g.hideShip) && !idle) renderer.render(scene, camera);
     if (frameN <= 3) mark('rendered');
     audio.scene(g);
     // adaptive resolution for the ship view: aim for 30+ fps

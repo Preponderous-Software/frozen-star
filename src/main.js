@@ -11,6 +11,7 @@ import bendLight from './chapters/bend-light.js';
 import intoTheDark from './chapters/into-the-dark.js';
 import evaporation from './chapters/evaporation.js';
 import observatory from './chapters/observatory.js';
+import { VERSION } from './version.js';
 import { mountGame } from './game/game.js';
 import { settingsForm, controlsForm, ACTS } from './game/settings-ui.js';
 import { loadSettings } from './game/settings.js';
@@ -172,6 +173,7 @@ function titleScreen() {
           h('p', 'Erebus is made up, but it is built to real numbers: it has the mass of 120,000 Suns, and its horizon is about 354,000 km from the centre, almost as far as the Moon is from the Earth. The lessons measure time in M, the time light takes to cross half that distance: 0.59 seconds for Erebus. Nothing is sped up or slowed down: what you see happens at its true speed.'),
           h('h4', 'Credits'),
           h('dl.credits',
+            h('dt', 'Cast'), h('dd', 'You: the expedition\'s scientist, "Doctor" · WREN: the Tern\'s ship AI · Ines Okafor: pilot'),
             h('dt', 'Created by'), h('dd', 'Daniel McCoy Stephenson, Preponderous Software'),
             h('dt', 'Code and writing'), h('dd', 'Drafted with Claude (Anthropic) for Preponderous Software'),
             h('dt', 'Playtesting'), h('dd', 'AI playtesters, run with ', h('a', { href: 'https://github.com/Preponderous-Software/playtester', target: '_blank', rel: 'noopener' }, 'playtester')),
@@ -182,7 +184,7 @@ function titleScreen() {
             h('li', 'Misner, Thorne & Wheeler, ', h('i', 'Gravitation'), ' (1973)'),
             h('li', 'Hamilton & Lisle, ', h('i', 'The river model of black holes'), ' (2008)'),
             h('li', 'Page, ', h('i', 'Particle emission rates from a black hole'), ' (1976)')),
-          h('p.fine', 'Open source under the MIT license: ', h('a', { href: 'https://github.com/Preponderous-Software/frozen-star', target: '_blank', rel: 'noopener' }, 'github.com/Preponderous-Software/frozen-star'), '.')),
+          h('p.fine', `Version ${VERSION}. Open source under the MIT license: `, h('a', { href: 'https://github.com/Preponderous-Software/frozen-star', target: '_blank', rel: 'noopener' }, 'github.com/Preponderous-Software/frozen-star'), '.')),
         backBtn());
     } else if (which === 'discoveries') {
       panel.replaceChildren(head('Discoveries', 'Things to notice'),

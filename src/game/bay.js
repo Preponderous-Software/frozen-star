@@ -78,7 +78,7 @@ function drawPanel(g, w, h, st) {
 
 /** The bay's moving parts. `ctx` carries the ship builder's group, materials and lists. */
 export function buildBay({ group, M, interactables, blinkers }) {
-  const hullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.25, map: hullTexture(), emissive: 0x2a2d38 }); // a faint self-glow keeps it readable against space
+  const hullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.25, map: hullTexture(), emissive: 0x4c505e }); // a self-glow keeps it readable against space, even far out
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x23273a, roughness: 0.5, metalness: 0.5 });
   const canopyMat = new THREE.MeshStandardMaterial({ color: 0x1a2440, roughness: 0.12, metalness: 0.6, emissive: 0x2a3c66, emissiveIntensity: 0.5 });
   const amberMat = new THREE.MeshStandardMaterial({ color: 0xffb45c, emissive: 0xffa040, emissiveIntensity: 0.6 });
@@ -105,6 +105,9 @@ export function buildBay({ group, M, interactables, blinkers }) {
   part(new THREE.BoxGeometry(0.06, 0.6, 0.4), darkMat, 0.0, 0.56, 0.62); // dorsal fin with the status light
   const statusLight = part(new THREE.SphereGeometry(0.06, 10, 8), lightMat, 0, 0.9, 0.62);
   blinkers.push({ mat: lightMat, rate: 0.45, phase: 0.3 });
+  // running lights, big enough to read from the bridge: red to port, green to starboard, a white strobe on the nose
+  for (const [sx, col] of [[-1, 0xff3b30], [1, 0x34e07a]]) part(new THREE.SphereGeometry(0.11, 10, 8), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 2.2 }), sx * (R + 0.06), 0.05, 0.25);
+  { const strobe = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 2 }); part(new THREE.SphereGeometry(0.1, 10, 8), strobe, 0, 0.62, -1.0); blinkers.push({ mat: strobe, rate: 0.8, phase: 0 }); }
 
   // ---- the launch door in the port wall: it drops into the deck to open ----
   const doorMats = [new THREE.MeshStandardMaterial({ map: bayDoorTexture(), roughness: 0.6, metalness: 0.3 }), M.hull, M.trim, M.trim, M.trim, M.trim];
@@ -173,6 +176,8 @@ export function buildBay({ group, M, interactables, blinkers }) {
     get state() { return state; },
     /** Ines takes the capsule out: board, open the launch door, slide out to port and run forward to hold station. */
     launch(t0 = 0) { if (!flight) flight = { t: t0 }; }, // t0 > 0 skips ahead (screenshots)
+    /** Where the capsule holds station after launch (ship coordinates). */
+    hold: HOLD,
     attach(g) {
       g.bay = ctl;
       g.hud.where = g.hud.where || {};
@@ -227,6 +232,15 @@ export function buildBay({ group, M, interactables, blinkers }) {
       };
       update(0);
       g.ticks.add(update);
+      // the "Capsule · Ines" bracket on the capsule itself while it flies and holds station outside (the window
+      // check hides it while the capsule is still in the bay); once she is falling, the story's marker takes over
+      const at = new THREE.Vector3();
+      g.addMarker?.(() => {
+        if (state !== 'out' || !flight || !capsule.visible) return null;
+        capsule.getWorldPosition(at).sub(g.camera.position);
+        const dist = at.length();
+        return { dir: at.normalize().toArray(), rgb: [1, 0.9, 0.8], flux: 0, size: 0.01, label: `Capsule · Ines<br>${Math.round(dist)} m${flight.t > 9 ? ', holding station' : ''}` };
+      });
     },
   };
   const tmp = new THREE.Vector3();

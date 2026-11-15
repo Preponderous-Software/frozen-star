@@ -267,7 +267,7 @@ export function controlsTable(s) {
 }
 
 export const ACTS = [
-  ['start', 'Prologue', 'A dream, and waking up aboard the Tern'],
+  ['start', 'Waking up', 'A dream, and waking up aboard the Tern'],
   ['bridge', 'Beacon K-1', 'Drop a probe and watch it freeze'],
   ['probe-done', 'The rescue', 'Ines is falling'],
   ['rescue-done', 'The descent', 'Hover near the horizon'],

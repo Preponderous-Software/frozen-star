@@ -25,7 +25,7 @@ export function createHud(root) {
   subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
-    say(who, text, { dur, style, where, tag } = {}) {
+    say(who, text, { dur, style, where, tag, key } = {}) {
       const sp = SPEAKERS[who] || { name: who, color: '#ece8f4' };
       // where an off-screen speaker is talking from (Ines: "capsule bay", "capsule"), as a quiet tag after the name
       const at = where ?? this?.where?.[who];
@@ -33,16 +33,19 @@ export function createHud(root) {
       // tag: a word on what colour alone would say (how redshifted a radio line is)
       const el = h('p.fp-line', h('b', { style: { color: sp.color } }, sp.name, place), tag ? h('small.fp-tag', tag) : null, ' ', h('span', text));
       if (style) Object.assign(el.querySelector('span').style, style);
+      if (key) el.dataset.key = key;
       subs.append(el);
       while (subs.children.length > 3) subs.firstChild.remove();
       const id = ++lineId, t = dur ?? Math.min(9, 1.6 + text.length * 0.055);
       setTimeout(() => el.remove(), t * 1000 + 9000);
       return new Promise((res) => {
-        const p = { id, remain: t, done: () => { if (p.finished) return; p.finished = true; el.classList.add('old'); timers.delete(p); if (pending === p) pending = null; res(id); } };
+        const p = { id, key, remain: t, done: () => { if (p.finished) return; p.finished = true; el.classList.add('old'); timers.delete(p); if (pending === p) pending = null; res(id); } };
         timers.add(p); pending = p;
       });
     },
     clearSubs() { subs.innerHTML = ''; },
+    /** Take the lines said with this `key` off the screen (a hint whose moment has passed). */
+    unsay(key) { for (const p of [...timers]) if (p.key === key) p.done(); for (const e of subs.querySelectorAll(`[data-key="${key}"]`)) e.remove(); },
     /** Speaker id → where they are talking from, shown after the name (set by the capsule bay for Ines). */
     where: {},
     /** Finish the current line now (Space, or a tap on the subtitles). */
@@ -52,7 +55,11 @@ export function createHud(root) {
     lookHint(on) { look.hidden = !on; },
     /** A short notice in the corner. opts: { sub, cls, sec } add a second line, a class and a longer stay. */
     toast(text, { sub, cls, sec = 1.8 } = {}) {
-      const t = h('div.fp-toast' + (cls ? `.${cls}` : ''), { role: 'status' }, sub ? [h('b', text), h('small', sub)] : text); root.append(t);
+      const t = h('div.fp-toast' + (cls ? `.${cls}` : ''), { role: 'status' }, sub ? [h('b', text), h('small', sub)] : text);
+      // toasts of the same kind stack instead of covering each other (discoveries hang down, the rest go up)
+      const above = [...root.querySelectorAll('.fp-toast')].filter((o) => o.className === t.className);
+      root.append(t);
+      if (above.length) { const last = above[above.length - 1], gap = parseFloat(last.style.getPropertyValue('--stack') || 0) + last.offsetHeight + 8; t.style.setProperty('--stack', gap); t.style.translate = `0 ${cls === 'disc-toast' ? gap : -gap}px`; }
       setTimeout(() => t.classList.add('out'), sec * 1000); setTimeout(() => t.remove(), sec * 1000 + 800);
     },
     choosing: false,

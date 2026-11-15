@@ -181,8 +181,18 @@ async function dream(g) {
   // replays: let the player skip the dream
   const skip = Object.assign(document.createElement('button'), { type: 'button', className: 'fp-skip', textContent: 'Skip the dream ›' });
   let skipped = false;
-  skip.onclick = () => { skipped = true; tau = f.tauEnd; };
-  g.el.append(skip);
+  // a quiet cue (faint stars, an ellipsis) until the sky's first frame is on screen: on a busy machine that
+  // can take a while, and a black screen reads as a hang
+  const cue = Object.assign(document.createElement('div'), { className: 'fp-dream-cue', innerHTML: '<span>…</span>' });
+  cue.setAttribute('aria-hidden', 'true');
+  // skipping (the button, Esc or Space) acts at once: the sky stops tracing, and the screen fades to black
+  const doSkip = () => {
+    if (skipped) return;
+    skipped = true; tau = f.tauEnd; g.skyHold = true;
+    skip.remove(); cue.remove(); g.hud.clearSubs(); g.hud.fade(1, 0.3);
+  };
+  skip.onclick = doSkip; g.skipCutscene = doSkip;
+  g.el.append(cue, skip);
   const tick = (dt) => {
     // past the horizon the dream slows, so its last line can be read before the white-out
     tau = skipped ? f.tauEnd : Math.min(f.tauEnd, tau + dt * speed * (tau >= f.tauH ? 0.3 : 1));
@@ -190,21 +200,23 @@ async function dream(g) {
   };
   g.ticks.add(tick);
   g.hud.fade(1, 0);
-  await g.wait(0.3);
-  g.hud.fade(0, 3);
-  await g.wait(2);
-  g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
+  const f0 = g.skyFrames || 0;
+  await g.until(() => (g.skyFrames || 0) > f0 + 1 || skipped || !g.sky);
+  cue.classList.add('out'); setTimeout(() => cue.remove(), 1500);
+  if (!skipped) g.hud.fade(0, 3);
+  await Promise.race([g.wait(2), g.until(() => skipped)]);
+  if (!skipped) g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 14 || skipped);
   if (!skipped) g.say('YOU', '(It grows. The stars around its edge are bending, crowding into a ring.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 7 || skipped);
-  g.say('YOU', '(The black is spreading. The light is all overhead now.)', { style: { fontStyle: 'italic' } });
+  if (!skipped) g.say('YOU', '(The black is spreading. The light is all overhead now.)', { style: { fontStyle: 'italic' } });
   await g.until(() => tau >= f.tauH);
   if (!skipped) { g.audio.whoosh(2.5); g.say('YOU', '(Nothing happened.)', { style: { fontStyle: 'italic' }, dur: 2.2 }); }
   await g.until(() => f.rOfTau(tau) < 0.9);
-  skip.remove();
+  skip.remove(); g.skipCutscene = null;
   await g.hud.fade(1, skipped ? 0.3 : 0.6, skipped ? '#000' : '#fff');
   g.ticks.delete(tick);
-  g.skyOverride = null; g.hideShip = false;
+  g.skyOverride = null; g.hideShip = false; g.skyHold = false;
   g.hud.clearSubs();
   await g.hud.fade(1, 0.8, '#000');
 }
@@ -216,14 +228,15 @@ async function wake(g) {
   await g.wait(0.6);
   g.hud.fade(0, 2.5);
   await g.hud.card('Frozen Star', 'Research vessel Tern · 10 Schwarzschild radii above Erebus', 3.2);
-  await g.say('WREN', 'Good morning, Doctor. It is 06:40, ship time.');
+  g.hud.where.WREN = 'ship\'s AI'; // a quiet tag on WREN's lines until the bridge, so nobody takes WREN for the player
+  await g.say('WREN', 'Good morning, Doctor. WREN here, the Tern\'s ship intelligence. It is 06:40, ship time.');
   await g.tweenTo(new THREE.Vector3(3.8, 1.15, 5.3), -0.12, -0.04, 2.2);
   await g.tweenTo(new THREE.Vector3(3.7, EYE, 4.7), -0.1, 0.0, 1.4);
   setWalk(g, 3.7, 4.7, -0.1, 0.0);
-  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
+  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.', when: () => !g.inRoom('bridge') });
   g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
   g.say('WREN', 'We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.');
-  g.hud.hint(controlsHintHtml({ touch: g.controls.isTouch() }));
+  g.controlsHint(controlsHintHtml({ touch: g.controls.isTouch() }));
   await g.wait(4.5);
   await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
   g.wait(8).then(() => g.hud.hint(null)).catch(() => {});
@@ -235,7 +248,7 @@ async function toBridge(g) {
   await g.until(() => g.inRoom('corridor') || g.inRoom('bridge') || Math.hypot(g.me.x - 1, g.me.z - 4.1) < 1.0);
   g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
-  g.waypoint = null; g.hud.hint(null); g.flags.seenBridge = true;
+  g.waypoint = null; g.hud.hint(null); g.flags.seenBridge = true; delete g.hud.where.WREN;
   g.save('bridge');
 }
 
@@ -330,9 +343,17 @@ async function rescueAct(g) {
   g.flags.rescueTries = g.flags.rescueTries || 0;
   if (!g.flags.rescueIntro) {
     await g.say('INES', 'My turn. I\'m taking the capsule out to sample the disk light. Back in twenty minutes.');
+    // a short build-up, and the launch waits (a few seconds at most) until the player looks out to port
+    g.objective('Watch Ines launch: the port side of the bridge window');
+    const hold = g.bay?.hold, eye = new THREE.Vector3();
+    const facing = () => { if (!hold || !g.inRoom('bridge') || g.mode !== 'walk') return false; const a = g.lookAngles(eye.set(g.me.x, g.eye, g.me.z), hold); return Math.abs(Math.atan2(Math.sin(a.yaw - g.me.yaw), Math.cos(a.yaw - g.me.yaw))) < 0.6; };
+    await g.say('INES', 'Bay doors opening. Watch the port side, doc.');
+    await Promise.race([g.until(facing), g.wait(6)]);
     g.bay?.launch(); // [capsule bay] the capsule leaves its cradle and runs forward past the port windows
+    await g.wait(8); // out of the bay and forward, into the left of the bridge window
+    g.objective(null);
     await g.say('WREN', 'Capsule away. She is holding position beside us.');
-    await g.wait(5);
+    await g.wait(4);
     g.flags.rescueIntro = true;
   }
   for (;;) {
@@ -365,7 +386,7 @@ async function rescueAttempt(g) {
   g.alarm(true);
   const run = createRun(g, 'capsule'); run.signals = [];
   g.capsule = run; g.lastRun = run;
-  const removeMarker = g.addMarker(runMarker(run, { nm0: 560, size: 0.007, name: 'Capsule · Ines' }));
+  const removeMarker = g.addMarker(runMarker(run, { nm0: 560, size: 0.01, name: 'Capsule · Ines' }));
   g.waypoint = { pos: consolePos(g, 'comms'), label: 'Comms', near: 1.4 };
   const f = run.f, D = f.rescueDeadline;
   g.say('WREN', 'Doctor, Ines\'s capsule has lost main power. It is falling.');
@@ -404,14 +425,14 @@ async function rescueAttempt(g) {
     run.hidden = true; removeMarker();
     run.saved = { tau: result.tau, r: result.r, seenAt: f.messageArrival(result.tau) };
     g.alarm(false); g.objective(null);
-    g.flags.stats.margin = secs(D - run.fired); g.flags.stats.seenAt = f.seenAt(run.fired).r / 2; g.flags.stats.metAt = result.r / 2;
+    g.flags.stats.margin = secs(D - run.fired); g.flags.stats.marginS = Math.round(secs(D)) - Math.round(secs(run.fired)); // the rounded margin adds up with the rounded deadline g.flags.stats.seenAt = f.seenAt(run.fired).r / 2; g.flags.stats.metAt = result.r / 2;
     // her reply can only reach us with the light of the burn, after everything she sent before it
     await g.say('WREN', 'Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.');
     await g.until(() => run.S() >= run.saved.seenAt);
     const lit = 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!';
     run.log.push({ text: lit }); g.audio.radio(f.onePlusZ(f.rOfTau(run.saved.tau)), lit.length);
     await g.say('INES', lit);
-    await g.say('WREN', `You fired ${Math.round(secs(D - run.fired))} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
+    await g.say('WREN', `You fired ${g.flags.stats.marginS} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
     g.ticks.delete(tick);
     await g.hud.fade(1, 1.5);
     g.hud.clearSubs();
@@ -569,18 +590,32 @@ async function epilogue(g, haloNow) {
   g.flags.helmUnlocked = true; g.flags.mapUnlocked = true; g.flags.orpheusReady = true; g.flags.beaconDone = true; g.flags.inesHome = true;
   const first = !g.flags.finished;
   g.flags.finished = true;
+  let wantHalo = haloNow;
   if (!haloNow) {
     g.save('epilogue');
     await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
-    if (first) await logbook(g);
+    if (first && (await logbook(g, { halo: !g.flags.haloDone })) === 'halo') wantHalo = true;
   }
-  const explore = () => g.objective('Explore the Tern. The lab archive has more.');
+  // postscript: the photon sphere. It is offered by WREN once the player has had a little time to themselves,
+  // and it stays easy to find: a line under the objective, a prompt at the helm, a button on the logbook.
+  let started = false;
+  const explore = () => {
+    g.objective('Explore the Tern. The lab archive has more.');
+    if (!started && !g.flags.haloDone) g.hud.objectiveNote('Optional: the photon sphere. Take the helm to begin.');
+  };
   explore();
   freeRoam(g);
-  // postscript: the photon sphere, offered once the player has had a little time to themselves
-  const halo = () => haloAct(g, { logbook: () => logbook(g) }).then(explore);
-  if (haloNow) { g.hud.card('Postscript · The photon sphere', 'Where light goes in circles.', 3); await halo(); }
-  else if (!g.flags.haloDone) (async () => { await g.wait(25); await g.until(() => g.quiet(4)); g.hud.card('Postscript · The photon sphere', 'Where light goes in circles.', 3); await halo(); })().catch(() => {});
+  const startHalo = (force = false) => {
+    if (started || (g.flags.haloDone && !force)) return null;
+    started = true;
+    g.hud.card('Postscript · The photon sphere', 'Where light goes in circles.', 3);
+    return haloAct(g, { logbook: () => logbook(g) }).then(explore);
+  };
+  const helmIt = g.ship.interactables.find((i) => i.id === 'helm'), helmLabel = helmIt.label, helmFree = g.handlers.helm;
+  Object.defineProperty(helmIt, 'label', { get: () => (!started && !g.flags.haloDone ? 'Optional: the photon sphere' : helmLabel), configurable: true });
+  g.on('helm', (it) => { if (startHalo()) return g.handlers.helm(it); return helmFree(it); }); // the postscript's own helm panel
+  if (wantHalo) await startHalo(true);
+  else if (!g.flags.haloDone) (async () => { await g.wait(25); await g.until(() => g.quiet(4) || started); await startHalo(); })().catch(() => {});
 }
 
 // ---------- after the story: small things to find ----------
@@ -597,11 +632,13 @@ function freeRoam(g) {
     [['INES', 'Next time I go out, you\'re on the beam. Nobody else.']],
     [['INES', 'Go look at the window, doc. I\'m fine. Really.']],
   ];
+  // once she has said everything, the channel still answers: a short sign-off, never silence
+  const later = [['INES', '…Catch you later, doc.'], ['INES', 'Still here. Go on, the window\'s yours.']];
   let chat = 0;
   g.on('comms', () => {
-    if (g.talkingToInes) return;
+    if (g.talkingToInes) { g.hud.skip(); return; } // E again moves her on to the next line
     g.talkingToInes = true; g.audio.radio();
-    const lines = chats[Math.min(chat++, chats.length - 1)];
+    const lines = chat < chats.length ? chats[chat++] : [later[(chat++ - chats.length) % later.length]];
     (async () => { for (const [who, text] of lines) await g.say(who, text); })().catch(() => {}).finally(() => { g.talkingToInes = false; });
   });
   // the helm, with nobody's plan to follow: WREN reads out what the field is holding
@@ -630,7 +667,7 @@ function freeRoam(g) {
 }
 
 // ---------- the logbook: what the player saw, against what really happened ----------
-function logbook(g) {
+function logbook(g, { halo = false } = {}) {
   const st = g.flags.stats || {}, tries = g.flags.rescueTries || 0;
   const f = new Infall(R_STATION), s = (m) => Math.round(secs(m)), inside = secs(f.tauEnd - f.tauH).toFixed(1);
   const label = (t) => `<small style="display:block;font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">${t}</small>`;
@@ -650,7 +687,7 @@ function logbook(g) {
       st.prediction === 'right' ? 'You predicted ping 9.' : ''),
     row('Ines',
       st.seenAt != null ? `When you fired, your screen showed her at ${st.seenAt.toFixed(1)} rₛ, looking almost normal.` : 'On your screen she looked fine the whole time.',
-      st.metAt != null ? `The beam caught her at ${st.metAt.toFixed(2)} rₛ, ${Math.round(st.margin)} s before the last moment it could have left.` : `The beam had to leave within ${s(f.rescueDeadline)} s of her mayday, while her picture still looked fine.`,
+      st.metAt != null ? `The beam caught her at ${st.metAt.toFixed(2)} rₛ, ${st.marginS ?? Math.round(st.margin)} s before the last moment it could have left.` : `The beam had to leave within ${s(f.rescueDeadline)} s of her mayday, while her picture still looked fine.`,
       tries ? `It took ${tries + 1} tries.` : ''),
     row('Descent',
       'Your own clock ran normally. The windows went black and every star crowded in behind you.',
@@ -679,7 +716,10 @@ function logbook(g) {
     const keep = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Keep exploring', className: 'primary' });
     keep.onclick = () => { box.remove(); res(); };
     const menu = Object.assign(document.createElement('a'), { href: '#title', textContent: 'Main menu', className: 'button' });
-    actions.append(keep, menu); box.append(p, actions);
+    actions.append(keep);
+    // the optional postscript, for anyone who wants it now
+    if (halo) actions.append(Object.assign(document.createElement('button'), { type: 'button', textContent: 'Postscript: the photon sphere', onclick: () => { box.remove(); res('halo'); } }));
+    actions.append(menu); box.append(p, actions);
     g.el.append(box); g.controls.unlock(); keep.focus({ preventScroll: true }); box.scrollTop = 0; // start at the top: it scrolls on short screens
   });
 }
