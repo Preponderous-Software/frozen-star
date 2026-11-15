@@ -1,27 +1,26 @@
 # Frozen Star
 
-A browser game about general relativity. From far away, nothing is ever seen to fall into a black hole: it slows, reddens and fades at the edge. On its own clock it falls straight through. Seven chapters show why both are true.
+A first-person game about general relativity. You wake aboard the research vessel *Tern*, holding station 10 Schwarzschild radii above Erebus, a black hole of 120,000 suns. Today you find out whether things really fall in. From far away, nothing ever seems to: it slows, reddens and fades at the edge. On its own clock it falls straight through.
 
-![A ray-traced black hole with its accretion disk lensed over and under the shadow](docs/media/hero.png)
+![The bridge of the Tern: a beacon probe tracked through the window over Erebus's shadow](docs/media/bridge.png)
 
 The old Soviet name for black holes was "frozen stars", after the frozen image a distant observer sees.
 
-## Chapters
+## The story
 
-| # | Chapter | What you learn |
-|---|---------|----------------|
-| 1 | **Two Clocks** | A probe's pings arrive later and later; its image reddens, freezes and fades. |
-| 2 | **Last Words** | The horizon is a one-way door: messages sent from inside never get out. |
-| 3 | **The Rescue** | The image on your screen is old light. By the time it looks worrying, it is too late. |
-| 4 | **Pick Your Hole** | Tides at the horizon scale as 1/M²: small holes shred you, big ones don't. |
-| 5 | **Hover** | Hovering near the horizon slows your clock, at a crushing cost in thrust. |
-| 6 | **Into the Dark** | Fall in yourself, first person, ray-traced through the horizon. |
-| 7 | **Evaporation** | Why Hawking evaporation doesn't save "you never fall in". |
-| + | **Observatory** | A free camera around the hole. |
+1. **A dream** of falling in. At the horizon, nothing happens.
+2. **Wake up** in your quarters and walk to the bridge.
+3. **Beacon K-1.** Drop a probe and watch its light freeze in the window. Its beacon is on the speakers, so you hear the pitch slide down as it redshifts.
+4. **The rescue.** Ines's capsule loses power and drifts in. Her radio messages arrive slower and redder. Fire the recall beam in time, but the picture on your screen is old light.
+5. **The helm.** Hover the ship near the horizon while the relay clock races ahead.
+6. **Orpheus.** A camera probe streams frames that arrive further and further apart, then freeze just before the horizon.
+7. **Explore.** The original training chapters live on the lab's archive terminal.
 
-![Falling toward Sagittarius A*](docs/media/into-the-dark.png)
+Everything happens at its true speed: at 120,000 suns, one unit of black-hole time (GM/c³) is 0.59 seconds.
 
-![The spacetime diagram: the probe's path and its pings heading home](docs/media/spacetime-diagram.png)
+![Falling, in a dream](docs/media/dream.png)
+
+![The Orpheus feed: the last frame before the horizon](docs/media/orpheus.png)
 
 ## The physics is real
 
@@ -33,14 +32,16 @@ The old Soviet name for black holes was "frozen stars", after the frozen image a
 
 ## Run it
 
-There is no build step. Serve the folder with any static file server and open `index.html`:
+There is no build step. Serve the folder and open it:
 
 ```sh
-python3 -m http.server 8000
+python3 tools/serve.py . 8000      # or any static file server
 # then open http://localhost:8000/
 ```
 
-The 3D views need WebGL 2. Add `?lowgpu` to the URL on slow machines.
+The game needs WebGL 2. Add `?lowgpu` to the URL on slow machines. Controls: WASD and mouse (click to capture), E to use, Space to skip a line; on touch, left thumb walks and dragging looks; gamepads work too. On Windows, `tools/play-frozen-star.bat` copies the WSL clone and opens the game.
+
+three.js r170 is vendored in `vendor/three` (MIT).
 
 ## Test
 
@@ -48,4 +49,4 @@ The 3D views need WebGL 2. Add `?lowgpu` to the URL on slow machines.
 npm test          # node --test, no dependencies
 ```
 
-`tools/tour.cjs` drives every screen in headless Chromium and saves screenshots (needs Playwright).
+`tools/tour.cjs` (training chapters) and `tools/fp-shots.cjs` (the first-person game; `?debug&cp=<checkpoint>&timescale=N`) drive headless Chromium and save screenshots (need Playwright).

@@ -11,6 +11,8 @@ import { step, EYE } from './walk.js';
 import { shipPosition, toHole, fromHole, SEC_PER_M, R_STATION, DISK_OUTER } from './world.js';
 import { hoverRate } from '../physics/body.js';
 import { runStory } from './story.js';
+import { createAudio } from './audio.js';
+import { hoverAccel } from '../physics/body.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
 const T0 = performance.now();
@@ -33,6 +35,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, alpha: true, antialias: !LOW_GPU, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(70, 1, 0.05, 2000);
   camera.rotation.order = 'YXZ';
@@ -60,7 +63,8 @@ export function mountGame(root, { checkpoint } = {}) {
   };
   const hud = createHud(el);
   g.hud = hud;
-  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); } });
+  const audio = createAudio(); g.audio = audio;
+  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); }, onSkip: () => hud.skip() });
   g.controls = controls;
 
   // ---- story helpers ----
@@ -93,7 +97,7 @@ export function mountGame(root, { checkpoint } = {}) {
     g.pose.pos.set(g.me.x, g.eye, g.me.z); g.pose.yaw = g.me.yaw; g.pose.pitch = g.me.pitch;
     const a = lookAngles(it.focus.pos, it.focus.look);
     await g.tweenTo(it.focus.pos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
-    panel.replaceChildren(); panel.hidden = false;
+    panel.replaceChildren(); panel.hidden = false; audio.open();
     const close = h('button.fp-close', { type: 'button', onclick: () => closeApp() }, '← Step back');
     const body = h('div.fp-app');
     panel.append(h('div.fp-panel-head', close, h('span.fine', controls.isTouch() ? '' : 'Esc or Q to step back')), body);
@@ -102,7 +106,7 @@ export function mountGame(root, { checkpoint } = {}) {
   }
   async function closeApp() {
     if (g.mode !== 'console') return;
-    appDispose?.(); appDispose = null; panel.hidden = true; panel.replaceChildren();
+    appDispose?.(); appDispose = null; panel.hidden = true; panel.replaceChildren(); audio.close();
     g.mode = 'tweening';
     await g.tweenTo(new THREE.Vector3(walkPose.x, g.eye, walkPose.z), walkPose.yaw, walkPose.pitch, 0.5);
     g.me = { ...walkPose, vx: 0, vz: 0 }; g.mode = 'walk'; controls.setEnabled(true); hud.crosshair(true);
@@ -137,19 +141,30 @@ export function mountGame(root, { checkpoint } = {}) {
   menu.append(
     h('p.eyebrow', 'Paused'),
     h('button', { type: 'button', onclick: () => { menu.hidden = true; } }, 'Resume'),
+    h('button#fp-sound', { type: 'button', onclick: (e) => { audio.setMuted(!audio.muted); e.currentTarget.textContent = audio.muted ? 'Sound: off' : 'Sound: on'; } }, audio.muted ? 'Sound: off' : 'Sound: on'),
     h('a.button', { href: '#title' }, 'Leave the ship'),
     h('button', { type: 'button', onclick: () => { try { localStorage.removeItem('frozen-star.fp.v1'); } catch { /* */ } location.hash = '#title'; } }, 'Forget my progress'),
-    h('p.fine', 'WASD or arrows to walk, mouse to look (click to capture it), E to use, Shift to run. On touch: left thumb walks, drag to look.'),
+    h('p.fine', 'WASD or arrows to walk, mouse to look (click to capture it), E to use, Shift to run, Space to skip a line. On touch: left thumb walks, drag to look, tap a line to skip it.'),
   );
 
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
-  let last = performance.now(), raf = 0, alive = true, skyAvg = 16, skyFrames = 0, screenTimer = 0;
+  let last = performance.now(), raf = 0, alive = true, skyAvg = 16, skyFrames = 0, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
+  let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
+  const raycaster = new THREE.Raycaster();
+  const way = h('div.fp-way', { hidden: true }, h('i'), h('span'));
+  el.append(way);
+  g.waypoint = null;
+  const brackets = new Map();
   function resize() {
     const w = el.clientWidth, hh = el.clientHeight;
-    renderer.setPixelRatio(Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1));
+    renderer.setPixelRatio(dpr);
     renderer.setSize(w, hh, false);
-    camera.aspect = w / Math.max(1, hh); camera.updateProjectionMatrix();
+    camera.aspect = w / Math.max(1, hh);
+    // keep at least ~80° across on tall (portrait) screens
+    const hfov = THREE.MathUtils.degToRad(80);
+    camera.fov = camera.aspect < 1.15 ? Math.min(105, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / camera.aspect))) : 70;
+    camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize); ro.observe(el); resize();
 
@@ -170,11 +185,14 @@ export function mountGame(root, { checkpoint } = {}) {
     const inp = controls.read(dt);
     if (g.mode === 'walk') {
       g.me.yaw -= inp.lookDX; g.me.pitch = Math.max(-1.45, Math.min(1.45, g.me.pitch - inp.lookDY));
+      const px = g.me.x, pz = g.me.z;
       g.me = step(g.me, inp, dt, ship.colliders);
+      stepDist += Math.hypot(g.me.x - px, g.me.z - pz);
+      if (stepDist > (inp.run ? 0.95 : 0.75)) { stepDist = 0; audio.step(inp.run ? 1.2 : 0.8); }
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
       focusIt = findInteractable();
       const label = focusIt?.label;
-      hud.prompt(label ? (controls.isTouch() ? label : `<kbd>E</kbd> ${label}`) : null);
+      hud.prompt(label && !controls.isTouch() ? `<kbd>E</kbd> ${label}` : null);
       controls.showUse(label || null);
       if (inp.interact) interact();
     } else {
@@ -187,9 +205,12 @@ export function mountGame(root, { checkpoint } = {}) {
       if (g.mode === 'console' && !tween) { g.pose.yaw -= inp.lookDX * 0.25; g.pose.pitch = Math.max(-1, Math.min(1, g.pose.pitch - inp.lookDY * 0.25)); }
       camera.position.copy(g.pose.pos); camera.rotation.set(g.pose.pitch, g.pose.yaw, 0);
     }
+    for (const b of ship.blinkers) b.mat.emissiveIntensity = 0.25 + 1.6 * (0.5 + 0.5 * Math.sin(g.time * b.rate * 6.283 + b.phase)) ** 3;
     // doors
     for (const d of ship.doors) {
       const near = Math.hypot(g.me.x - d.center[0], g.me.z - d.center[1]) < 1.8 && !d.locked && g.mode !== 'cutscene';
+      if (near && !d.wasNear) audio.door();
+      d.wasNear = near;
       d.open += ((near ? 1 : 0) - d.open) * Math.min(1, dt * 6);
       const off = d.open * (d.width - 0.05);
       if (d.axis === 'x') d.panel.position.x = d.closed + off; else d.panel.position.z = d.closed + off;
@@ -208,7 +229,40 @@ export function mountGame(root, { checkpoint } = {}) {
       m.s.scale.set(size, size, 1);
       m.s.material.color.setRGB(st.rgb[0], st.rgb[1], st.rgb[2]);
       m.s.material.opacity = Math.min(1, st.flux);
+      // tracking bracket on the glass, if the light is seen through a window
+      let br = brackets.get(m);
+      if (st.label) {
+        if (!br) { br = h('div.fp-track', h('i'), h('span')); el.append(br); brackets.set(m, br); }
+        const v = m.s.position.clone().project(camera);
+        let show = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
+        if (show) {
+          raycaster.set(camera.position, m.s.position.clone().sub(camera.position).normalize());
+          const hit = raycaster.intersectObjects(ship.group.children, true).find((x) => x.object.visible);
+          show = !hit || ship.windows.includes(hit.object);
+        }
+        br.hidden = !show;
+        if (show) { br.style.transform = `translate(${((v.x + 1) / 2) * el.clientWidth}px, ${((1 - v.y) / 2) * el.clientHeight}px)`; br.querySelector('span').innerHTML = st.label; }
+      } else if (br) br.hidden = true;
     }
+    for (const [m, br] of brackets) if (!markers.has(m) || !m.s.visible) br.hidden = true;
+    // waypoint toward the objective
+    if (g.waypoint && g.mode === 'walk') {
+      const wp = g.waypoint.pos || g.waypoint;
+      const d3 = Math.hypot(wp.x - g.me.x, wp.z - g.me.z);
+      if (d3 < (g.waypoint.near ?? 1.6)) way.hidden = true;
+      else {
+        const v = wp.clone().project(camera), W = el.clientWidth, H = el.clientHeight;
+        const behind = v.z > 1;
+        let x = v.x, y = v.y;
+        if (behind) { x = -x; y = -y; }
+        const onScreen = !behind && Math.abs(x) < 0.85 && Math.abs(y) < 0.8;
+        if (!onScreen) { const k = 0.85 / Math.max(Math.abs(x) / 0.92, Math.abs(y) / 0.82, 1e-6); x *= k; y *= k; if (behind && Math.hypot(x, y) < 0.5) { x = 0; y = -0.8; } }
+        way.hidden = false; way.classList.toggle('edge', !onScreen);
+        way.style.transform = `translate(${((x + 1) / 2) * W}px, ${((1 - y) / 2) * H}px)`;
+        way.querySelector('i').style.transform = onScreen ? '' : `rotate(${Math.atan2(-y, x)}rad)`;
+        way.querySelector('span').textContent = `${g.waypoint.label || ''} ${d3.toFixed(0)} m`;
+      }
+    } else way.hidden = true;
     // screens (about 20 times a second)
     screenTimer += dt;
     if (screenTimer > 0.05) {
@@ -242,6 +296,15 @@ export function mountGame(root, { checkpoint } = {}) {
     if (frameN <= 3) mark('pre-render');
     if (!(g.skyOverride && g.hideShip)) renderer.render(scene, camera);
     if (frameN <= 3) mark('rendered');
+    audio.setHum(g.hideShip ? 0.08 : g.inRoom('bridge') ? 1 : 0.7, 1 + 0.08 * Math.max(0, Math.log10(hoverAccel(g.shipR, 1.2e5) / hoverAccel(R_STATION, 1.2e5))));
+    // adaptive resolution for the ship view: aim for 30+ fps
+    frameAvg = frameAvg * 0.95 + (dt / TIME_SCALE) * 1000 * 0.05; dprTimer += dt / TIME_SCALE;
+    if (dprTimer > 2) {
+      dprTimer = 0;
+      const max = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
+      const next = frameAvg > 38 ? Math.max(0.6, dpr * 0.8) : frameAvg < 20 ? Math.min(max, dpr * 1.15) : dpr;
+      if (Math.abs(next - dpr) > 0.02) { dpr = next; resize(); }
+    }
     raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
@@ -259,7 +322,7 @@ export function mountGame(root, { checkpoint } = {}) {
   return () => {
     alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect();
     for (const w of waiters) w.rej(new Error('aborted'));
-    appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose();
+    appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
     document.body.classList.remove('fp-active');
   };
 }

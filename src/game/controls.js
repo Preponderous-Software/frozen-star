@@ -4,7 +4,7 @@ import { stick, deadzone } from './walk.js';
 
 const LOOK_MOUSE = 0.0022, LOOK_TOUCH = 0.0055, LOOK_PAD = 2.4;
 
-export function createControls(el, { onInteract, onBack } = {}) {
+export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   const keys = new Set();
   let lookDX = 0, lookDY = 0, interactEdge = false, backEdge = false;
   let touchStick = null, touchLook = null, stickVec = { forward: 0, right: 0, run: false };
@@ -23,6 +23,7 @@ export function createControls(el, { onInteract, onBack } = {}) {
     const k = e.code;
     if (k === 'KeyE' || k === 'Enter') { interactEdge = true; onInteract?.(); }
     if (k === 'Escape' || k === 'KeyQ') { backEdge = true; onBack?.(); }
+    if (k === 'Space') onSkip?.();
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space'].includes(k)) e.preventDefault();
     keys.add(k);
   };

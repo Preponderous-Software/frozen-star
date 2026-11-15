@@ -35,7 +35,7 @@ function labelTexture(text, { w = 512, h = 128, fg = '#ece8f4', bg = 'rgba(0,0,0
 
 export function buildShip() {
   const group = new THREE.Group();
-  const colliders = [], windows = [], interactables = [], doors = [], rooms = [], screens = {}, lights = {};
+  const colliders = [], windows = [], interactables = [], doors = [], rooms = [], screens = {}, lights = {}, blinkers = [];
 
   const M = {
     wall: new THREE.MeshStandardMaterial({ color: 0xdfe2ea, roughness: 0.75, metalness: 0.05, map: panelTexture('#e6e8ee', '#b9bdc9', 256, 256, 2, 1) }),
@@ -44,7 +44,10 @@ export function buildShip() {
     floor: new THREE.MeshStandardMaterial({ color: 0x9aa0b4, roughness: 0.85, map: panelTexture('#3a3f50', '#2a2e3c', 256, 256, 1, 1) }),
     ceil: new THREE.MeshStandardMaterial({ color: 0xc9cdd8, roughness: 0.9, map: panelTexture('#d4d7df', '#aeb3c0', 256, 256, 1, 2) }),
     glass: new THREE.MeshStandardMaterial({ color: 0xbcd4ff, transparent: true, opacity: 0.06, roughness: 0.05, metalness: 0, depthWrite: false }),
-    lightStrip: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xeaf0ff, emissiveIntensity: 1.6 }),
+    lightStrip: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf3efe6, emissiveIntensity: 0.8 }),
+    rail: new THREE.MeshStandardMaterial({ color: 0x9aa1b3, roughness: 0.35, metalness: 0.8 }),
+    pipe: new THREE.MeshStandardMaterial({ color: 0x5b6274, roughness: 0.5, metalness: 0.6 }),
+    rug: new THREE.MeshStandardMaterial({ color: 0x6b3f3a, roughness: 1 }),
     amber: new THREE.MeshStandardMaterial({ color: 0xffb45c, emissive: 0xffa040, emissiveIntensity: 1.2 }),
     fabric: new THREE.MeshStandardMaterial({ color: 0x45506e, roughness: 0.95 }),
     sheet: new THREE.MeshStandardMaterial({ color: 0xd8dbe4, roughness: 0.95 }),
@@ -116,9 +119,11 @@ export function buildShip() {
     const n = Math.max(1, Math.round((along ? d : w) / 3.2));
     for (let i = 0; i < n; i++) {
       const t = (i + 0.5) / n;
-      along ? box(0.25, 0.03, 1.6, M.lightStrip, (x0 + x1) / 2, height - 0.02, z0 + d * t) : box(1.6, 0.03, 0.25, M.lightStrip, x0 + w * t, height - 0.02, (z0 + z1) / 2);
+      const cx = along ? (x0 + x1) / 2 : x0 + w * t, cz = along ? z0 + d * t : (z0 + z1) / 2;
+      along ? box(0.22, 0.02, 1.4, M.lightStrip, cx, height - 0.035, cz) : box(1.4, 0.02, 0.22, M.lightStrip, cx, height - 0.035, cz);
+      along ? box(0.34, 0.03, 1.52, M.trim, cx, height - 0.012, cz) : box(1.52, 0.03, 0.34, M.trim, cx, height - 0.012, cz);
     }
-    const pl = new THREE.PointLight(light, 6, Math.max(w, d) * 1.6, 1.4); pl.position.set((x0 + x1) / 2, height - 0.4, (z0 + z1) / 2); group.add(pl); lights[id] = pl;
+    const pl = new THREE.PointLight(light, 7, Math.max(w, d) * 1.7, 1.3); pl.position.set((x0 + x1) / 2, height - 0.4, (z0 + z1) / 2); group.add(pl); lights[id] = pl;
     // floor trim
     box(w, 0.06, 0.04, M.amber, (x0 + x1) / 2, 0.03, z0 + 0.08).material = M.trim;
   }
@@ -185,29 +190,32 @@ export function buildShip() {
   interactables.push({ id: 'porthole', pos: new THREE.Vector3(4.1, 1.45, 2.05), radius: 1.8, label: 'Look out of the porthole' });
 
   // ---- Bridge consoles ----
-  function makeConsole(id, x, z, ry, label) {
+  function makeConsole(id, x, z, ry, label, { low = false } = {}) {
     const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; group.add(g);
-    box(1.3, 0.85, 0.7, M.console, 0, 0.425, 0, g);
-    const top = box(1.3, 0.06, 0.55, M.trim, 0, 0.9, 0.05, g); top.rotation.x = -0.35;
-    box(1.32, 0.03, 0.03, M.amber, 0, 0.86, 0.36, g);
+    const bodyH = low ? 0.62 : 0.85;
+    box(1.3, bodyH, 0.7, M.console, 0, bodyH / 2, 0, g);
+    const top = box(1.3, 0.06, 0.55, M.trim, 0, bodyH + 0.05, 0.05, g); top.rotation.x = -0.35;
+    box(1.32, 0.03, 0.03, M.amber, 0, bodyH + 0.01, 0.36, g);
+    const glow = new THREE.PointLight(0x7fb0ff, 0.9, 2.2, 2); glow.position.set(0, bodyH + 0.6, 0.45); g.add(glow);
     const c = document.createElement('canvas'); c.width = 640; c.height = 384;
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
     const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.69), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
-    scr.position.set(0, 1.32, -0.18); scr.rotation.x = -0.28; g.add(scr);
-    box(1.2, 0.74, 0.04, M.trim, 0, 1.32, -0.21, g).rotation.x = -0.28;
+    const sy = low ? 0.86 : 1.32, tilt = low ? -0.95 : -0.28;
+    scr.position.set(0, sy, low ? 0.02 : -0.18); scr.rotation.x = tilt; g.add(scr);
+    const bez = box(1.2, 0.74, 0.04, M.trim, 0, sy, low ? -0.01 : -0.21, g); bez.rotation.x = tilt;
     const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.2), new THREE.MeshBasicMaterial({ map: labelTexture(label, { font: '500 54px "IBM Plex Mono", monospace', fg: '#ffc882' }), transparent: true }));
-    lab.position.set(0, 0.7, 0.36); g.add(lab);
+    lab.position.set(0, low ? 0.45 : 0.7, 0.36); g.add(lab);
     g.updateMatrixWorld(true);
     const screenWorld = new THREE.Vector3(); scr.getWorldPosition(screenWorld);
     const front = new THREE.Vector3(0, 0, 1).applyQuaternion(g.quaternion);
-    const focusPos = screenWorld.clone().addScaledVector(front, 1.05); focusPos.y = 1.58;
+    const focusPos = screenWorld.clone().addScaledVector(front, low ? 0.85 : 1.05); focusPos.y = low ? 1.45 : 1.58;
     screens[id] = { canvas: c, ctx: c.getContext('2d'), tex, mesh: scr, w: c.width, h: c.height };
     colliders.push(aabbOf(g));
     interactables.push({ id, pos: screenWorld, radius: 1.9, label: `Use the ${label.toLowerCase()} console`, console: true, focus: { pos: focusPos, look: screenWorld.clone().add(new THREE.Vector3(0, 0.05, 0)) } });
     return g;
   }
   makeConsole('probe', -1.95, -11.2, 0.3, 'PROBE');
-  makeConsole('helm', 0, -11.6, 0, 'HELM');
+  makeConsole('helm', 0, -11.3, 0, 'HELM', { low: true });
   makeConsole('comms', 1.95, -11.2, -0.3, 'COMMS');
   // chair
   box(0.55, 0.45, 0.55, M.fabric, 0, 0.23, -9.3); box(0.55, 0.55, 0.1, M.fabric, 0, 0.72, -9.03);
@@ -245,9 +253,46 @@ export function buildShip() {
   interactables.push({ id: 'archive', pos: archWorld, radius: 1.9, label: 'Open the archive', console: true, focus: { pos: new THREE.Vector3(-3.2, 1.58, -1.0), look: archWorld } });
   box(1.8, 0.8, 0.7, M.wallDark, -2.0, 0.4, -3.0); colliders.push([-2.9, -3.4, -1.1, -2.6]);
 
+  // ---- detail ----
+  const cyl = (r, len, mat, x, y, z, axis) => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), mat); m.position.set(x, y, z);
+    if (axis === 'z') m.rotation.x = Math.PI / 2; else if (axis === 'x') m.rotation.z = Math.PI / 2;
+    group.add(m); return m;
+  };
+  // corridor handrails and ceiling pipes
+  for (const sx of [-0.9, 0.9]) {
+    cyl(0.025, 12.6, M.rail, sx, 1.0, 1.5, 'z');
+    for (let z = -4.5; z <= 7.5; z += 2) box(0.04, 0.04, 0.12, M.rail, sx + Math.sign(sx) * 0.05, 1.0, z);
+    cyl(0.05, 13, M.pipe, sx * 0.95, 2.36, 1.5, 'z');
+  }
+  cyl(0.035, 13, M.pipe, -0.78, 2.4, 1.5, 'z');
+  // amber floor strips in the corridor, and under the bridge window
+  for (const sx of [-0.93, 0.93]) box(0.04, 0.015, 12.8, M.amber, sx, 0.01, 1.5);
+  box(6.0, 0.03, 0.05, M.amber, 0, 0.73, -12.9);
+  box(6.2, 0.06, 0.3, M.trim, 0, 0.72, -12.8);
+  // status lights beside doors (they blink)
+  const ledMat = (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.5 });
+  for (const [x, y, z, ry, c, rate] of [[0.94, 1.35, 3.3, -Math.PI / 2, 0x7fd6a8, 0.7], [-0.94, 1.35, -0.2, Math.PI / 2, 0x7fd6a8, 0.9], [0.8, 1.4, -4.94, 0, 0x8fb8ff, 0.5], [0, 1.5, 7.94, Math.PI, 0xff6b5c, 1.6], [-3.3, 2.2, -10.5, Math.PI / 2, 0xffb45c, 0.35]]) {
+    const plate = box(0.16, 0.24, 0.02, M.trim, x, y, z); plate.rotation.y = ry;
+    for (let k = 0; k < 3; k++) {
+      const led = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 0.01), ledMat(k === 2 ? 0xffb45c : c));
+      led.position.set(x, y + 0.07 - k * 0.07, z); led.rotation.y = ry; led.translateZ(0.015); group.add(led);
+      blinkers.push({ mat: led.material, rate: rate * (1 + k * 0.37), phase: k * 1.7 });
+    }
+  }
+  // quarters: shelf with books, a mug, a rug
+  box(0.9, 0.03, 0.25, M.trim, 4.85, 1.5, 3.3).rotation.y = Math.PI / 2;
+  const bookCols = [0x8a3b3b, 0x3b5a8a, 0xc9a54a, 0x3e7a5a, 0x6b4f8a, 0xa8a8a8];
+  for (let i = 0; i < 9; i++) { const hgt = 0.18 + ((i * 37) % 7) * 0.012; box(0.16, hgt, 0.04, new THREE.MeshStandardMaterial({ color: bookCols[i % 6], roughness: 0.8 }), 4.86, 1.515 + hgt / 2, 2.95 + i * 0.075); }
+  cyl(0.04, 0.09, new THREE.MeshStandardMaterial({ color: 0xece8f4, roughness: 0.4 }), 4.45, 0.83, 3.65);
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.1), M.rug); rug.rotation.x = -Math.PI / 2; rug.position.set(3.2, 0.006, 4.4); group.add(rug);
+  // bridge: overhead cable trays and floor plates
+  box(6.4, 0.05, 0.4, M.trim, 0, 3.1, -9);
+  box(0.4, 0.05, 7.6, M.trim, -2.9, 3.1, -9); box(0.4, 0.05, 7.6, M.trim, 2.9, 3.1, -9);
+
   const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30333f, 0.9); group.add(hemi);
 
-  return { group, colliders, windows, interactables, doors, rooms, screens, lights, materials: M };
+  return { group, colliders, windows, interactables, doors, rooms, screens, lights, blinkers, materials: M };
 }
 
 function aabbOf(obj) {

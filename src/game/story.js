@@ -7,13 +7,14 @@ import { formatDuration } from '../physics/units.js';
 import { SEC_PER_M, R_STATION, shipPosition, HOLE } from './world.js';
 import { EYE } from './walk.js';
 import {
-  createRun, runMarker, screenFrame, screenLines, drawRunOnScreen, drawMap, drawClocks,
+  createRun, runMarker, carrierState, screenFrame, screenLines, drawRunOnScreen, drawMap, drawClocks,
   datapadApp, probeApp, commsApp, mapApp, helmApp, createFeed, drawFeed, feedApp, archiveApp,
 } from './apps.js';
 import { CHAPTER_LIST } from './chapters-list.js';
 
 const ORDER = ['start', 'bridge', 'probe-done', 'rescue-done', 'helm-done', 'epilogue'];
 const secs = (m) => m * SEC_PER_M;
+const consolePos = (g, id) => g.ship.interactables.find((i) => i.id === id).pos.clone();
 
 export async function runStory(g, cp) {
   const at = Math.max(0, ORDER.indexOf(cp));
@@ -90,7 +91,11 @@ async function dream(g) {
     const r = Math.max(0.3, f.rOfTau(tau)), pos = dir.map((v) => v * r);
     return { cam: pos, basis: lookBasis(pos, [0, -0.4, 0]), V: fallerVelocity(pos, E), fov: 1.35, time: g.time, disk: true };
   };
-  const tick = (dt) => { tau = Math.min(f.tauEnd, tau + dt * speed); };
+  let beat = 0;
+  const tick = (dt) => {
+    tau = Math.min(f.tauEnd, tau + dt * speed);
+    beat -= dt; if (beat <= 0 && tau < f.tauH) { g.audio.heartbeat(); beat = 1.1; }
+  };
   g.ticks.add(tick);
   g.hud.fade(1, 0);
   await g.wait(0.3);
@@ -100,6 +105,7 @@ async function dream(g) {
   await g.until(() => f.rOfTau(tau) < 7);
   g.say('YOU', '(The black is spreading. The light is all overhead now.)', { style: { fontStyle: 'italic' } });
   await g.until(() => tau >= f.tauH);
+  g.audio.whoosh(2.5);
   g.say('YOU', '(Nothing happened.)', { style: { fontStyle: 'italic' }, dur: 2.2 });
   await g.until(() => f.rOfTau(tau) < 0.9);
   await g.hud.fade(1, 0.6, '#fff');
@@ -129,7 +135,11 @@ async function wake(g) {
 }
 
 async function toBridge(g) {
+  g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
+  await g.until(() => g.inRoom('corridor'));
+  g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
+  g.waypoint = null;
   g.save('bridge');
 }
 
@@ -141,12 +151,13 @@ async function beaconAct(g) {
     if (g.beacon) return;
     const run = createRun(g, 'beacon'); run.signals = [];
     g.beacon = run; g.lastRun = run; launched = true;
-    g.removeBeaconMarker = g.addMarker(runMarker(run));
+    g.removeBeaconMarker = g.addMarker(runMarker(run, { name: 'K-1' }));
     run.log.push({ who: 'probe', text: 'Released at τ = 0' });
+    g.waypoint = null;
   };
   await g.say('INES', 'Isn\'t it something? That black circle is Erebus. Well, its shadow. I\'m out in the capsule bay doing pre-flight.');
   await g.say('WREN', 'First item on today\'s plan: drop beacon probe K-1 and log its signal.');
-  if (!launched) g.objective('Drop the beacon probe (probe console, left)');
+  if (!launched) { g.objective('Drop the beacon probe (probe console, left)'); g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 }; }
   await g.until(() => launched);
   g.objective('Watch the probe fall');
   const run = g.beacon, f = run.f;
@@ -154,10 +165,11 @@ async function beaconAct(g) {
   const A9 = f.messageArrival(90);
   const tick = () => {
     while (sent < 9 && run.tau() >= (sent + 1) * 10) { sent++; run.signals.push({ tau: sent * 10 }); run.log.push({ who: 'probe', text: `Ping ${sent} sent at τ = ${sent * 10} M` }); }
-    while (got < 9 && run.S() >= f.messageArrival((got + 1) * 10)) { got++; run.log.push({ who: 'ship', text: `Ping ${got} received ${formatDuration(secs(f.messageArrival(got * 10)))} after release`, kind: 'got' }); }
+    g.audio.carrier('beacon', carrierState(run));
+    while (got < 9 && run.S() >= f.messageArrival((got + 1) * 10)) { got++; { const re = f.rOfTau(got * 10), zz = f.onePlusZ(re); g.audio.ping(zz, zz ** -4); } run.log.push({ who: 'ship', text: `Ping ${got} received ${formatDuration(secs(f.messageArrival(got * 10)))} after release`, kind: 'got' }); }
   };
   g.ticks.add(tick);
-  g.say('WREN', 'K-1 pings every ten M of its own time. About six seconds.');
+  g.say('WREN', 'K-1 pings every ten M of its own time, about six seconds. Its beacon is on the speakers. Listen to the pitch.');
   await g.until(() => got >= 6);
   g.say('WREN', 'Notice the gaps between pings growing.');
   await g.until(() => got >= 7);
@@ -175,12 +187,13 @@ async function beaconAct(g) {
   await g.say('INES', 'Then what am I looking at? It\'s still there on the screen, right at the edge.');
   await g.say('WREN', 'Old light. Each moment of the fall reaches us later than the one before. The picture slows, reddens and fades, but the probe itself is gone.');
   await g.until(() => run.seen().lnz > 9);
-  g.ticks.delete(tick);
-  await g.say('INES', '...and now it\'s gone from the screen too.');
+  g.ticks.delete(tick); g.audio.carrier('beacon', null);
+  await g.say('INES', '...and now it\'s gone from the screen too. And the tone slid right down into nothing.');
   g.flags.mapUnlocked = true; g.flags.beaconDone = true;
   await g.say('WREN', 'I have drawn the whole fall on the spacetime map, on the port wall.');
   g.removeBeaconMarker?.();
   g.objective('Optional: study the spacetime map (port wall)');
+  g.waypoint = { pos: new THREE.Vector3(-3.3, 1.75, -6.9), label: 'Map', near: 2.4 };
   g.save('probe-done');
   await g.wait(10);
 }
@@ -241,7 +254,7 @@ function alarmFn(g) {
   let on = false;
   const tick = () => { if (on) { const k = 0.5 + 0.5 * Math.sin(g.time * 5); L.color.setRGB(1, 0.25 + 0.2 * k, 0.2 + 0.15 * k); } };
   g.ticks.add(tick);
-  return (v) => { on = v; if (!v) L.color.copy(base); };
+  return (v) => { on = v; g.audio.alarm(v); if (!v) L.color.copy(base); };
 }
 
 async function rescueAttempt(g) {
@@ -249,7 +262,8 @@ async function rescueAttempt(g) {
   g.alarm(true);
   const run = createRun(g, 'capsule'); run.signals = [];
   g.capsule = run; g.lastRun = run;
-  const removeMarker = g.addMarker(runMarker(run, { nm0: 560, size: 0.007 }));
+  const removeMarker = g.addMarker(runMarker(run, { nm0: 560, size: 0.007, name: 'Capsule · Ines' }));
+  g.waypoint = { pos: consolePos(g, 'comms'), label: 'Comms', near: 1.4 };
   const f = run.f, D = f.rescueDeadline;
   g.say('WREN', 'Doctor, Ines\'s capsule has lost main power. It is falling.');
   g.objective('Save Ines: fire the recall beam from the comms console. Wait as long as you dare.');
@@ -259,7 +273,7 @@ async function rescueAttempt(g) {
   let result = null;
   g.fireRecall = () => {
     if (run.fired != null) return;
-    run.fired = run.S();
+    run.fired = run.S(); g.audio.click(); g.waypoint = null;
     const seen = run.seen();
     run.log.push({ text: `[You fired the recall beam. Your screen showed her at ${(seen.r / 2).toFixed(2)} rₛ.]`, style: { color: '#7fd6a8' } });
   };
@@ -269,7 +283,7 @@ async function rescueAttempt(g) {
       q.done = true;
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
       const style = inesStyle(f, q.tau);
-      run.log.push({ text: q.text, style }); g.say('INES', q.text, { style });
+      run.log.push({ text: q.text, style }); g.audio.radio(); g.say('INES', q.text, { style });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);
@@ -311,7 +325,9 @@ async function helmAct(g) {
   await g.say('INES', 'I want to see that again. Without dying this time.');
   await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)');
+  g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
   await g.until(() => 1 / hoverRate(g.shipR) >= 2);
+  g.waypoint = null;
   g.say('WREN', 'Relay clock at double speed. Hold here for twenty seconds.');
   g.objective('Hold for 20 seconds');
   const ship0 = g.clocks.ship, relay0 = g.clocks.relay;
@@ -337,6 +353,7 @@ async function orpheusAct(g) {
   await g.say('INES', 'One probe left. Orpheus. It has a camera, and it streams.');
   await g.say('WREN', 'Orpheus is loaded at the probe console. Its feed will show on the starboard screen.');
   g.objective('Launch Orpheus (probe console), then watch its feed (starboard screen)');
+  g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 };
   let launched = false;
   g.feed = createFeed();
   const FRAME = 1.5; // M of probe time between frames
@@ -351,7 +368,8 @@ async function orpheusAct(g) {
     if (g.orpheus) return;
     const run = createRun(g, 'orpheus'); run.signals = [];
     g.orpheus = run; g.lastRun = run; launched = true;
-    g.removeOrpheusMarker = g.addMarker(runMarker(run, { nm0: 500 }));
+    g.removeOrpheusMarker = g.addMarker(runMarker(run, { nm0: 500, name: 'Orpheus' }));
+    g.waypoint = { pos: new THREE.Vector3(3.3, 1.75, -6.9), label: 'Feed', near: 2.4 };
   };
   await g.until(() => launched);
   const run = g.orpheus, f = run.f;
@@ -360,11 +378,16 @@ async function orpheusAct(g) {
       const next = (frames + 1) * FRAME;
       if (next >= f.tauH || run.S() < f.messageArrival(next)) break;
       frames++; tauSent = next; rSent = f.rOfTau(next);
-      g.feed.render(rSent, g.time);
+      g.feed.render(rSent, g.time); g.audio.frame();
       if (frames % 6 === 0) run.signals.push({ tau: next });
     }
   };
-  g.ticks.add(tick);
+  const sound = () => {
+    g.audio.carrier('orpheus', carrierState(run, 520));
+    const near = Math.max(0, 1 - Math.hypot(g.me.x - 2.6, g.me.z + 6.9) / 5);
+    g.audio.static(frames ? Math.min(1, g.feedState().noise) * near : 0);
+  };
+  g.ticks.add(tick); g.ticks.add(sound);
   g.objective('Watch the Orpheus feed (starboard screen)');
   await g.until(() => run.tau() >= f.tauH - 6);
   g.say('WREN', 'Frames are arriving further apart. The signal is being stretched as it climbs out.');
@@ -373,6 +396,7 @@ async function orpheusAct(g) {
   g.say('YOU', '(That view. That\'s what I dreamt.)', { style: { fontStyle: 'italic' } });
   await g.until(() => run.seen().lnz > 9);
   await g.wait(2);
+  g.objective(null);
   await g.say('INES', 'So that last frame is all we get. Did it fall in, or is it stuck there?');
   const pick = await g.hud.choice('What do you tell Ines?', ['It fell in. Its last light just never reaches us.', 'It is frozen at the edge, forever.']);
   if (pick === 1) {
@@ -383,7 +407,7 @@ async function orpheusAct(g) {
     await g.say('WREN', 'No one outside ever will. Only Orpheus saw it.');
   }
   g.say('YOU', '(Only Orpheus. And me, in a dream.)', { style: { fontStyle: 'italic' } });
-  g.ticks.delete(tick); g.removeOrpheusMarker?.();
+  g.ticks.delete(tick); g.ticks.delete(sound); g.audio.carrier('orpheus', null); g.audio.static(0); g.removeOrpheusMarker?.(); g.waypoint = null;
   g.save('epilogue');
   await g.wait(5);
 }

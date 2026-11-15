@@ -17,7 +17,8 @@ export function createHud(root) {
   const hint = h('div.fp-hint', { hidden: true });
   root.append(cross, objective, prompt, subs, hint, card, fade);
 
-  let lineId = 0;
+  let lineId = 0, pending = null;
+  subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
     say(who, text, { dur, style } = {}) {
@@ -27,11 +28,16 @@ export function createHud(root) {
       subs.append(el);
       while (subs.children.length > 3) subs.firstChild.remove();
       const id = ++lineId, t = dur ?? Math.min(9, 1.6 + text.length * 0.055);
-      setTimeout(() => { el.classList.add('old'); }, t * 1000 + 1500);
       setTimeout(() => el.remove(), t * 1000 + 9000);
-      return new Promise((res) => setTimeout(res, t * 1000)).then(() => id);
+      return new Promise((res) => {
+        const done = () => { clearTimeout(timer); el.classList.add('old'); if (pending?.id === id) pending = null; res(id); };
+        const timer = setTimeout(done, t * 1000);
+        pending = { id, done };
+      });
     },
     clearSubs() { subs.innerHTML = ''; },
+    /** Finish the current line now (Space, or a tap on the subtitles). */
+    skip() { pending?.done(); },
     objective(text) { objective.hidden = !text; if (text) objective.querySelector('b').textContent = text; objective.classList.remove('flash'); void objective.offsetWidth; objective.classList.add('flash'); },
     prompt(text) { prompt.hidden = !text; if (text) prompt.innerHTML = text; },
     crosshair(on) { cross.hidden = !on; },

@@ -25,13 +25,21 @@ export function createRun(g, kind) {
 }
 
 /** A window marker for a run: the probe's light as the ship receives it. */
-export function runMarker(run, { nm0 = 470, size = 0.005 } = {}) {
+export function runMarker(run, { nm0 = 470, size = 0.005, name = 'K-1' } = {}) {
   return () => {
     if (run.hidden) return null;
     const s = run.seen(), z = Math.exp(s.lnz), nm = nm0 * z, flux = Math.exp(-4 * s.lnz);
-    if (nm > 790 || flux < 1e-4) return null;
-    return { rgb: wavelengthRGB(nm).map((c) => Math.max(c, 0.05)), flux: Math.min(1, flux * 1.4), size: size * (0.6 + 0.4 * Math.min(1, flux * 2)) };
+    if (s.lnz > 9) return null;
+    const visible = nm <= 790 && flux > 1e-4;
+    const label = `${name}<br>1+z ${z < 1e4 ? z.toPrecision(3) : sig(z)} · its clock ${s.tau.toFixed(1)} M${visible ? '' : '<br>infrared only'}`;
+    return { rgb: visible ? wavelengthRGB(nm).map((c) => Math.max(c, 0.05)) : [0, 0, 0], flux: visible ? Math.min(1, flux * 1.4) : 0, size: size * (0.6 + 0.4 * Math.min(1, flux * 2)), label };
   };
+}
+
+/** The run's carrier as a sound: pitch ÷ (1 + z), loudness by flux. */
+export function carrierState(run, base = 660) {
+  const s = run.seen(); if (s.lnz > 9) return null;
+  return { freq: base / Math.exp(s.lnz), vol: 0.045 * Math.pow(Math.exp(-4 * s.lnz), 0.3) };
 }
 
 // ---------- shared drawing on in-ship screens ----------
