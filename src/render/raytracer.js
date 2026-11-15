@@ -197,10 +197,12 @@ export class BlackHoleView {
     if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   }
 
-  render() {
+  /** Draw. `scissor` = [x0, y0, x1, y1] in 0..1 of the canvas (bottom-left origin) limits the work to that rectangle. */
+  render(scissor) {
     this.resize();
     const { gl, u, state: st } = this;
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    gl.disable(gl.SCISSOR_TEST);
     gl.useProgram(this.prog);
     gl.uniform2f(u.uRes, this.canvas.width, this.canvas.height);
     gl.uniform3fv(u.uCam, st.cam);
@@ -214,7 +216,18 @@ export class BlackHoleView {
     gl.uniform1i(u.uSteps, st.steps);
     gl.uniform1f(u.uExposure, st.exposure);
     gl.uniform1f(u.uDiskOuter, st.diskOuter);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // one rectangle, a list of rectangles, or the whole canvas
+    const rects = !scissor ? null : Array.isArray(scissor[0]) ? scissor : [scissor];
+    if (!rects) { gl.drawArrays(gl.TRIANGLES, 0, 3); return; }
+    const W = this.canvas.width, H = this.canvas.height;
+    gl.enable(gl.SCISSOR_TEST);
+    for (const r of rects) {
+      const x0 = Math.floor(Math.max(0, r[0]) * W), y0 = Math.floor(Math.max(0, r[1]) * H);
+      const x1 = Math.ceil(Math.min(1, r[2]) * W), y1 = Math.ceil(Math.min(1, r[3]) * H);
+      if (x1 <= x0 || y1 <= y0) continue;
+      gl.scissor(x0, y0, x1 - x0, y1 - y0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    gl.disable(gl.SCISSOR_TEST);
   }
 
   dispose() { this.gl.getExtension('WEBGL_lose_context')?.loseContext(); }

@@ -201,6 +201,7 @@ export function mountGame(root, { checkpoint } = {}) {
 
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
+  let skyRect = null;
   let last = performance.now(), raf = 0, alive = true, skyAvg = 16, skyFrames = 0, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
@@ -344,7 +345,21 @@ export function mountGame(root, { checkpoint } = {}) {
       let need = !!g.skyOverride;
       if (!need) {
         projM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); frustum.setFromProjectionMatrix(projM);
-        need = ship.windows.some((w) => frustum.intersectsBox(wBox.setFromObject(w)));
+        // trace only the screen rectangle that visible windows cover
+        const rects = [];
+        for (const w of ship.windows) {
+          wBox.setFromObject(w);
+          if (!frustum.intersectsBox(wBox)) continue;
+          need = true;
+          let x0 = 1, y0 = 1, x1 = 0, y1 = 0;
+          for (let k = 0; k < 8; k++) {
+            const c = tmpV.set(k & 1 ? wBox.max.x : wBox.min.x, k & 2 ? wBox.max.y : wBox.min.y, k & 4 ? wBox.max.z : wBox.min.z).project(camera);
+            if (c.z > 1 || c.z < -1) { x0 = 0; y0 = 0; x1 = 1; y1 = 1; break; } // a corner behind the camera: whole screen
+            x0 = Math.min(x0, (c.x + 1) / 2); x1 = Math.max(x1, (c.x + 1) / 2); y0 = Math.min(y0, (c.y + 1) / 2); y1 = Math.max(y1, (c.y + 1) / 2);
+          }
+          rects.push([x0 - 0.01, y0 - 0.01, x1 + 0.01, y1 + 0.01]);
+        }
+        skyRect = need ? rects : null;
       }
       if (need) {
         if (g.skyOverride) sky.set(g.skyOverride(g));
@@ -354,7 +369,7 @@ export function mountGame(root, { checkpoint } = {}) {
           const pos = shipPosition(g.shipR);
           sky.set({ cam: pos, basis: [r, u, f], V: hoverVelocity(pos), fov: THREE.MathUtils.degToRad(camera.fov), time: g.time, disk: true });
         }
-        sky.render();
+        sky.render(g.skyOverride ? null : skyRect);
         // adapt the sky's resolution to the whole frame's time (no GPU stalls to measure it)
         skyAvg = skyAvg * 0.85 + (realDt / TIME_SCALE) * 1000 * 0.15; skyFrames += realDt / TIME_SCALE;
         const [lo, hi] = settings.quality === 'low' ? [0.2, 0.3] : settings.quality === 'high' ? [0.5, 1] : [0.2, 0.85];

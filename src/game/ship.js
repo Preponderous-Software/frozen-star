@@ -173,7 +173,6 @@ export function buildShip() {
   box(0.5, 0.12, 0.7, M.sheet, 4.25, 0.66, 5.9, bunk);
   box(1.9, 0.08, 0.98, M.fabric, 2.6, 0.64, 5.9, bunk);
   box(3.1, 1.2, 0.08, M.wallDark, 3.1, 1.4, 6.42, bunk);
-  const readLamp = new THREE.PointLight(0xffc68a, 2.2, 3, 1.5); readLamp.position.set(4.3, 1.4, 6.0); group.add(readLamp);
   box(0.12, 0.05, 0.12, M.amber, 4.3, 1.45, 6.32);
   // desk
   box(0.7, 0.05, 1.4, M.wood, 4.6, 0.76, 3.3);
@@ -196,7 +195,6 @@ export function buildShip() {
     box(1.3, bodyH, 0.7, M.console, 0, bodyH / 2, 0, g);
     const top = box(1.3, 0.06, 0.55, M.trim, 0, bodyH + 0.05, 0.05, g); top.rotation.x = -0.35;
     box(1.32, 0.03, 0.03, M.amber, 0, bodyH + 0.01, 0.36, g);
-    const glow = new THREE.PointLight(0x7fb0ff, 0.9, 2.2, 2); glow.position.set(0, bodyH + 0.6, 0.45); g.add(glow);
     const c = document.createElement('canvas'); c.width = 640; c.height = 384;
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
     const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.69), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));

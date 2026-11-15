@@ -57,7 +57,8 @@ function createWindow() {
   win.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('app://')) { e.preventDefault(); if (/^https?:/.test(url)) shell.openExternal(url); } });
   const query = arg('lowgpu') ? '?lowgpu' : '';
   const open = arg('open=') ? arg('open=').split('=')[1] : 'title';
-  win.loadURL(`app://frozen-star/index.html${query}${SMOKE ? (query ? '&' : '?') + 'debug' : ''}#${open}`);
+  const cp = SMOKE && arg('cp=') ? `&cp=${arg('cp=').split('=')[1]}` : '';
+  win.loadURL(`app://frozen-star/index.html${query}${SMOKE ? (query ? '&' : '?') + 'debug' + cp : ''}#${open}`);
 }
 
 // Hidden self-test: load, wait for the page to say it is ready, record errors and a screenshot, quit.
