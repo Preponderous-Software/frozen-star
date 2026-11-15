@@ -1,0 +1,121 @@
+{
+  "session": "s01",
+  "goal": "Play from the very beginning as a brand-new player who has never seen the game: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Note every moment of confusion, and screenshot anything that looks broken on screen.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "2d0528f"
+  },
+  "seed": null,
+  "durationSec": 958,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Dream opens on a plain black screen for ~15-18 s before anything renders",
+      "detail": "After pressing Wake up, the DREAM screen showed only black plus the menu and 'Skip the dream' buttons; the probe's tick stayed at 0 for ~15 s wall time before the black hole appeared and the first line came at tick 144. A new player would think the game had hung. Expected a loading indication or an immediate first frame/subtitle. (Load may be worse in this software-rendered VM, but nothing on screen says it is loading.)",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir .; pt await TITLE 30; pt key Return; pt await DREAM 20; pt wait 4; pt shot x; pt state (tick 0)",
+      "screenshot": "shots/dream1.png",
+      "tick": 0
+    },
+    {
+      "severity": "minor",
+      "category": "balance",
+      "title": "Dream has a 22-game-second silent stretch on a nearly static image",
+      "detail": "Only three subtitle lines in the whole dream: tick 144 '(Falling. No wind, no sound.)', then nothing until tick 1502, then '(Nothing happened.)' at 1640. For most of that gap the black hole barely changes size. It felt long and I almost pressed Skip; the payoff (the plunge in the last few seconds) is good but arrives late.",
+      "repro": "As above; watch the DREAM without skipping, pt events shows dialogue ticks 144, 1502, 1640.",
+      "screenshot": "shots/dream7.png",
+      "tick": 757
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Photon ring drawn as a broken ring of separate dots (dream, title, portholes)",
+      "detail": "The thin ring just outside the shadow renders as a chain of separated dots/dashes rather than a continuous ring, in every dream frame, the title backdrop and through the porthole/bridge windows. At close range in the dream (dream12) the inner ring is clearly dotted with gaps. This looks like sampling holes beyond ordinary low-res blur.",
+      "repro": "Start a new game, watch the DREAM; pt shot at tick ~1500-1650.",
+      "screenshot": "shots/dream12.png",
+      "tick": 1652
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Corridor: no objective marker on screen and 'BRIDGE - FORWARD' is ambiguous",
+      "detail": "Walking out of the quarters door you face the opposite corridor wall. The bridge is ~74 deg to the right, and there is no on-screen marker or edge arrow for it (in the quarters an edge arrow pointed to the door). The doorway sign says 'BRIDGE - FORWARD', but which way is forward is not clear; I turned left first and found Engineering. Once facing down the corridor a 'BRIDGE ↑' sign and marker are clear. Expected an edge arrow toward the bridge whenever the marker is off-screen.",
+      "repro": "From waking: pt walkto door; pt hold w 6 (through the door into the corridor); pt shot x",
+      "screenshot": "shots/corridor_no_marker.png",
+      "tick": 3149
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Controls hint never says how to turn",
+      "detail": "The on-screen hint after waking reads 'WASD to walk, E to use things, Esc to pause' but never mentions arrow keys or mouse-look for turning. A keyboard player who doesn't click the game has no hint that Left/Right turn. Also the 'E Look out of the porthole' prompt box overlaps the bottom corners of the use-bracket.",
+      "repro": "Start a new game, skip or watch dream, pt await WORLD; pt shot x",
+      "screenshot": "shots/hud_overlap.png",
+      "tick": 2327
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Use-bracket drawn far from the centre crosshair at the probe console",
+      "detail": "After stepping back (Esc) from the probe console, facing it: the centre crosshair dot sits at screen centre but the orange use-bracket is drawn ~110 px right and ~130 px lower on the console's screen, with the 'E Use the probe console' prompt between them. It reads as two different aim points. In the quarters the bracket is centred on the dot.",
+      "repro": "Reach the bridge, walk to the probe console, pt key e, launch, pt key Escape, pt wait 10, pt shot x",
+      "screenshot": "shots/reticle_offset.png",
+      "tick": 5274
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Probe console shows 'every 10 M' before M has been explained",
+      "detail": "The pre-launch panel explains rₛ ('ten horizon radii') but shows the ping interval as 'every 10 M' without saying what M is; only the small caption 'about 6 s' helps. The glossary explaining M (0.59 s) appears only after launch, at the bottom of a panel that needs scrolling.",
+      "repro": "Reach the bridge, walk to the probe console, pt key e, pt wait 8, pt shot x",
+      "screenshot": "shots/probe_panel_units.png",
+      "tick": 4642
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Console panel scrollbar sits under the ☰ menu button",
+      "detail": "After launching K-1 the right-hand panel is taller than the screen and gets a scrollbar whose top runs underneath the round ☰ menu button at the top right.",
+      "repro": "Launch Beacon K-1 from the probe console; pt shot x",
+      "screenshot": "shots/panel_scrollbar_menu.png",
+      "tick": 4716
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at ~3-12 ticks/s in the VM; 'Watch the probe fall' would take many real minutes",
+      "detail": "fps reported 10 throughout; game time advanced ~12 ticks/s in the dream and walking, and dropped to ~3 ticks/s with the probe console panel open (130 ticks per 40 s). The probe fall (about a game minute) would have taken well over 5 real minutes. Probably host load (software renderer, parallel sessions), noted for context.",
+      "repro": "pt status / pt state tick deltas while the probe console panel is open after launch.",
+      "screenshot": "shots/fall3.png",
+      "tick": 5070
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 62.1,
+      "Drop the beacon probe (probe console, left)": 77.7
+    },
+    "dreamLengthGameSeconds": 27.9,
+    "dreamSubtitleLines": 3,
+    "wrongTurnsFindingBridge": 1
+  },
+  "fun": 3,
+  "verdict": "The opening sells the premise: a gorgeous ray-traced title and dream, a cosy, well-dressed ship, and a clear 'Go to the bridge' -> 'Drop the beacon probe' chain with a probe panel that explains redshift and clock rates in plain words. The weak spots are the first minute (black screen, then a long quiet dream) and wayfinding in the corridor where the objective marker disappears. Fix the off-screen marker and the misplaced use-bracket and the first ten minutes are smooth.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That a black hole's dark disk is its shadow (about 2.5 times wider than the horizon), that the bright ring is background starlight bent all the way around, and that distance is measured in horizon radii (rₛ) and time in M. With the probe it starts teaching that a falling clock's light reaches you stretched (redshift), so you see its clock run slower than its own and the pings arrive further apart. I only saw the very start of that (stretch x1.04) before stopping."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Stepping out of my quarters into the corridor. I was facing a blank wall, the door marker I had been following was gone, and the sign 'BRIDGE - FORWARD' didn't tell me which way forward was, so I turned left and found Engineering first. A close second was the first ~15 seconds after Wake up: a black screen with no loading hint, then a long quiet stretch of the dream."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "1) Dream (no facing, cutscene): the screen was solid black for ~15 s before the black hole rendered. 2) Dream, title and windows: the thin photon ring around the shadow is drawn as a chain of separate dots with gaps, not a continuous ring. 3) Bridge, standing at the probe console facing it (yaw about 5) after stepping back with Esc: the orange use-bracket was drawn well right of and below the centre crosshair dot, like a second crosshair. 4) Quarters, facing the porthole right after waking: the 'E Look out of the porthole' prompt overlapped the bottom of the bracket. 5) Probe console panel after launch: its scrollbar ran under the ☰ menu button. Otherwise rendering was blurry (expected) but correct."
+    }
+  ]
+}

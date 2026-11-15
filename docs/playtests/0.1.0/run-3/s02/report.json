@@ -1,0 +1,126 @@
+{
+  "session": "s02",
+  "goal": "A player who has just finished the first chapter. Do the rescue, then wander: open every console and wall screen on the bridge, read each panel fully, and judge whether the words, numbers and diagrams make sense to someone with no physics background. Note jargon, unexplained numbers, text that is too long to read before it changes, and anything that looks broken.",
+  "build": {"version": "0.1.0", "commit": "6a54bd2"},
+  "seed": null,
+  "durationSec": 810,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "ux",
+      "title": "Spacetime map after a successful rescue shows the capsule's gold line ending on the singularity",
+      "detail": "After the rescue succeeded (WREN: 'Beam delivered, in time'; Ines: 'I'm climbing. I'm coming home!'), the in-world wall screen titled 'SPACETIME MAP - capsule' draws a gold line diving through the horizon and ending at r = 0 (singularity). To a non-physicist this reads as 'Ines died'. The side panel is titled 'Ines's fall', its caption says 'The gold line is the probe', and its own plot shows no gold line at all (its time window 't 139-189 M' has scrolled past the fall), while the wall screen shows a different window ('t 113-203 M'). Title, caption, wall screen and panel plot disagree about what is drawn. Expected: the map shows Ines's actual path (falling, then climbing back out), labelled consistently, with the panel and the wall screen showing the same thing.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir . --checkpoint probe-done; walk to comms, press e, click 'Fire recall beam' about 44 s after the power loss; after 'Beam delivered', walk to the map console (left-rear of the bridge), press e.",
+      "screenshot": "shots/map_capsule_hits_singularity.png",
+      "tick": 7126
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Spacetime map panel caption refers to a gold line and light cones the plot does not show",
+      "detail": "The panel caption says 'The gold line is the probe' and 'At the horizon the outward edge lies flat', but the plot has no gold line, and no light-cone wedges are drawn on the horizon row. Axis labels 't-hat' and 'r = 0' are not explained. A reader with no physics background cannot match the words to the picture.",
+      "repro": "Same as above; read the map panel and scroll it.",
+      "screenshot": "shots/map_no_gold_line.png",
+      "tick": 6880
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Helm console: the whole 3D view goes solid black while the helm panel is open",
+      "detail": "At the helm (centre desk, facing forward toward the main windows) the left half of the screen is pure black for as long as the panel is open; re-shot after 3 s, still black. At comms, probe, map and feed the left half shows the console screen and the room. The helm panel itself is one line ('Holding station at 10 rs. Descent is locked until the survey plan calls for it.') with no hint of what the survey plan is or where to find it.",
+      "repro": "After the rescue, walk to the helm (low centre desk), press e, take a screenshot.",
+      "screenshot": "shots/helm_black_view.png",
+      "tick": 5608
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Comms rescue panel opens with three unexplained units (M, 1+Z, rs)",
+      "detail": "The first screenful of the comms panel during the rescue shows '28.8 M / 17.1 s for this hole', 'REDSHIFT 1+Z 1.082', 'BRIGHTNESS 73%', 'APPEARS AT 9.51 rs'. The one-line explanation of rs and M sits below the fold, under the diagram, and redshift is never explained. In the 50 seconds of the rescue, the only number that helps the decision is how close she is, and I had to work that out from 'APPEARS AT ... rs'. The status line also stayed 'Falling. It looks almost normal from here.' the whole time, even with brightness down to 30%.",
+      "repro": "pt start ... --checkpoint probe-done; wait for 'capsule has lost main power'; walk to comms, press e.",
+      "screenshot": "shots/comms_jargon.png",
+      "tick": 2086
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms diagram does not label the capsule; the Fire button scrolls away while reading her messages",
+      "detail": "In 'CAPSULE - WHAT YOU SEE' the horizon and the station are labelled, but the capsule is an unlabelled glowing dot that changes colour (green, then yellow, then orange) with no legend. Ines's messages ('INES, AS RECEIVED') are below the fold; scrolling down to read them scrolls the 'Fire recall beam' button off the top of the panel during a time-critical decision.",
+      "repro": "During the rescue, at comms, move the pointer over the panel and scroll down 5.",
+      "screenshot": "shots/capsule_dot_unlabelled.png",
+      "tick": 3460
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Probe console: wall screen says 'ORPHEUS locked' while the panel shows a 'Launch Orpheus' button that silently does nothing",
+      "detail": "The in-world probe screen reads 'K-1 spent / ORPHEUS locked', but the panel shows a dimmed 'Launch Orpheus' button with no text saying it is locked or why. Clicking it does nothing, with no feedback. 'Erebus' is used by name with no reminder that it is the black hole, and 'K-1 spent' is not explained.",
+      "repro": "After the rescue, walk to the probe console (left of the helm), press e, click 'Launch Orpheus'.",
+      "screenshot": "shots/probe_locked_vs_launch.png",
+      "tick": 6083
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Archive 'Two Clocks' uses e^9, powers of ten, GM/c^3 and '6.5e+3 million suns'",
+      "detail": "The archive sim explains M well, then adds 'GM/c3'. The playback slider is labelled '8 M/s'. The black-hole list uses calculator notation ('6.5e+3 million suns', '4.0e+4 million suns'). The final verdict reads 'Gone. The light is stretched more than e^9 times', with REDSHIFT '4x10^3' and BRIGHTNESS '10^-23'. The quiz feedback 'Your prediction missed: it arrived at 108.8 M.' says I was wrong but not why. The result is several boxes below the fold.",
+      "repro": "Walk to the archive (lab terminal), press e, click '1. Two Clocks', pick 'about 300 M', click 'Drop the probe', wait about 30 s, scroll down.",
+      "screenshot": "shots/two_clocks_result_jargon.png",
+      "tick": 13157
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Hard to get from the lab back to the bridge: the waypoint and door point into a blank wall",
+      "detail": "After using the archive, the 'Helm 9 m' waypoint and the nearest 'bridge' door both point into a blank wall corner of the lab. Walking toward them slides along the wall. I had reached the lab by sidling through a doorway from the corridor and could not find that doorway again by sight in about 2 minutes. There is no signage in the lab.",
+      "repro": "From the archive, press Esc, turn toward the 'Helm' waypoint and hold w.",
+      "screenshot": "shots/lab_return_confusing.png",
+      "tick": 14372
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Faint ghost text shows behind the in-world spacetime map screen; 'Progress saved' toast covers panel text",
+      "detail": "At the map console, large faint text (something like 'III The des...') shows through behind the SPACETIME MAP wall screen, as if a chapter-title card or a second screen is z-fighting with it. The 'Progress saved' toast at bottom right covers the panel caption.",
+      "repro": "Walk to the map console, press e, look at the left half of the screen.",
+      "screenshot": "shots/map_ghost_text.png",
+      "tick": 6898
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Bridge header strip 'SHIP / RELAY / x1.054 / 10.00 rs' is never explained",
+      "detail": "The strip above the forward windows shows 'SHIP 06:40:04 RELAY 06:40:04 x1.054 10.00 rs'. Nothing says what 'x1.054' is (the relay clock rate relative to the ship). The next objective, 'Take the Tern down until the relay clock runs twice as fast', depends on reading exactly this number.",
+      "repro": "pt start ... --checkpoint probe-done; look forward from the start position.",
+      "screenshot": "shots/start.png",
+      "tick": 253
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Camera feed console is a dead end ('No signal.')",
+      "detail": "The feed panel is just 'Camera feed / No signal.' with nothing to say what will feed it or when. The hamburger menu button also overlaps the 'Esc or Q to step back' hint on the short panels (feed, helm, probe).",
+      "repro": "Walk to the feed wall screen (right of the bridge entrance), press e.",
+      "screenshot": "shots/feed_no_signal.png",
+      "tick": 9322
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {"Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 68.4},
+    "secondsFromPowerLossToObjective": 52.65,
+    "firedSecondsBeforeLastMoment": 4,
+    "consolesOpened": 6,
+    "consolesWithUnexplainedJargon": 4,
+    "averageGameTps": 17
+  },
+  "fun": 4,
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That what you see of something falling into a black hole is old, slowed-down light. On my screen Ines looked almost normal, but the real moment to act had already nearly passed (WREN: 'You fired 4 seconds before the last possible moment', and she still looked fine on my screen). Clocks near the hole run slow compared with clocks far away, signals take longer and longer to climb out, and the light gets redder and dimmer until it effectively stops arriving. So you have to act on reasoning, not on what the picture shows."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "Opening the spacetime map right after rescuing Ines. The wall screen titled 'capsule' showed a gold line falling through the horizon into the singularity, the panel title said 'Ines's fall', the caption said the gold line was 'the probe', and the panel's own plot had no gold line at all. I had just been told she was saved, and the diagram seemed to say she died. Also, during the rescue, the readouts (M, 1+Z, rs) were three unexplained units on a 50-second clock."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "1) At the helm (centre desk, facing forward toward the main windows), the whole 3D half of the screen was solid black for as long as the helm panel was open. 2) At the map console (left-rear of the bridge, facing the wall screen), faint large ghost text showed through behind the SPACETIME MAP screen, and the 'Progress saved' toast covered panel text. 3) On the probe console (left of the helm, facing forward), the wall screen said 'ORPHEUS locked' while the panel offered a 'Launch Orpheus' button that did nothing. 4) In the lab, facing the waypoint to the helm, the waypoint and door marker pointed into a blank wall. The ray-traced black hole through the windows looked right apart from the expected blur."}
+  ],
+  "verdict": "The rescue is excellent: 'wait as long as you dare' plus WREN's debrief that you fired 4 seconds before the deadline while she still looked fine teaches the core idea in one gut-punch. The bridge consoles around it undercut it: three unexplained units in the rescue readout, a spacetime map that seems to show Ines dying right after you saved her, and archive text that leans on e^9, 10^-23 and GM/c^3. Rewording the numbers in plain language and fixing the map's labels would make the post-rescue wander teach rather than confuse."
+}

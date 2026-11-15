@@ -1,0 +1,110 @@
+{
+  "session": "s03",
+  "goal": "Explore the whole ship as a curious visitor: every room (bridge, corridor, quarters, lab), every sign, poster, prop and optional thing you can use (whiteboard, mug, log, photo, datapad, porthole). Judge whether the ship feels like a real lived-in place, whether signs help you find your way, and screenshot anything broken: floating or clipping objects, things blocking doors or windows, unreadable text, places you get stuck.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "2d0528f"
+  },
+  "seed": null,
+  "durationSec": 1037,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Lab whiteboard can only be read through the bridge wall, never from the lab where it hangs",
+      "detail": "On the bridge, in the rear-left corner beside the LIFE SUPPORT BUS A panel, 'E Read the whiteboard' and the focus brackets appear on a blank grey wall with no whiteboard drawn, and E reads Einstein's field equation plus the 0.949 clock-rate line. The actual whiteboard hangs in the lab on the other side of that wall. In the lab, the bench in front of it (probe casing, box) stops you 2.9 m from the board and no prompt ever appears. Expected: the prompt only in the lab, with the board reachable from there.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir . --checkpoint bridge; pt face 180 (roughly); pt walkto item -> prompt on bare bridge wall, pt key e reads the board. Then go through the corridor into the lab door, walk to the whiteboard: blocked by the bench at 2.9 m, no prompt.",
+      "screenshot": "shots/whiteboard_through_wall.png",
+      "tick": 997
+    },
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Quarters desk: datapad and photo never give a use prompt; the porthole prompt wins",
+      "detail": "With the crosshair dead centre on the blue datapad sheet (1.6 m) or on the framed photo (1.3 m), the prompt stays 'E Look out of the porthole' (focus bracket drawn on the porthole above) or there is no prompt at all. I tried stepping closer and nudging the view in every direction. The mug on the nightstand right beside them works ('Pick up your mug'). So two of the six optional props in the quarters could not be used.",
+      "repro": "checkpoint bridge; walk corridor -> quarters; pt walkto item (mug); click game; aim at the photo on the desk, then at the blue sheet; observe prompt.",
+      "screenshot": "shots/datapad_hijacked_by_porthole.png",
+      "tick": 6944
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Photo on the quarters desk: crosshair on it at 1.3 m, no prompt",
+      "detail": "Separate shot of the photo case: crosshair centred on the photo, state says photo 1.3m +1, nothing happens on E.",
+      "repro": "As above, aim at the framed photo on the right end of the desk.",
+      "screenshot": "shots/photo_no_prompt.png",
+      "tick": 6064
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Wayfinding: bridge sign promises LAB but the lab door's sign says ARCHIVE",
+      "detail": "The sign over the bridge exit reads 'CORRIDOR: LAB \u00b7 QUARTERS \u00b7 AFT', but the side door in the corridor (the lab) is labelled 'ARCHIVE'. I was not sure I had found the lab until I was inside. Otherwise the signage was good: the bridge exit sign, floor arrows pointing back to BRIDGE, and 'ENGINEERING: SEALED \u00b7 CREW ONLY' on the aft door all helped.",
+      "repro": "checkpoint bridge; exit the bridge into the corridor; look at the first door on the left.",
+      "screenshot": "shots/lab_door_sign_archive.png",
+      "tick": 2110
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Probe waypoint marker sits on top of the lab whiteboard's equations",
+      "detail": "The orange 'Probe 11 m' marker is drawn over the middle of the whiteboard, and the small handwriting is too blurry to read on screen anyway, so the board's content only reaches you through subtitles.",
+      "repro": "Enter the lab and face the whiteboard.",
+      "screenshot": "shots/whiteboard_unreachable_lab.png",
+      "tick": 2603
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "WREN's probe-console hint plays while you are in the lab",
+      "detail": "On entering the lab, WREN says 'The probe console is the one on the left, by the window. Walk up to it and use it.' I was in the lab, where the console in reach is the archive, so 'on the left, by the window' points at the wrong thing.",
+      "repro": "checkpoint bridge; walk straight to the lab without using the probe console; wait.",
+      "screenshot": "shots/s17.png",
+      "tick": 2405
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Mouse look felt unreliable after clicking to capture",
+      "detail": "After clicking the game, horizontal 'pt look' moves barely changed my heading. Looking down at the desk produced strong slanted perspective that read as a tilted horizon (it may only be perspective; vertical props stayed vertical). Aiming at small desk props was fiddly.",
+      "repro": "In quarters: pt click 640 400; pt look 0 250; pt look -200 -30; pt look -100 0.",
+      "screenshot": "shots/tilted_view_after_mouselook.png",
+      "tick": 6452
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran around 8 ticks a second on this machine, so walking and turning were very slow",
+      "detail": "7136 ticks over about 940 s of wall time. A 4 s run covered about 1.5 m. This is probably machine contention, but it made a full tour impossible in 25 minutes.",
+      "repro": "pt state tick vs wall time over the session.",
+      "screenshot": "shots/s25.png",
+      "tick": 3778
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 0,
+    "deaths": 0,
+    "secondsToObjective": {},
+    "roomsVisited": 4,
+    "propsUsedOk": 4,
+    "propsTried": 6,
+    "propsNotReached": 1
+  },
+  "fun": 3,
+  "verdict": "The Tern feels genuinely lived-in: a cosy quarters with books, a desk lamp, a cold mug with a clock-dilation joke, an Earth poster and a hanging flight suit, plus a lab with a probe casing and a server rack, and WREN's ambient lines tie each prop to the physics nicely. But the optional props are where it breaks: the lab whiteboard can only be read through the bridge wall, and the quarters datapad and photo never give a prompt because the porthole seems to grab it. The lab door is signed ARCHIVE while the bridge sign says LAB.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "Gravitational time dilation near a black hole: the ship hovers at ten horizon radii, so its clocks run at about 0.949 of the distant relay's (the mug is 'six hours old' by my watch but six hours twenty by the relay's). It also teaches what the black hole looks like: the black disk is its shadow, about 2.5 times wider than the horizon, and the bright ring is starlight bent around it. The whiteboard adds Einstein's field equation and the Schwarzschild radius."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Reading the whiteboard on the bridge: the prompt appeared on a bare wall with no whiteboard in sight. Later I found the board in the lab on the other side of that wall, and from the lab I could not get close enough to use it. Close behind: the quarters desk, where pointing straight at the datapad or photo still showed 'Look out of the porthole'."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "(1) Bridge, rear-left corner by the LIFE SUPPORT BUS A panel, facing aft-left: a whiteboard prompt and focus brackets on an empty wall. (2) Lab, facing the whiteboard over the bench: the orange Probe waypoint covers the equations, and the handwriting is too blurry to read. (3) Quarters, facing the desk under the porthole: the focus bracket stays on the porthole while the crosshair is on the datapad; no prompt on the photo. (4) Quarters, looking down at the desk after mouse look: the view looked strongly slanted, possibly just perspective. I saw no floating or clipping props and no blocked doors. The black-hole view through the windows looked right apart from expected blur."
+    }
+  ]
+}

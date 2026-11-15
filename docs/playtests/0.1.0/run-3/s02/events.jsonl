@@ -1,0 +1,48 @@
+{"type": "screen", "tick": 6, "wallTimeMs": 1794756141725, "from": null, "to": "WORLD"}
+{"type": "world", "tick": 6, "wallTimeMs": 1794756141725, "how": "created", "seed": 0}
+{"type": "dialogue", "tick": 379, "wallTimeMs": 1794756154915, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "dialogue", "tick": 943, "wallTimeMs": 1794756173160, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 943, "wallTimeMs": 1794756173167, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 943, "wallTimeMs": 1794756173224, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 1018, "wallTimeMs": 1794756176555, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 1270, "wallTimeMs": 1794756188464, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 1666, "wallTimeMs": 1794756216163, "who": "WREN", "text": "The recall beam is on the comms console, to the right of the helm."}
+{"type": "dialogue", "tick": 1672, "wallTimeMs": 1794756216593, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}
+{"type": "screen", "tick": 1876, "wallTimeMs": 1794756230615, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 2170, "wallTimeMs": 1794756253481, "who": "INES", "text": "Halfway to the edge of the shadow, I think. The data's beautiful."}
+{"type": "dialogue", "tick": 2692, "wallTimeMs": 1794756295012, "who": "INES", "text": "Doc, the stars behind me are going blue. Is that right?"}
+{"type": "dialogue", "tick": 3196, "wallTimeMs": 1794756333278, "who": "INES", "text": "Still okay. Still waiting. Don't fire yet."}
+{"type": "dialogue", "tick": 3640, "wallTimeMs": 1794756363881, "who": "INES", "text": "Everything overhead is so bright I can barely read the instruments."}
+{"type": "dialogue", "tick": 4072, "wallTimeMs": 1794756392653, "who": "INES", "text": "The black fills most of the window now."}
+{"type": "dialogue", "tick": 4096, "wallTimeMs": 1794756394291, "who": "WREN", "text": "Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them."}
+{"type": "objective_completed", "tick": 4102, "wallTimeMs": 1794756394724, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 4444, "wallTimeMs": 1794756417789, "who": "INES", "text": "Okay. Maybe now, doc?"}
+{"type": "dialogue", "tick": 4660, "wallTimeMs": 1794756431960, "who": "INES", "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!"}
+{"type": "dialogue", "tick": 4948, "wallTimeMs": 1794756454549, "who": "WREN", "text": "You fired 4 seconds before the last possible moment. At that moment your screen showed her 6.7 r\u209b out, looking almost normal."}
+{"type": "screen", "tick": 5164, "wallTimeMs": 1794756472569, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 5182, "wallTimeMs": 1794756473724, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 5458, "wallTimeMs": 1794756493951, "from": "WORLD", "to": "CONSOLE"}
+{"type": "card", "tick": 5482, "wallTimeMs": 1794756495083, "title": "Twenty minutes later", "subtitle": null}
+{"type": "dialogue", "tick": 5554, "wallTimeMs": 1794756498985, "who": "INES", "text": "Docked. Hands still shaking."}
+{"type": "screen", "tick": 5614, "wallTimeMs": 1794756511269, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 5644, "wallTimeMs": 1794756514224, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 5747, "wallTimeMs": 1794756521628, "who": "INES", "text": "You know what scares me? On your screen I looked fine the whole time. If you'd waited until I looked like I was in trouble..."}
+{"type": "screen", "tick": 5915, "wallTimeMs": 1794756532224, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 6191, "wallTimeMs": 1794756552724, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 6215, "wallTimeMs": 1794756554224, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 6257, "wallTimeMs": 1794756556424, "who": "WREN", "text": "It would have been far too late. By the deadline, her picture was still only a third of the way down."}
+{"type": "screen", "tick": 6605, "wallTimeMs": 1794756573224, "from": "WORLD", "to": "CONSOLE"}
+{"type": "checkpoint", "tick": 6689, "wallTimeMs": 1794756576789, "checkpoint": "rescue-done"}
+{"type": "card", "tick": 6689, "wallTimeMs": 1794756576789, "title": "III \u00b7 The descent", "subtitle": "Closer to the edge."}
+{"type": "dialogue", "tick": 6689, "wallTimeMs": 1794756577543, "who": "INES", "text": "I want to see that again. Without dying this time."}
+{"type": "dialogue", "tick": 6952, "wallTimeMs": 1794756592536, "who": "WREN", "text": "The station-keeping field can take us lower. Below 1.33 r\u209b, every second aboard is two seconds on the relay far away."}
+{"type": "screen", "tick": 7174, "wallTimeMs": 1794756609727, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 7204, "wallTimeMs": 1794756611725, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "objective_started", "tick": 7439, "wallTimeMs": 1794756627958, "number": 2, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "screen", "tick": 8988, "wallTimeMs": 1794756700724, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 9338, "wallTimeMs": 1794756712257, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 9368, "wallTimeMs": 1794756713724, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 9842, "wallTimeMs": 1794756736234, "who": "WREN", "text": "The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times."}
+{"type": "screen", "tick": 10920, "wallTimeMs": 1794756767224, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 13217, "wallTimeMs": 1794756861741, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 13247, "wallTimeMs": 1794756863260, "from": "CUTSCENE", "to": "WORLD"}
