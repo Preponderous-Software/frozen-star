@@ -1,6 +1,6 @@
 // A ray-traced viewport with drag-to-look and automatic quality scaling.
 import { h } from './dom.js';
-import { BlackHoleView, attachLook } from '../render/raytracer.js';
+import { BlackHoleView, AdaptiveScale, attachLook } from '../render/raytracer.js';
 
 /** How long to wait for the browser to hand a lost GPU context back before offering a reload. */
 export const RESTORE_WAIT_MS = 4000;
@@ -32,18 +32,14 @@ export function viewport({ label = 'Ray-traced view of the black hole', classNam
       : h('div.no-gl', h('b', 'The 3D view needs WebGL 2.'), h('p', String(e.message || e))));
   }
   const look = attachLook(canvas);
-  // Adaptive resolution: aim for ~30 fps, never below a quarter-res render.
-  let avg = 16, frames = 0;
+  // Adaptive resolution: aim for 30 fps or better, never below a fifth-res render (see AdaptiveScale).
+  const ctl = view ? new AdaptiveScale({ lo: 0.2, hi: 1, scale: view.state.scale, budgetMs: 14 }) : null;
   function render(dt) {
     if (!view || view.lost) { render.prev = 0; return; }
     view.render();
     const now = performance.now(), ms = now - (render.prev || now); render.prev = now;
-    avg = avg * 0.85 + ms * 0.15; frames++;
-    if (frames > 10 && frames % 15 === 0) {
-      const s = view.state.scale;
-      if (avg > 36 && s > 0.2) view.set({ scale: Math.max(0.2, s * 0.8) });
-      else if (avg < 22 && s < 1) view.set({ scale: Math.min(1, s * 1.07) });
-    }
+    const fresh = view.gpuMs != null && now - view.gpuAt < 1000;
+    if (ms > 0) view.set({ scale: ctl.update(ms, fresh ? view.gpuMs : null) });
   }
   return { el, canvas, view, look: look.st, render, error, dispose() { clearTimeout(giveUp); look.dispose(); view?.dispose(); } };
 }

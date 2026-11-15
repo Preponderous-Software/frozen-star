@@ -18,7 +18,7 @@ uniform mat3 uBasis;    // columns: right, up, forward
 uniform vec3 uV;        // camera velocity relative to the rain frame
 uniform float uFov;     // vertical field of view (radians)
 uniform float uTime;
-uniform int uDisk, uGrid, uShift, uSteps;
+uniform int uDisk, uGrid, uShift, uSteps, uRing;
 uniform float uExposure, uDiskOuter;
 out vec4 outColor;
 
@@ -104,8 +104,9 @@ vec4 diskSample(vec3 xh, vec3 p, float E, float gCam) {
   return vec4(c, clamp(edge * (0.55 + 0.45 * streak), 0.0, 1.0));
 }
 
-void main() {
-  vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
+// Photon direction in the rain frame (n), and the camera energy per unit rain energy, for a pixel position.
+vec3 rayDir(vec2 frag, out float gCam) {
+  vec2 uv = (frag - 0.5 * uRes) / uRes.y;
   vec3 look = normalize(uBasis * vec3(uv * 2.0 * tan(uFov * 0.5), 1.0));
   // Photon travels opposite to where we look; boost it from the camera frame into the rain frame.
   vec3 nc = -look; vec3 n = nc; float Erain = 1.0;
@@ -116,11 +117,28 @@ void main() {
     Erain = ga * (1.0 + dot(uV, nc));
     n = pp / Erain;
   }
-  float gCam = 1.0 / Erain;
+  gCam = 1.0 / Erain;
+  return n;
+}
+
+// Impact parameter b = L/E of the ray through a pixel: both are conserved along it, so this is known
+// before tracing. b = 3√3 is the photon sphere; every thin, higher-order image of the disk lies just
+// outside it. Returns -1 where b says nothing about the photon sphere: when E <= 0 (possible only inside
+// the horizon), and for a ray traced outward from a camera outside r = 3.5, which never comes near it.
+float impact(vec2 frag) {
+  float gc; vec3 n = rayDir(frag, gc);
+  float r0 = length(uCam);
+  if (r0 > 3.5 && dot(n, uCam) < 0.0) return -1.0;
+  float E = 1.0 - sqrt(2.0 / r0) * dot(n, uCam / r0);
+  return E > 1e-4 ? length(cross(uCam, n)) / E : -1.0;
+}
+
+// Trace the ray through one point of the screen; returns the light it brings (before tone mapping).
+vec3 traceRay(vec2 frag) {
+  float gCam; vec3 n = rayDir(frag, gCam);
   vec3 x = uCam; vec3 p = n;
   float r0 = length(x);
   float E = 1.0 - sqrt(2.0 / r0) * dot(n, x / r0);
-
   vec3 acc = vec3(0.0); float accA = 0.0; bool done = false;
   // k1 of each step is the derivative at the end of the previous one (computed there anyway for the
   // escape test), so each RK4 step costs four derivative evaluations instead of five.
@@ -159,6 +177,43 @@ void main() {
   // Out of steps (a ray looping close to the photon sphere): outside it, show the sky in the
   // direction the ray was heading instead of a hard black cut.
   if (!done && length(x) > 3.2) acc += (1.0 - accA) * sky(normalize(-k1x), gCam / E);
+  return acc;
+}
+
+// The photon ring. Rays with b just above 3√3 wind around the hole before leaving, and carry the
+// higher-order (n ≥ 1) images of the disk: lines far thinner than a pixel at the sky's render scale.
+// One ray per pixel catches such a line only where it happens to cross the pixel centre, which draws
+// it as a dotted line. So pixels whose footprint overlaps that band of b get several rays spread across
+// the pixel along the direction b changes (the ring's radial direction; along the ring the image
+// varies slowly), and their light is averaged before tone mapping: the pixel shows the mean light over
+// its width, as a camera pixel of that size would record. Nothing is added or widened. Rays are
+// spaced at most RING_DB apart in b, closer than the n = 1 image is wide (about 0.045 M), so that
+// image is never missed. The band [b_c − 0.01, b_c + 0.13] holds the thin images seen from the ship;
+// further out (where the n = 1 image meets the disk plane) it is over a pixel wide and needs no help.
+const float BC = 5.196152;
+const float RING_DB = 0.04;
+const int RING_MAX = 5;
+
+void main() {
+  vec2 frag = gl_FragCoord.xy;
+  int ns = 1; vec2 dir = vec2(1.0, 0.0);
+  if (uRing == 1) {
+    float b0 = impact(frag);
+    if (b0 > BC - 1.0 && b0 < BC + 1.0) {
+      vec2 gb = vec2(impact(frag + vec2(1.0, 0.0)), impact(frag + vec2(0.0, 1.0))) - b0;
+      float db = length(gb);
+      if (db > RING_DB && db < 2.0 && b0 - 0.5 * db < BC + 0.13 && b0 + 0.5 * db > BC - 0.01) {
+        ns = min(int(ceil(db / RING_DB)), RING_MAX);
+        dir = gb / db;
+      }
+    }
+  }
+  vec3 acc = vec3(0.0);
+  for (int k = 0; k < RING_MAX; k++) {
+    if (k >= ns) break;
+    acc += traceRay(frag + dir * ((float(k) + 0.5) / float(ns) - 0.5));
+  }
+  acc /= float(ns);
   vec3 col = 1.0 - exp(-acc * uExposure);
   float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = max(mix(vec3(lum), col, 1.45), 0.0); // film-like saturation so shifts read clearly
@@ -220,7 +275,7 @@ export class BlackHoleView {
     markGlWorked();
     this.state = {
       cam: [0, 0, -30], basis: lookBasis([0, 0, -30], [0, 0, 0]), V: [0, 0, 0], fov: 1.0, time: 0,
-      disk: true, grid: false, shift: true, steps: 600, exposure: 1.5, diskOuter: 22,
+      disk: true, grid: false, shift: true, steps: 600, exposure: 1.5, diskOuter: 22, ring: true,
       scale: opts.scale ?? Math.min(1, 1.25 / (window.devicePixelRatio || 1)),
     };
     // ?lowgpu: a small, cheap render for weak machines (and the headless screenshot tour).
@@ -242,8 +297,13 @@ export class BlackHoleView {
     const loc = gl.getAttribLocation(prog, 'aPos');
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    // GPU time of each draw, where the browser offers it (most desktop Chrome/Electron builds): lets the
+    // resolution adapt to what the ray trace itself costs, not to the frame time, which vsync rounds
+    // to 16.7 / 33.3 / 50 ms and which includes everything else on the page.
+    this.timer = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+    this.query = null; this.gpuMs = null; this.gpuAt = 0;
     this.u = {};
-    for (const n of ['uRes', 'uCam', 'uBasis', 'uV', 'uFov', 'uTime', 'uDisk', 'uGrid', 'uShift', 'uSteps', 'uExposure', 'uDiskOuter']) this.u[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uRes', 'uCam', 'uBasis', 'uV', 'uFov', 'uTime', 'uDisk', 'uGrid', 'uShift', 'uSteps', 'uExposure', 'uDiskOuter', 'uRing']) this.u[n] = gl.getUniformLocation(prog, n);
   }
 
   set(patch) {
@@ -278,26 +338,106 @@ export class BlackHoleView {
     gl.uniform1i(u.uSteps, st.steps);
     gl.uniform1f(u.uExposure, st.exposure);
     gl.uniform1f(u.uDiskOuter, st.diskOuter);
+    gl.uniform1i(u.uRing, st.ring ? 1 : 0);
     // one rectangle, a list of rectangles, or the whole canvas
     const rects = !scissor ? null : Array.isArray(scissor[0]) ? scissor : [scissor];
-    if (!rects) { gl.drawArrays(gl.TRIANGLES, 0, 3); return; }
-    const W = this.canvas.width, H = this.canvas.height;
-    gl.enable(gl.SCISSOR_TEST);
-    for (const r of rects) {
-      const x0 = Math.floor(Math.max(0, r[0]) * W), y0 = Math.floor(Math.max(0, r[1]) * H);
-      const x1 = Math.ceil(Math.min(1, r[2]) * W), y1 = Math.ceil(Math.min(1, r[3]) * H);
-      if (x1 <= x0 || y1 <= y0) continue;
-      gl.scissor(x0, y0, x1 - x0, y1 - y0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    const timing = this._timeBegin();
+    if (!rects) gl.drawArrays(gl.TRIANGLES, 0, 3);
+    else {
+      const W = this.canvas.width, H = this.canvas.height;
+      gl.enable(gl.SCISSOR_TEST);
+      for (const r of rects) {
+        const x0 = Math.floor(Math.max(0, r[0]) * W), y0 = Math.floor(Math.max(0, r[1]) * H);
+        const x1 = Math.ceil(Math.min(1, r[2]) * W), y1 = Math.ceil(Math.min(1, r[3]) * H);
+        if (x1 <= x0 || y1 <= y0) continue;
+        gl.scissor(x0, y0, x1 - x0, y1 - y0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
+      gl.disable(gl.SCISSOR_TEST);
     }
-    gl.disable(gl.SCISSOR_TEST);
+    if (timing) gl.endQuery(this.timer.TIME_ELAPSED_EXT);
+  }
+
+  /** Read the last timer query if it is ready, and start a new one if none is in flight. */
+  _timeBegin() {
+    const { gl, timer } = this;
+    if (!timer) return false;
+    if (this.query) {
+      if (!gl.getQueryParameter(this.query, gl.QUERY_RESULT_AVAILABLE)) return false;
+      const ns = gl.getQueryParameter(this.query, gl.QUERY_RESULT);
+      if (!gl.getParameter(timer.GPU_DISJOINT_EXT)) {
+        const ms = ns / 1e6;
+        this.gpuMs = this.gpuMs == null ? ms : this.gpuMs * 0.8 + ms * 0.2;
+        this.gpuAt = performance.now();
+      }
+    } else this.query = gl.createQuery();
+    gl.beginQuery(timer.TIME_ELAPSED_EXT, this.query);
+    return true;
   }
 
   dispose() {
     if (this.disposed) return;
+    if (this.query && !this.gl.isContextLost()) this.gl.deleteQuery(this.query);
     this.disposed = true;
     this.canvas.removeEventListener('webglcontextlost', this._onLost);
     this.canvas.removeEventListener('webglcontextrestored', this._onRestored);
     if (!this.gl.isContextLost()) this.gl.getExtension('WEBGL_lose_context')?.loseContext();
+  }
+}
+
+/**
+ * Adaptive render scale for a BlackHoleView: aims at 30 fps or better without guessing from noise.
+ *
+ * With a GPU timer (view.gpuMs) the scale is steered so the ray trace takes `budgetMs` of GPU time per
+ * frame (cost grows with the square of the scale); if the whole frame still runs under ~28 fps the
+ * budget shrinks, and it recovers once the frame is back above 30 fps.
+ * Without a timer only the frame time is known, and vsync rounds it: any GPU load between 16.7 and
+ * 33.3 ms shows as 33.3 ms, so "under 22 ms" never happens on a 30 fps machine and the old rule
+ * never grew. Instead, while the frame holds 30 fps the scale steps up every 2 s; a step that drops
+ * the frame rate is undone, and that scale becomes a ceiling for a minute.
+ * One-off hitches (a frame over 60 ms and 2.5 times the running average: shader compiles, texture
+ * uploads) are ignored, and so is the first second after a reset, so a start-up hitch no longer
+ * ratchets the scale down for good.
+ */
+export class AdaptiveScale {
+  constructor({ lo = 0.2, hi = 1, scale = 0.5, budgetMs = 12 } = {}) {
+    Object.assign(this, { lo, hi, scale, budgetMs });
+    this.k = 1; this.avg = 0; this.n = 0; this.hitches = 0; this.since = 0; this.lastChange = 0; this.lastGrow = -1e9;
+    this.ceil = Infinity; this.ceilUntil = 0; this.t = 0;
+  }
+
+  /** Start measuring afresh (after a view or mode switch). */
+  reset() { this.avg = 0; this.n = 0; this.since = 0; this.t = 0; this.lastChange = 0; }
+
+  /** Feed one frame. dtMs: time since the last frame; gpuMs: the view's GPU time or null. Returns the scale. */
+  update(dtMs, gpuMs = null) {
+    if (!(dtMs > 0)) return this.scale;
+    this.t += dtMs; this.since += dtMs;
+    if (this.t < 1000) return this.scale; // warm-up
+    // a one-off hitch; three in a row are real and count
+    if (this.n > 5 && dtMs > 60 && dtMs > 2.5 * this.avg && ++this.hitches < 3) return this.scale;
+    this.hitches = 0;
+    this.avg = this.n ? this.avg * 0.9 + dtMs * 0.1 : dtMs; this.n++;
+    if (this.since < 500 || this.n < 10) return this.scale;
+    this.since = 0;
+    const s = this.scale, now = this.t;
+    let next = s;
+    if (gpuMs != null && gpuMs > 0) {
+      if (this.avg > 36) this.k = Math.max(0.3, this.k * 0.85);
+      else if (this.avg < 33.5) this.k = Math.min(1, this.k * 1.05);
+      const ratio = Math.sqrt((this.budgetMs * this.k) / gpuMs);
+      if (Math.abs(ratio - 1) > 0.06) next = s * Math.min(1.1, Math.max(0.8, ratio));
+    } else if (this.avg > 36) {
+      next = s * 0.85;
+      // the last step up cost the frame rate: do not try that scale again for a minute
+      if (now - this.lastGrow < 3000) { this.ceil = s * 0.97; this.ceilUntil = now + 60000; }
+    } else if (now - this.lastChange > (this.avg < 22 ? 500 : 2000) && this.avg < 34.5) {
+      const cap = now < this.ceilUntil ? this.ceil : Infinity;
+      next = Math.min(s * (this.avg < 22 ? 1.1 : 1.06), Math.max(s, cap));
+      if (next > s) this.lastGrow = now;
+    }
+    next = Math.min(this.hi, Math.max(this.lo, next));
+    if (Math.abs(next - s) > 1e-3) { this.scale = next; this.lastChange = now; this.n = Math.min(this.n, 5); }
+    return this.scale;
   }
 }
 
