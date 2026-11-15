@@ -1,0 +1,32 @@
+/* Discoveries: the list (title menu and pause menu) and the notices. */
+.disc-view { display: grid; gap: 8px; }
+.disc-view h4 { margin: 10px 0 0; font: 500 11.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.disc-count { margin: 0; font: 13px var(--mono); color: var(--muted); display: grid; gap: 6px; }
+.disc-count b { color: var(--amber); font-size: 15px; }
+.disc-bar { display: block; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.disc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--amber), var(--amber-2)); }
+.disc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.disc { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line); background: rgba(20,23,41,.6); }
+.disc b { display: block; font: 600 14px var(--display, inherit); color: var(--fg); }
+.disc p { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.disc-mark { width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; position: relative; }
+/* found: a small black hole with its ring of light */
+.disc.got .disc-mark { background: radial-gradient(circle, #000 0 38%, var(--amber-2) 44%, rgba(255,180,92,.35) 60%, transparent 72%); }
+.disc.got { border-color: rgba(255,180,92,.28); }
+/* not found yet: a silhouette, with the hint in place of the fact */
+.disc.locked .disc-mark { border: 1.5px dashed rgba(155,152,180,.45); }
+.disc.locked b { color: rgba(155,152,180,.55); letter-spacing: .2em; }
+.disc.locked p { font-style: italic; color: rgba(155,152,180,.8); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* the HUD toast, in its discovery form: a little wider, with the fact under the title */
+.fp-toast.disc-toast { bottom: auto; top: calc(66px + env(safe-area-inset-top, 0px)); max-width: min(360px, calc(100% - 32px)); border-color: rgba(255,180,92,.5); color: var(--amber-2); display: grid; gap: 3px; padding: 9px 13px; }
+.fp-toast.disc-toast small { font: 400 12.5px/1.4 var(--body); color: var(--fg); opacity: .85; }
+
+/* outside the ship (training lessons) */
+.disc-float { position: fixed; z-index: 50; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: min(360px, calc(100% - 32px)); padding: 10px 14px; border-radius: 10px; background: rgba(7,8,18,.92); border: 1px solid rgba(255,180,92,.5); display: grid; gap: 2px; pointer-events: none; transition: opacity .8s; }
+.disc-float span { font: 500 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
+.disc-float b { color: var(--amber-2); }
+.disc-float p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--fg); opacity: .85; }
+.disc-float.out { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .disc-float, .fp-toast.disc-toast { transition: none; } }

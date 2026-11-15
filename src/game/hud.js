@@ -43,9 +43,10 @@ export function createHud(root) {
     /** Advance subtitle timers by dt seconds of game time (0 while paused). */
     tick(dt) { for (const p of [...timers]) { p.remain -= dt; p.onTick?.(); if (p.remain <= 0) p.done(); } },
     lookHint(on) { look.hidden = !on; },
-    toast(text) {
-      const t = h('div.fp-toast', text); root.append(t);
-      setTimeout(() => t.classList.add('out'), 1800); setTimeout(() => t.remove(), 2600);
+    /** A short notice in the corner. opts: { sub, cls, sec } add a second line, a class and a longer stay. */
+    toast(text, { sub, cls, sec = 1.8 } = {}) {
+      const t = h('div.fp-toast' + (cls ? `.${cls}` : ''), { role: 'status' }, sub ? [h('b', text), h('small', sub)] : text); root.append(t);
+      setTimeout(() => t.classList.add('out'), sec * 1000); setTimeout(() => t.remove(), sec * 1000 + 800);
     },
     choosing: false,
     /** A line under the objective that updates quietly (a countdown), without making a new objective. */

@@ -15,6 +15,7 @@ import { mountGame } from './game/game.js';
 import { settingsForm, controlsTable, ACTS } from './game/settings-ui.js';
 import { loadSettings } from './game/settings.js';
 import { padNav } from './ui/padnav.js';
+import { DISCOVERIES, discoveriesView, foundCount, syncTraining, unlock, floatToast } from './game/discoveries.js';
 import { RESTORE_WAIT_MS } from './ui/view3d.js';
 
 export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, bendLight, intoTheDark, evaporation];
@@ -115,6 +116,7 @@ function titleScreen() {
   const item = (label, sub, onclick, cls = '') => h('button.menu-item' + cls, { type: 'button', onclick }, h('b', label), sub ? h('span', sub) : null);
   const LOCK = '<svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M3 6V4a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="1" y="6" width="10" height="7.5" rx="1.6" fill="currentColor"/></svg>';
   const here = save ? Math.max(0, actIndex(save.cp)) : -1;
+  syncTraining(getStars); // stars earned before discoveries existed still count
   const items = [
     save ? item('Continue', `${ROMAN[here] || 'Aboard the Tern'} · ${ACTS[here]?.[1] || ''}`.replace(/ · $/, ''), () => startAt(null), '.primary')
       : item('Wake up', 'Start the story · about 20 minutes', () => startAt(null, true), '.primary'),
@@ -122,6 +124,7 @@ function titleScreen() {
     item('Chapters', save ? (finished ? 'Replay any part of the story' : 'Replay the parts you have reached') : 'See the story ahead', (e) => showPanel('acts', e.currentTarget)),
     item('Training simulations', 'Eight short lessons, with stars to earn', () => { location.hash = '#training'; }),
     item('Observatory', 'A free camera around a black hole', () => { location.hash = '#observatory'; }),
+    item('Discoveries', `${foundCount()} of ${DISCOVERIES.length} found`, (e) => showPanel('discoveries', e.currentTarget)),
     item('Settings', 'Look speed, sound, subtitles, controls', (e) => showPanel('settings', e.currentTarget)),
     item('About', 'The physics, and who made it', (e) => showPanel('about', e.currentTarget)),
     isDesktop ? item('Quit', null, () => window.close(), '.quiet') : null,
@@ -180,6 +183,10 @@ function titleScreen() {
             h('li', 'Hamilton & Lisle, ', h('i', 'The river model of black holes'), ' (2008)'),
             h('li', 'Page, ', h('i', 'Particle emission rates from a black hole'), ' (1976)')),
           h('p.fine', 'Open source under the MIT license: ', h('a', { href: 'https://github.com/Preponderous-Software/frozen-star', target: '_blank', rel: 'noopener' }, 'github.com/Preponderous-Software/frozen-star'), '.')),
+        backBtn());
+    } else if (which === 'discoveries') {
+      panel.replaceChildren(head('Discoveries', 'Things to notice'),
+        h('div.panel-body', h('p.fp-note', 'Small things to find aboard the Tern and in the training simulations. Each one comes with a true fact about gravity and light.'), discoveriesView()),
         backBtn());
     } else if (which === 'new') {
       panel.replaceChildren(head('New game', 'Start again?'),
@@ -318,6 +325,7 @@ function chapterScreen(ch) {
       if (!ok || met[i]) return;
       met[i] = true; goalEls[i].classList.add('met');
       const n = met.filter(Boolean).length; if (award(ch.id, n)) updateTotal();
+      if (n >= 3) { const d = unlock(`lesson-${ch.id}`); if (d) floatToast(d); }
     },
     debrief({ title, body: paras }) {
       debrief.replaceChildren(

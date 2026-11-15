@@ -1,0 +1,25 @@
+/* Photo mode: the HUD steps aside, and a small bar of looks sits at the bottom. */
+.fp-photo .fp-subs, .fp-photo .fp-objective, .fp-photo .fp-prompt, .fp-photo .fp-cross, .fp-photo .fp-hint,
+.fp-photo .fp-look, .fp-photo .fp-way, .fp-photo .fp-track, .fp-photo .fp-focus, .fp-photo .fp-menu-btn,
+.fp-photo .fp-touch .fp-use, .fp-photo .fp-card { display: none !important; }
+.ph-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2; background: radial-gradient(ellipse at center, transparent 0 48%, rgba(0,0,0,.72) 100%); }
+.ph-vignette[hidden] { display: none; }
+.ph-flash { position: absolute; inset: 0; z-index: 9; background: #fff; pointer-events: none; animation: ph-flash .45s ease-out forwards; }
+@keyframes ph-flash { from { opacity: .55; } to { opacity: 0; } }
+.ph-bar { position: absolute; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: min(640px, calc(100% - 32px)); box-sizing: border-box;
+  padding: 10px 14px; border-radius: 12px; background: rgba(7,8,18,.82); border: 1px solid var(--line); backdrop-filter: blur(6px); display: grid; gap: 8px; }
+.ph-bar[hidden] { display: none; }
+.ph-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.ph-row .eyebrow { margin: 0; }
+.ph-keys { font: 11.5px var(--mono); color: var(--muted); }
+.ph-keys .hint-pad { display: none; }
+body[data-input=pad] .ph-keys .hint-keys { display: none; }
+body[data-input=pad] .ph-keys .hint-pad { display: inline; }
+body[data-input=touch] .ph-keys { display: none; }
+.ph-range { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; flex: 1 1 220px; font: 12px var(--mono); color: var(--muted); }
+.ph-range input { width: 100%; accent-color: var(--amber); }
+.ph-range output { min-width: 52px; text-align: right; color: var(--fg); }
+.ph-toggle[aria-pressed=true] { border-color: var(--amber); color: var(--amber-2); background: rgba(255,180,92,.1); }
+.ph-save { border-color: var(--ok); color: var(--ok); background: rgba(127,214,168,.1); margin-left: auto; }
+@media (max-width: 520px) { .ph-save { margin-left: 0; } .ph-keys { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ph-flash { display: none; } }
