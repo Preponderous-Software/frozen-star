@@ -146,7 +146,7 @@ function titleScreen() {
           h('h4', 'Credits'),
           h('dl.credits',
             h('dt', 'Created by'), h('dd', 'Daniel McCoy Stephenson, Preponderous Software'),
-            h('dt', 'Code and writing'), h('dd', 'Drafted with Claude (Anthropic), reviewed by the author'),
+            h('dt', 'Code and writing'), h('dd', 'Drafted with Claude (Anthropic) for Preponderous Software'),
             h('dt', 'Playtesting'), h('dd', 'AI playtesters, run with ', h('a', { href: 'https://github.com/Preponderous-Software/playtester', target: '_blank', rel: 'noopener' }, 'playtester')),
             h('dt', 'Engine'), h('dd', 'three.js (MIT) and a hand-written WebGL2 ray tracer'),
             h('dt', 'Type'), h('dd', 'Bricolage Grotesque and IBM Plex (SIL Open Font License)')),
