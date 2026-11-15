@@ -75,9 +75,6 @@ canvas.fp-feed { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius:
 .fp-set > output { grid-area: o; font: 500 12.5px var(--mono); }
 .fp-set > input[type=range], .fp-set > select { grid-area: i; width: 100%; }
 .fp-set > input[type=checkbox] { grid-area: o; width: 18px; height: 18px; }
-.fp-keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 13.5px; }
-.fp-keys dt { color: var(--amber-2); font-weight: 500; }
-.fp-keys dd { margin: 0; color: #d6d2e3; }
 .fp-subs-large .fp-line { font-size: 20px; }
 .fp-subs-large .fp-objective b { font-size: 17px; }
 /* accessibility settings (settings.js applyDisplay) */

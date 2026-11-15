@@ -299,7 +299,7 @@ export function commsApp(body, g, { run, onFire, showMap }) {
     }
     st.update(frozenAt ?? S, { mass: HOLE.mass });
     if (frozenAt != null) st.status.set('Climbing. Her engine burn has reached you: from here on the picture shows her coming home.');
-    while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.text)); }
+    while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.tag ? h('small.fp-tag', `${m.tag} `) : null, m.text)); }
     if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.cutTau = r.saved?.tau; diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
   });
   return stop;

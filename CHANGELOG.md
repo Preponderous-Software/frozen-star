@@ -2,6 +2,14 @@
 
 Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/playtests/<version>/`, and the release process is in [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+- **Postscript · The photon sphere.** An optional mission after the story: hover at 1.5 rₛ, fire a laser along the hull and catch it coming back 11 s later, then watch a pulse fired 1 m higher spiral away.
+- **A real capsule bay.** Ines is visible doing pre-flight beside capsule C-1; the capsule leaves past the bridge window and docks again after the rescue. Her lines say where she is speaking from.
+- **Discoveries:** 20 achievements, each with a physics fact. **Photo mode** (P): freeze time, hide the HUD, float the camera and save a full-resolution picture.
+- **Controls and accessibility:** rebind every key and gamepad button; reduce flashing, subtitle background, console text size, hold or toggle run, colour-safe redshift.
+- **Renderer:** the photon ring is a continuous line at low resolution, and the sky's resolution climbs on GPUs that hold 30 fps.
+
 ## 0.1.0 (2026-11-15)
 
 The first release: the whole story, eight lessons, a desktop app for Windows and a browser version.
