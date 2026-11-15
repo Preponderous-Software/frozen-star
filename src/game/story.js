@@ -310,7 +310,8 @@ async function rescueAttempt(g) {
     }
   };
   g.ticks.add(tick);
-  g.say('WREN', 'The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago.');
+  g.say('WREN', 'The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago.')
+    .then(() => run.fired == null && g.say('WREN', `I can compute the deadline: the beam must leave within ${Math.round(secs(D))} seconds of her mayday. The clock is on the comms console. Her picture will not tell you.`)).catch(() => {});
   await g.until(() => result || run.S() > 175);
   let saved = !!result?.saved;
   if (saved) {

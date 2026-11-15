@@ -114,3 +114,5 @@ canvas.fp-feed { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius:
 .fp-look { top: calc(50% + 64px); }
 .fp-card h2 { font-size: clamp(36px, 6vw, 64px); }
 .fp-legend { font: 12px var(--mono); color: var(--muted); margin: 0; grid-column: 1 / -1; }
+.fp-deadline { font: 500 14px var(--mono); color: #ffd29a; }
+.fp-deadline.late { color: #ff8a7a; }
