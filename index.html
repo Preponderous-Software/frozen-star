@@ -16,9 +16,10 @@
 <body>
 <header class="bar">
   <a class="brand" href="#title"><span class="mark" aria-hidden="true"></span>Frozen Star</a>
-  <nav><a href="#title">Menu</a><a href="#training">Training</a><a href="#observatory">Observatory</a></nav>
+  <nav aria-label="Sections"><a href="#title">Menu</a><a href="#training">Training</a><a href="#observatory">Observatory</a></nav>
 </header>
-<main id="app"></main>
+<main id="app"><div class="boot" role="status"><span class="boot-mark" aria-hidden="true"></span><p class="boot-name">Frozen Star</p><p class="boot-sub">Loading</p></div></main>
+<div id="veil" aria-hidden="true"></div>
 <noscript><p style="padding:24px">Frozen Star needs JavaScript.</p></noscript>
 <script type="module" src="src/main.js"></script>
 </body>
