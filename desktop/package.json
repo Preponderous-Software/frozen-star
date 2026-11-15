@@ -1,7 +1,7 @@
 {
   "name": "frozen-star",
   "productName": "Frozen Star",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A first-person game about general relativity.",
   "main": "main.cjs",
   "private": true,

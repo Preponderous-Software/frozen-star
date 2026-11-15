@@ -2,14 +2,19 @@
 
 Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/playtests/<version>/`, and the release process is in [docs/RELEASING.md](docs/RELEASING.md).
 
-## Unreleased
+## 0.2.0 (2026-11-15)
 
+Voices, a new chapter, and a ship you can read at a glance. Playtest evidence: [docs/playtests/0.2.0](docs/playtests/0.2.0).
+
+- **Voices.** Ines is voiced by Kokoro-82M's Sky voice and WREN, the ship's AI, by its George voice. Over the radio, Ines's voice slows and deepens by exactly her redshift factor 1+z, the same stretch her light gets; in the bay she is on the intercom, and once docked she is in the room. WREN speaks clean over the ship's PA, objective hints included, and the two never talk over each other.
 - **Postscript · The photon sphere.** An optional mission after the story: hover at 1.5 rₛ, fire a laser along the hull and catch it coming back 11 s later, then watch a pulse fired 1 m higher spiral away.
 - **A real capsule bay.** Ines is visible doing pre-flight beside capsule C-1; the capsule leaves past the bridge window and docks again after the rescue. Her lines say where she is speaking from.
 - **Discoveries:** 20 achievements, each with a physics fact. **Photo mode** (P): freeze time, hide the HUD, float the camera and save a full-resolution picture.
 - **Controls and accessibility:** rebind every key and gamepad button; reduce flashing, subtitle background, console text size, hold or toggle run, colour-safe redshift.
-- **WREN speaks.** The ship's AI has a calm British voice (Kokoro-82M `bm_george`), heard clean over the ship's PA and never over Ines: the two take turns. Objective hints are spoken too.
 - **Renderer:** the photon ring is a continuous line at low resolution, and the sky's resolution climbs on GPUs that hold 30 fps.
+- **Clearer opening and rescue:** WREN introduces itself as the ship's AI; Ines's launch has a build-up and the capsule is visible leaving with running lights and a tracking bracket; one deadline total everywhere.
+- **Fixes from three more AI playtest rounds:** the dream no longer starts on a long black screen (a negative first time step), hints never outlive their objective, the Postscript can be started from the helm or the logbook, lists scroll under load, photo saves are confirmed, and more.
+- **Media:** darkroom-rendered MP4/WebM clips of the dream and the descent, and a room grid.
 
 ## 0.1.0 (2026-11-15)
 
