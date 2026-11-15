@@ -72,8 +72,12 @@ vec3 sky(vec3 d, float g) {
   // Galactic band
   vec3 nG = normalize(vec3(0.25, 0.92, 0.3));
   float dn = dot(d, nG); float band = exp(-dn * dn / 0.012); // not pow(): its base can be negative
-  float dust = fbm(d * 5.0);
-  col += shifted(4800.0, band * (0.015 + 0.06 * fbm(d * 2.5 + 7.0)) * smoothstep(0.35, 0.75, dust + 0.15), g);
+  // The band's two fbm calls are the sky's main cost. Away from the band (|dn| > 0.41, about 60% of
+  // the sky) it adds under 1e-6 of light, so skip them there; where the dust mask is zero, skip the second.
+  if (band > 1e-6) {
+    float dust = fbm(d * 5.0);
+    if (dust > 0.2) col += shifted(4800.0, band * (0.015 + 0.06 * fbm(d * 2.5 + 7.0)) * smoothstep(0.35, 0.75, dust + 0.15), g);
+  }
   if (uGrid == 1) {
     float lat = asin(clamp(d.y, -1.0, 1.0)), lon = atan(d.z, d.x);
     float step = 3.14159265 / 12.0;
@@ -118,12 +122,17 @@ void main() {
   float E = 1.0 - sqrt(2.0 / r0) * dot(n, x / r0);
 
   vec3 acc = vec3(0.0); float accA = 0.0; bool done = false;
+  // k1 of each step is the derivative at the end of the previous one (computed there anyway for the
+  // escape test), so each RK4 step costs four derivative evaluations instead of five.
+  vec3 k1x, k1p; derivs(x, p, E, k1x, k1p);
   for (int i = 0; i < 900; i++) {
     if (i >= uSteps) break;
     float r = length(x);
-    vec3 k1x, k1p, k2x, k2p, k3x, k3p, k4x, k4p;
-    derivs(x, p, E, k1x, k1p);
-    float h = -(0.035 * min(r, 8.0) + 0.09 * max(0.0, r - 8.0)) / length(k1x);
+    vec3 k2x, k2p, k3x, k3p, k4x, k4p;
+    // Step length in space: fine near the hole, coarser far out. Beyond r = 24 (outside the disk and
+    // the ship's orbit) space is nearly flat and the ray nearly straight, so the step grows faster
+    // there; that moves the final sky direction by about 0.03 mrad (a few hundredths of a pixel).
+    float h = -(0.035 * min(r, 8.0) + 0.09 * max(0.0, r - 8.0) + 0.4 * max(0.0, r - 24.0)) / length(k1x);
     derivs(x + 0.5 * h * k1x, p + 0.5 * h * k1p, E, k2x, k2p);
     derivs(x + 0.5 * h * k2x, p + 0.5 * h * k2p, E, k3x, k3p);
     derivs(x + h * k3x, p + h * k3p, E, k4x, k4p);
@@ -139,17 +148,17 @@ void main() {
     }
     x = nx; p = np;
     float rn = length(x);
-    vec3 bdx, bdp; derivs(x, p, E, bdx, bdp); bdx = -bdx;
-    float radial = dot(bdx, x) / rn;
-    if (rn > 300.0 && radial > 0.0) { acc += (1.0 - accA) * sky(normalize(bdx), gCam / E); done = true; break; }
-    if ((rn < 2.01 && radial < 0.0) || length(p) > 1e5 || rn < 0.05) { done = true; break; }
+    derivs(x, p, E, k1x, k1p);
+    float radial = -dot(k1x, x) / rn;
+    if (rn > 300.0 && radial > 0.0) { acc += (1.0 - accA) * sky(normalize(-k1x), gCam / E); done = true; break; }
+    // Captured. Inside the photon sphere (r < 3) a ray heading inward can never turn back out (the
+    // effective potential only falls further in), and the disk starts at r = 6, so nothing more can
+    // be seen along it: stop at r < 2.95 instead of tracing on to the horizon.
+    if ((rn < 2.95 && radial < 0.0) || length(p) > 1e5 || rn < 0.05) { done = true; break; }
   }
   // Out of steps (a ray looping close to the photon sphere): outside it, show the sky in the
   // direction the ray was heading instead of a hard black cut.
-  if (!done && length(x) > 3.2) {
-    vec3 bdx, bdp; derivs(x, p, E, bdx, bdp);
-    acc += (1.0 - accA) * sky(normalize(-bdx), gCam / E);
-  }
+  if (!done && length(x) > 3.2) acc += (1.0 - accA) * sky(normalize(-k1x), gCam / E);
   vec3 col = 1.0 - exp(-acc * uExposure);
   float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = max(mix(vec3(lum), col, 1.45), 0.0); // film-like saturation so shifts read clearly

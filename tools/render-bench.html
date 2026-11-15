@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{width:384px;height:216px;display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+const q = new URLSearchParams(location.search);
+const M = await import(q.get('mod'));
+window.M = M;
+const v = new M.BlackHoleView(document.getElementById('c'), { preserve: true, scale: 1 });
+window.runView = (spec, reps) => {
+  const cam = spec.cam;
+  const V = spec.v === 'hover' ? M.hoverVelocity(cam) : spec.v === 'fall' ? M.fallerVelocity(cam, Math.sqrt(1 - 2 / 20)) : [0, 0, 0];
+  v.set({ steps: spec.steps || 520, cam, basis: M.lookBasis(cam, spec.target), V, disk: spec.disk !== false, grid: !!spec.grid, fov: spec.fov || 1.2, exposure: 1.6, time: spec.time || 0, diskOuter: 15 });
+  const gl = v.gl, px = new Uint8Array(4);
+  v.render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const t0 = performance.now();
+  for (let i = 0; i < reps; i++) { v.render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+  const ms = (performance.now() - t0) / reps;
+  const W = v.canvas.width, H = v.canvas.height, all = new Uint8Array(W * H * 4);
+  gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  return { ms, W, H, px: Array.from(all), png: v.canvas.toDataURL('image/png') };
+};
+document.title = 'ready';
+</script>
