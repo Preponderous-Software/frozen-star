@@ -2,8 +2,8 @@
 import * as THREE from 'three';
 import { Infall } from '../physics/infall.js';
 import { lookBasis, fallerVelocity } from '../render/raytracer.js';
-import { hoverRate } from '../physics/body.js';
-import { formatDuration } from '../physics/units.js';
+import { hoverRate, hoverAccel, tidalStretch, maxTimeInside } from '../physics/body.js';
+import { formatDuration, formatAccel, G_EARTH } from '../physics/units.js';
 import { SEC_PER_M, R_STATION, shipPosition, HOLE } from './world.js';
 import { EYE } from './walk.js';
 import {
@@ -26,6 +26,7 @@ export async function runStory(g, cp) {
   g.helmTarget = R_STATION;
   baseScreens(g);
   baseHandlers(g);
+  reactions(g);
   if (at === 0) { await dream(g); await wake(g); await toBridge(g); }
   else spawnOnBridge(g);
   const chapter = (n, name, sub) => { g.hud.card(`${n} · ${name}`, sub, 3); };
@@ -53,14 +54,19 @@ function baseHandlers(g) {
   const pad = g.ship.interactables.find((i) => i.id === 'datapad');
   pad.focus = { pos: new THREE.Vector3(3.9, 1.5, 3.0), look: new THREE.Vector3(4.6, 0.8, 3.0) };
   g.on('datapad', (it) => g.openApp(it, datapadApp));
-  g.on('photo', () => g.say('YOU', 'Home. Twenty-six thousand light-years behind us.'));
   g.on('porthole', async () => {
     await g.say('WREN', 'The black disk is Erebus\'s shadow. It is about two and a half times wider than the horizon itself.');
     await g.say('WREN', 'The bright ring around it is starlight from behind the hole, bent all the way around.');
   });
   g.on('map', (it) => g.openApp(it, (b) => mapApp(b, g, { run: () => (g.flags.mapUnlocked ? g.lastRun : null) })));
   g.on('archive', (it) => g.openApp(it, (b) => archiveApp(b, g, { chapters: CHAPTER_LIST })));
-  g.on('helm', (it) => g.openApp(it, (b) => (g.flags.helmUnlocked ? helmApp(b, g, { onTarget: (r) => { g.helmTarget = r; } }) : (b.append(h3('Helm'), p('Holding station at 10 rₛ. Descent is locked for now: later in the survey you will take the ship down toward the horizon from here.')), null))));
+  g.on('helm', (it) => {
+    if (!g.flags.helmUnlocked) {
+      g.react?.('helm-early', ['WREN', 'Descent is locked until the survey plan calls for it, Doctor. Erebus will keep.'],
+        ...(g.flags.beaconDone ? [] : [['INES', 'And not while I\'m prepping the capsule, please. I\'d like the ship where I left it.']]));
+    }
+    return g.openApp(it, (b) => (g.flags.helmUnlocked ? helmApp(b, g, { onTarget: (r) => { g.helmTarget = r; } }) : (b.append(h3('Helm'), p('Holding station at 10 rₛ. Descent is locked for now: later in the survey you will take the ship down toward the horizon from here.')), null)));
+  });
   g.on('comms', (it) => g.openApp(it, (b) => commsApp(b, g, { run: () => g.capsule, onFire: () => g.fireRecall?.(), showMap: (g.flags.rescueTries || 0) > 0 })));
   g.on('feed', (it) => g.openApp(it, (b) => (g.feed ? feedApp(b, g, { feedState: g.feedState, feed: g.feed }) : (b.append(h3('Camera feed'), p('No signal. This screen shows what a camera probe sends home, and none is out yet.')), null))));
   g.on('probe', (it) => g.openApp(it, (b) => probeApp(b, g, {
@@ -75,6 +81,73 @@ function baseHandlers(g) {
     if (Math.abs(d) > 1e-4) g.shipR += Math.sign(d) * Math.min(Math.abs(d), dt * Math.max(0.15, Math.abs(d) * 0.6));
   });
 }
+
+// Angular diameter (degrees) of Erebus's shadow seen from radius r (units of M). Hovering there, the
+// edge sits at sin α = (3√3 M / r)·√(1 − 2M/r), past 90° below the photon sphere at 3M. A camera falling
+// through r with energy E moves inward at v = √(1 − (1 − 2M/r)/E²) relative to the hoverer, and
+// aberration pulls the edge forward: cos α' = (cos α + v) / (1 + v cos α).
+export function shadowDeg(r, E) {
+  let half = Math.asin(Math.min(1, (3 * Math.sqrt(3) / r) * Math.sqrt(1 - 2 / r)));
+  if (r < 3) half = Math.PI - half;
+  if (E != null) { const v = Math.sqrt(1 - (1 - 2 / r) / (E * E)), c = Math.cos(half); half = Math.acos((c + v) / (1 + v * c)); }
+  return (360 * half) / Math.PI;
+}
+export const fallSpeed = (r, E) => Math.sqrt(1 - (1 - 2 / r) / (E * E)); // as a fraction of c, past a hovering observer
+
+// ---------- small moments: the crew notices what the player does ----------
+// Each fires once, and only while nobody is talking and nothing urgent is going on.
+function reactions(g) {
+  let talking = 0, quietAt = 0;
+  const say0 = g.say;
+  g.say = (who, text, opts) => {
+    const pr = say0(who, text, opts);
+    talking++; const done = () => { talking--; quietAt = g.time; }; pr.then(done, done);
+    return pr;
+  };
+  const seen = new Set();
+  g.quiet = (gap = 4) => talking === 0 && g.time - quietAt > gap && g.mode === 'walk' && !g.paused && !g.hud.choosing && !g.capsule && !g.holding;
+  g.react = (key, ...lines) => {
+    if (seen.has(key)) return false;
+    seen.add(key);
+    // let whoever is speaking finish first (for a few seconds at most), so nobody talks over the plot
+    (async () => {
+      await Promise.race([g.until(() => talking === 0), g.wait(6)]);
+      for (const [who, text, opts] of lines) await g.say(who, text, opts);
+    })().catch(() => {});
+    return true;
+  };
+  const italic = { style: { fontStyle: 'italic' } };
+  // home pulls ahead: the photo, a second time
+  let photos = 0;
+  g.on('photo', () => {
+    if (photos++ === 0) return g.say('YOU', 'Home. Twenty-six thousand light-years behind us.');
+    const k = 1 / hoverRate(g.shipR), extra = Math.round(60 * (k - 1));
+    return g.say('YOU', k < 1.5 ? `(Every hour I spend here, an hour and ${extra} minutes pass at home. They're pulling ahead of me.)` : `(Down here, every hour of mine is ${k.toFixed(1)} hours at home.)`, italic);
+  });
+  let linger = 0;
+  g.ticks.add((dt) => {
+    // the expedition's two clocks, kept for the logbook
+    const st = g.flags.stats;
+    st.shipT = (st.shipT || 0) + dt; st.relayT = (st.relayT || 0) + dt / hoverRate(g.shipR);
+    if (g.mode !== 'walk' || g.paused) { linger = 0; return; }
+    const yaw = Math.atan2(Math.sin(g.me.yaw), Math.cos(g.me.yaw));
+    const atWindow = g.inRoom('bridge') && g.me.z < -9.6 && Math.abs(yaw) < 0.6 && g.me.pitch > -0.5;
+    linger = atWindow ? linger + dt : 0;
+    if (linger > 8 && g.quiet() && Math.abs(g.shipR - R_STATION) < 0.1) {
+      const d = shadowDeg(g.shipR);
+      if (g.react('window', ['WREN', `From here Erebus's shadow is ${Math.round(d)} degrees across: about ${Math.round(d / 0.52)} full Moons side by side.`])) linger = 0;
+      else if (g.flags.inesHome && g.react('window2',
+        ['INES', 'Every time I look, I find another thin arc of light in that ring.'],
+        ['WREN', 'You are not imagining them. Light that loops the hole once makes one ring; light that loops twice makes a thinner one just inside it. Every star in the sky is in there, over and over.'])) linger = 0;
+    }
+    if (g.inRoom('quarters') && g.flags.seenBridge && g.quiet(2)) {
+      if (!g.flags.inesHome) g.react('quarters', ['WREN', 'Back already, Doctor? You were talking in your sleep last night. Something about falling. I did not log it.']);
+      else g.react('quarters2', ['INES', 'Taking a minute, doc? Don\'t blame you. I can still feel the floor dropping away.']);
+    }
+    if (g.inRoom('lab') && g.quiet(2)) g.react('lab', ['WREN', 'The archive holds the expedition\'s training simulations. Same equations as outside the window, slowed down so you can take them apart.']);
+  });
+}
+
 const h3 = (t) => Object.assign(document.createElement('h3'), { textContent: t });
 const p = (t) => Object.assign(document.createElement('p'), { textContent: t });
 
@@ -84,7 +157,7 @@ function setWalk(g, x, z, yaw, pitch = 0) {
 }
 
 function spawnOnBridge(g) {
-  g.flags.mapUnlocked = g.flags.mapUnlocked ?? false;
+  g.flags.mapUnlocked = g.flags.mapUnlocked ?? false; g.flags.seenBridge = true;
   setWalk(g, 0, -7.0, 0);
   g.hud.fade(1, 0); g.hud.fade(0, 1.4);
 }
@@ -154,7 +227,7 @@ async function toBridge(g) {
   await g.until(() => g.inRoom('corridor') || g.inRoom('bridge'));
   g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
-  g.waypoint = null; g.hud.hint(null);
+  g.waypoint = null; g.hud.hint(null); g.flags.seenBridge = true;
   g.save('bridge');
 }
 
@@ -186,6 +259,9 @@ async function beaconAct(g) {
   };
   g.ticks.add(tick);
   g.say('WREN', 'K-1 pings every ten M of its own time, about six seconds. Its beacon is on the speakers. Listen to the pitch.');
+  await g.until(() => got >= 3);
+  await g.say('INES', 'I can hear it from the bay. Steady as a metronome.');
+  g.say('WREN', 'By its own clock, it is. Keep listening.');
   await g.until(() => got >= 6);
   g.say('WREN', 'Notice the gaps between pings growing.');
   await g.until(() => got >= 7);
@@ -318,7 +394,7 @@ async function rescueAttempt(g) {
     run.hidden = true; removeMarker();
     run.saved = { tau: result.tau, r: result.r, seenAt: f.messageArrival(result.tau) };
     g.alarm(false); g.objective(null);
-    g.flags.stats.margin = secs(D - run.fired); g.flags.stats.seenAt = f.seenAt(run.fired).r / 2;
+    g.flags.stats.margin = secs(D - run.fired); g.flags.stats.seenAt = f.seenAt(run.fired).r / 2; g.flags.stats.metAt = result.r / 2;
     // her reply can only reach us with the light of the burn, after everything she sent before it
     await g.say('WREN', 'Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.');
     await g.until(() => run.S() >= run.saved.seenAt);
@@ -330,6 +406,7 @@ async function rescueAttempt(g) {
     await g.hud.fade(1, 1.5);
     g.hud.clearSubs();
     g.capsule = null;
+    g.flags.inesHome = true; // the bay screens show her docked from here on
     await g.hud.card('Twenty minutes later', null, 2.4);
     await g.hud.fade(0, 1.5);
     await g.say('INES', 'Docked. Hands still shaking.');
@@ -367,15 +444,18 @@ async function helmAct(g) {
   })().catch(() => {});
   const ship0 = g.clocks.ship, relay0 = g.clocks.relay;
   let held = 0;
+  g.holding = true;
   let shown = -1;
   const tick = (dt) => {
     held = 1 / hoverRate(g.shipR) >= 2 ? held + dt : Math.max(0, held - dt * 0.5);
+    g.flags.stats.deepest = Math.min(g.flags.stats.deepest ?? Infinity, g.shipR / 2);
     const left = Math.max(0, Math.ceil(20 - held));
     if (left !== shown) { shown = left; g.hud.objectiveNote(left > 0 ? `${left} s to go` : 'Held'); }
   };
   g.ticks.add(tick);
   await g.until(() => held >= 20);
   g.ticks.delete(tick);
+  g.holding = false;
   g.objective('Return to 10 rₛ (helm)');
   await g.say('INES', 'Okay. That\'s enough. Take us back up.');
   await g.until(() => g.shipR > R_STATION - 0.05);
@@ -431,6 +511,16 @@ async function orpheusAct(g) {
   };
   g.ticks.add(tick); g.ticks.add(sound);
   g.objective('Watch the Orpheus feed (starboard screen)', { hint: 'The feed is on the big screen on the starboard wall, to the right as you face the window.', after: 25 });
+  // while the early frames come in: what to expect when Orpheus passes the depth where the ship hovered
+  (async () => {
+    await g.until(() => frames >= 8);
+    await g.say('INES', 'There it goes. The shadow\'s bigger every frame.');
+    await g.until(() => frames >= 18);
+    const deep = Math.min(1.33, g.flags.stats.deepest ?? 1.33), r = 2 * deep;
+    await g.say('INES', `When it passes ${deep.toFixed(2)} rₛ, where we hovered, will its picture go all black like our window did?`);
+    await g.say('WREN', `No. Hovering there, the shadow covered ${Math.round(shadowDeg(r))} degrees of our sky. Orpheus will pass that spot at ${Math.round(100 * fallSpeed(r, f.E))}% of light speed, and its motion swings the sky ahead of it. It will see the shadow only ${Math.round(shadowDeg(r, f.E))} degrees across.`);
+    await g.say('WREN', 'Same place, different motion, different sky.');
+  })().catch(() => {});
   await g.until(() => run.tau() >= f.tauH - 6);
   g.say('WREN', 'Frames are arriving further apart. The signal is being stretched as it climbs out.');
   await g.until(() => run.tau() >= f.tauEnd);
@@ -445,7 +535,7 @@ async function orpheusAct(g) {
   await g.say('INES', 'So that last frame is all we get. Did it fall in, or is it stuck there?');
   if (g.mode === 'console') await g.closeApp();
   const pick = await g.hud.choice('What do you tell Ines?', ['It fell in. Its last light just never reaches us.', 'It is frozen at the edge, forever.']);
-  g.flags.stats.frames = frames; g.flags.stats.answer = pick === 0 ? 'fell in' : 'frozen';
+  g.flags.stats.frames = frames; g.flags.stats.rLast = rSent / 2; g.flags.stats.answer = pick === 0 ? 'fell in' : 'frozen';
   if (pick === 1) {
     await g.say('WREN', 'Its clock never stopped. Orpheus reached the centre less than a second after crossing, by its own clock. The frozen picture is only the last light that could still climb out, and even that has faded.');
     await g.say('INES', 'So "frozen" is just what it looks like from here.');
@@ -467,12 +557,46 @@ async function epilogue(g) {
   await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
   if (first) await logbook(g);
   g.objective('Explore the Tern. The lab archive has more.');
+  freeRoam(g);
+}
+
+// ---------- after the story: small things to find ----------
+function freeRoam(g) {
+  g.hud.hint('Free roam: talk to Ines at the comms console, take the helm, or drop another beacon.');
+  g.wait(12).then(() => g.hud.hint(null)).catch(() => {});
+  // Ines, on the comms channel from the capsule bay
+  const M = HOLE.mass, tideG = tidalStretch(2, M) / G_EARTH;
+  const chats = [
+    [['INES', `WREN worked it out for me. At the horizon, the tide from head to toe would have been ${tideG.toFixed(2)} g. A gentle stretch, nothing more.`],
+      ['WREN', `Erebus is big, and tides weaken with size. At the horizon of a black hole of ten suns, the same stretch would be ${formatAccel(tidalStretch(2, 10))}.`]],
+    [['INES', `And if I had crossed? WREN says the longest anyone can last inside Erebus is ${maxTimeInside(M).toFixed(1)} seconds, by their own watch. Then the centre.`],
+      ['INES', 'Less than two seconds. Somehow that\'s worse than forever.']],
+    [['INES', 'Next time I go out, you\'re on the beam. Nobody else.']],
+    [['INES', 'Go look at the window, doc. I\'m fine. Really.']],
+  ];
+  let chat = 0;
+  g.on('comms', () => {
+    if (g.talkingToInes) return;
+    g.talkingToInes = true; g.audio.radio();
+    const lines = chats[Math.min(chat++, chats.length - 1)];
+    (async () => { for (const [who, text] of lines) await g.say(who, text); })().catch(() => {}).finally(() => { g.talkingToInes = false; });
+  });
+  // the helm, with nobody's plan to follow: WREN reads out what the field is holding
+  let deepest = R_STATION;
+  g.ticks.add(() => {
+    deepest = Math.min(deepest, g.shipR);
+    if (g.shipR < 2.2 && g.quiet(1)) g.react('free-deep', ['WREN', `The field is pushing against ${formatAccel(hoverAccel(g.shipR, M))} to hold us here. Nobody aboard feels a thing.`]);
+    if (g.shipR < 2.08 && g.quiet(1)) g.react('free-floor', ['WREN', `${(1 / hoverRate(g.shipR)).toFixed(1)} relay seconds for each of ours. This is as deep as the field can hold us, Doctor.`], ['INES', 'Doc. Up. Please.']);
+    if (deepest < 2.2 && g.shipR > R_STATION - 0.05 && g.quiet(1)) g.react('free-home', ['INES', 'Thank you.']);
+  });
   // free play: the beacon can be dropped again from the probe console
   g.flags.beaconDone = false; g.beacon = null; g.orpheus = null;
+  let drops = 1;
   g.launchBeacon = () => {
     const run = createRun(g, 'beacon'); run.signals = [];
     g.beacon = run; g.lastRun = run;
-    const rm = g.addMarker(runMarker(run));
+    const rm = g.addMarker(runMarker(run, { name: `K-${++drops}` }));
+    if (drops === 2) g.react('redrop', ['WREN', `K-2 away. You know how this ends now: about ${Math.round(secs(run.f.tauH))} seconds to the horizon by its clock. It will still look as if it never gets there.`]);
     let sent = 0;
     const tick = () => {
       while (sent < 9 && run.tau() >= (sent + 1) * 10) { sent++; run.signals.push({ tau: sent * 10 }); }
@@ -482,20 +606,43 @@ async function epilogue(g) {
   };
 }
 
-// ---------- the logbook: the player's own numbers ----------
+// ---------- the logbook: what the player saw, against what really happened ----------
 function logbook(g) {
   const st = g.flags.stats || {}, tries = g.flags.rescueTries || 0;
-  const row = (k, v, note) => { const li = document.createElement('li'); li.innerHTML = `<b>${k}</b><span>${v}</span>${note ? `<em>${note}</em>` : ''}`; return li; };
+  const f = new Infall(R_STATION), s = (m) => Math.round(secs(m)), inside = secs(f.tauEnd - f.tauH).toFixed(1);
+  const label = (t) => `<small style="display:block;font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">${t}</small>`;
+  const row = (k, saw, real, note) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${k}</b><span>${label('You saw')}${saw}</span><em style="font-size:15px;color:#e3dff0">${label('What happened')}${real}${note ? ` <span style="color:var(--amber-2)">${note}</span>` : ''}</em>`;
+    return li;
+  };
   const box = document.createElement('div'); box.className = 'fp-logbook';
-  box.innerHTML = '<p class="eyebrow">Expedition log · Tern above Erebus</p><h2>What you saw</h2>';
+  box.innerHTML = '<p class="eyebrow">Expedition log · Tern above Erebus</p><h2>What you saw, and what happened</h2>';
   const ul = document.createElement('ul');
+  const pick = st.answer === 'fell in' ? 'You told Ines it fell in. It did.' : st.answer === 'frozen' ? 'You told Ines it was frozen. Only its picture was.' : '';
   ul.append(
-    row('Beacon K-1', 'crossed the horizon 58 s after release, by its own clock', st.prediction === 'right' ? 'You predicted ping 9 correctly.' : 'Ping 9 arrived 64 s after release, not 53.'),
-    row('Rescue', st.margin != null ? `fired ${Math.round(st.margin)} s before the deadline` : 'Ines came home', st.seenAt == null ? 'The picture on your screen was old light the whole time.' : tries ? `It took ${tries + 1} tries. On the try that worked, your screen showed her at ${st.seenAt.toFixed(1)} rₛ.` : `Your screen showed her at ${st.seenAt.toFixed(1)} rₛ, still looking fine.`),
-    row('Descent', st.lost != null ? `the universe aged ${Math.round(st.lost)} s more than you` : 'held at twice the relay rate', 'Hovering clocks run slow; the field paid for it.'),
-    row('Orpheus', st.frames ? `${st.frames} frames received, the last from just above the horizon` : 'its last frame froze at the horizon', st.answer === 'fell in' ? 'You told Ines it fell in. It did.' : 'Its clock never stopped; only its light did.'),
+    row('Beacon K-1',
+      `Its pings came further and further apart: ping 9 arrived ${s(f.messageArrival(90))} s after release, not the ${s(90)} s of its own clock. Then its dot hung at the edge of the shadow, reddening, until it faded.`,
+      `By its own clock it crossed the horizon ${s(f.tauH)} s after release, and reached the centre ${inside} s later.`,
+      st.prediction === 'right' ? 'You predicted ping 9.' : ''),
+    row('Ines',
+      st.seenAt != null ? `When you fired, your screen showed her at ${st.seenAt.toFixed(1)} rₛ, looking almost normal.` : 'On your screen she looked fine the whole time.',
+      st.metAt != null ? `The beam caught her at ${st.metAt.toFixed(2)} rₛ, ${Math.round(st.margin)} s before the last moment it could have left.` : `The beam had to leave within ${s(f.rescueDeadline)} s of her mayday, while her picture still looked fine.`,
+      tries ? `It took ${tries + 1} tries.` : ''),
+    row('Descent',
+      'Your own clock ran normally. The windows went black and every star crowded in behind you.',
+      st.lost != null ? `You held ${st.deepest != null ? `${st.deepest.toFixed(2)} rₛ` : 'low'}. The relay far away aged ${Math.round(st.lost)} s more than you did.` : 'Hovering clocks run slow. The relay far away aged more than you did.'),
+    row('Orpheus',
+      st.frames ? `${st.frames} frames, the last sent from ${st.rLast != null ? `${st.rLast.toFixed(2)} rₛ` : 'just above the horizon'}, each later and redder than the one before. Then nothing, ever.` : 'Its frames came slower and redder, and then stopped.',
+      `It crossed the horizon ${s(f.tauH)} s after launch by its own clock, and reached the centre ${inside} s later. Nothing it saw inside can ever reach us.`,
+      pick),
   );
   box.append(ul);
+  if (st.shipT > 60 && st.relayT > st.shipT) {
+    const c = document.createElement('p'); c.className = 'fp-logbook-foot';
+    c.textContent = `Your clock logged ${formatDuration(st.shipT)} aboard the Tern. The relay, far from Erebus, logged ${formatDuration(st.relayT - st.shipT)} more.`;
+    box.append(c);
+  }
   const p = document.createElement('p'); p.className = 'fp-logbook-foot';
   p.textContent = 'From far away, nothing is ever seen to fall in. That is a fact about light, not about the things that fall.';
   const actions = document.createElement('div'); actions.className = 'fp-logbook-actions';
@@ -504,6 +651,6 @@ function logbook(g) {
     keep.onclick = () => { box.remove(); res(); };
     const menu = Object.assign(document.createElement('a'), { href: '#title', textContent: 'Main menu', className: 'button' });
     actions.append(keep, menu); box.append(p, actions);
-    g.el.append(box); g.controls.unlock(); keep.focus();
+    g.el.append(box); g.controls.unlock(); keep.focus({ preventScroll: true }); box.scrollTop = 0; // start at the top: it scrolls on short screens
   });
 }
