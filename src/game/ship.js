@@ -335,7 +335,7 @@ function consoleKeysTexture(accent) {
 
 export function buildShip() {
   const group = new THREE.Group();
-  const colliders = [], windows = [], interactables = [], doors = [], rooms = [], screens = {}, lights = {}, blinkers = [];
+  const colliders = [], walls = [], windows = [], interactables = [], doors = [], rooms = [], screens = {}, lights = {}, blinkers = [];
 
   const M = {
     wall: new THREE.MeshStandardMaterial({ color: 0xdfe2ea, roughness: 0.75, metalness: 0.05, map: wallTexture() }),
@@ -384,7 +384,7 @@ export function buildShip() {
       const m = axis === 'x' ? box(len, h, T, mat, mid, y, at) : box(T, h, len, mat, at, y, mid);
       const rep = Math.max(1, Math.round(len / 1.6));
       m.material = mat.clone(); m.material.map = mat.map.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(rep, Math.max(1, Math.round(h / 1.3)));
-      if (solid) colliders.push(axis === 'x' ? [a, at - T / 2, b, at + T / 2] : [at - T / 2, a, at + T / 2, b]);
+      if (solid) { const rect = axis === 'x' ? [a, at - T / 2, b, at + T / 2] : [at - T / 2, a, at + T / 2, b]; colliders.push(rect); walls.push(rect); }
       if (solid && y0 === 0 && h > 0.4) axis === 'x' ? box(len, 0.1, T + 0.02, M.trim, mid, 0.05, at) : box(T + 0.02, 0.1, len, M.trim, at, 0.05, mid); // kick plate
     };
     let cur = from;
@@ -413,7 +413,7 @@ export function buildShip() {
         trimTop.material = M.amber;
         for (const jx of [o.a - 0.035, o.b + 0.035]) axis === 'x' ? box(0.07, 2.15, T + 0.05, M.trim, jx, 1.075, at) : box(T + 0.05, 2.15, 0.07, M.trim, at, 1.075, jx); // jambs
         const coll = { box: axis === 'x' ? [o.a, at - T / 2, o.b, at + T / 2] : [at - T / 2, o.a, at + T / 2, o.b], off: false };
-        colliders.push(coll);
+        colliders.push(coll); walls.push(coll);
         doors.push({ id: o.id, panel, axis, closed: cx, width: w, open: 0, coll, center: axis === 'x' ? [cx, at] : [at, cx], locked: !!o.locked, label: o.label });
       }
       cur = o.b;
@@ -718,7 +718,7 @@ export function buildShip() {
   plane(2.1, 0.985, new THREE.MeshStandardMaterial({ map: whiteboardTexture(), roughness: 0.35 }), -2.2, 1.68, -3.428, 0);
   box(2.2, 1.06, 0.03, M.rail, -2.2, 1.68, -3.45); box(1.0, 0.04, 0.08, M.rail, -2.2, 1.13, -3.41);
   for (const [dx, c] of [[-0.2, M.navy], [-0.08, M.red], [0.05, M.leaf]]) { const mk = cyl(0.012, 0.12, c, -2.2 + dx, 1.16, -3.41, 'x'); mk.rotation.y = 0.1; }
-  interactables.push({ id: 'whiteboard', pos: new THREE.Vector3(-2.2, 1.68, -3.43), radius: 2.4, label: 'Read the whiteboard',
+  interactables.push({ id: 'whiteboard', pos: new THREE.Vector3(-2.2, 1.68, -3.43), radius: 3.2, label: 'Read the whiteboard',
     lines: [['YOU', 'Einstein\'s field equation. Matter tells spacetime how to curve; curved spacetime tells matter how to move.'],
       ['YOU', 'Someone has worked it out underneath: at ten horizon radii our clocks run at 0.949 of the relay\'s. Every hour here is about an hour and three minutes out there.']] });
   // on the bench: a spare probe in its cradle, a spectrometer, a stack of data cards
@@ -759,7 +759,7 @@ export function buildShip() {
   const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30333f, 0.9); group.add(hemi);
 
   mergeStatic(group, new Set([M.glass, M.door]), rooms);
-  return { group, colliders, windows, interactables, doors, rooms, screens, lights, blinkers, materials: M };
+  return { group, colliders, walls, windows, interactables, doors, rooms, screens, lights, blinkers, materials: M };
 }
 
 /** Bake the group's loose static meshes into one mesh per shared material. Moving parts (doors), glass and

@@ -135,6 +135,25 @@ export function mountGame(root, { checkpoint } = {}) {
 
   // ---- interaction ----
   let focusIt = null;
+  // Does a wall (or a closed door) stand between two floor points? The last 0.25 m is ignored, so
+  // things mounted on a wall still count from in front of it.
+  function wallBetween(x0, z0, x1, z1) {
+    const dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, dz);
+    if (len < 0.3) return false;
+    const tMax = (len - 0.25) / len;
+    for (const w of ship.walls) {
+      if (w.off) continue;
+      const [ax, az, bx, bz] = w.box || w;
+      let t0 = 0, t1 = tMax;
+      for (const [p, d, lo, hi] of [[x0, dx, ax, bx], [z0, dz, az, bz]]) {
+        if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) { t0 = 1; break; } continue; }
+        let ta = (lo - p) / d, tb = (hi - p) / d; if (ta > tb) [ta, tb] = [tb, ta];
+        t0 = Math.max(t0, ta); t1 = Math.min(t1, tb);
+      }
+      if (t0 <= t1) return true;
+    }
+    return false;
+  }
   function findInteractable() {
     const eye = new THREE.Vector3(g.me.x, g.eye, g.me.z);
     const dir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(g.me.pitch, g.me.yaw, 0, 'YXZ'));
@@ -143,6 +162,7 @@ export function mountGame(root, { checkpoint } = {}) {
       if (it.disabled || !g.handlers[it.id]) continue;
       const to = it.pos.clone().sub(eye), d = to.length();
       if (Math.hypot(to.x, to.z) > it.radius) continue; // reach is measured across the floor, so low things on a desk count
+      if (wallBetween(eye.x, eye.z, it.pos.x, it.pos.z)) continue; // never through a wall or a closed door
       // the look must land near the thing sideways: a cone that narrows with distance (about 32° at 1 m,
       // 22° at 2 m). Up and down stays lenient, so a desk item counts without staring at the floor.
       const hd = Math.hypot(to.x, to.z), hl = Math.hypot(dir.x, dir.z) || 1;
@@ -274,6 +294,7 @@ export function mountGame(root, { checkpoint } = {}) {
       focusIt = findInteractable();
       const label = focusIt?.label;
       if (focusIt) {
+        camera.updateMatrixWorld(); // the matrices may still hold last frame's pose (e.g. the console view)
         const v = focusIt.pos.clone().project(camera);
         focusBox.hidden = v.z > 1;
         focusBox.style.transform = `translate(${((v.x + 1) / 2) * el.clientWidth}px, ${((1 - v.y) / 2) * el.clientHeight}px)`;
