@@ -119,3 +119,19 @@ test('formatDuration', () => {
   assert.equal(formatDuration(90), '1.5 min');
   assert.equal(formatDuration(0.0049), '4.9 ms');
 });
+
+test('climbSeen: continuous at the burn, eases home, clock keeps running', async () => {
+  const { Infall, climbSeen, CLIMB_M } = await import('../src/physics/infall.js');
+  const f = new Infall(20);
+  const seenAt = f.messageArrival(f.rescueAt(f.rescueDeadline * 0.8).tau);
+  const saved = { seenAt }, b = f.seenAt(seenAt);
+  const c0 = climbSeen(f, saved, seenAt);
+  assert.ok(Math.abs(c0.r - b.r) < 1e-9 && Math.abs(c0.lnz - b.lnz) < 1e-9 && Math.abs(c0.tau - b.tau) < 1e-9);
+  let prev = c0;
+  for (let i = 1; i <= 20; i++) {
+    const c = climbSeen(f, saved, seenAt + (i / 20) * CLIMB_M);
+    assert.ok(c.r >= prev.r - 1e-12 && c.tau > prev.tau);
+    prev = c;
+  }
+  assert.ok(Math.abs(prev.r - f.R0) < 1e-9 && Math.abs(prev.lnz) < 1e-9);
+});

@@ -24,3 +24,5 @@ body[data-input=touch] .ph-keys { display: none; }
 .ph-save { border-color: var(--ok); color: var(--ok); background: rgba(127,214,168,.1); margin-left: auto; }
 @media (max-width: 520px) { .ph-save { margin-left: 0; } .ph-keys { display: none; } }
 @media (prefers-reduced-motion: reduce) { .ph-flash { display: none; } }
+.ph-saved { margin: 0; font: 500 12px var(--mono); color: var(--ok); }
+.ph-saved[hidden] { display: none; }

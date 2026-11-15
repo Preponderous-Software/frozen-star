@@ -15,6 +15,7 @@ const M_METRES = HOLE.mass * METERS_PER_M_SUN; // one M of length at Erebus: abo
 const LOCK = 0.01 / M_METRES; // the field holds the photon sphere to within a centimetre
 const MAST = 1 / M_METRES; // the dorsal mast stands one metre further out
 const NEAR = 0.012; // how close (in M) the helm must bring the ship before the field can lock
+const SNAP = 0.06; // a helm target this close (in M, 0.03 rₛ) is taken as the photon sphere itself
 const secs = (m) => m * SEC_PER_M;
 const LAP_S = secs(PHOTON_LAP.hover), LAP_FAR_S = secs(PHOTON_LAP.far);
 const LAP_KM = (2 * Math.PI * PHOTON_SPHERE * M_METRES) / 1000;
@@ -97,7 +98,7 @@ function drawSide(ctx, w, hh, cam, locked) {
 // ---------- the laser section of the helm panel ----------
 function laserApp(body, g, st) {
   st.cam = st.cam || g.haloCam || (g.haloCam = sideCam()); // one WebGL context, made the first time it is needed
-  const dispose = helmApp(body, g, { onTarget: (r) => { g.helmTarget = r; st.locked = false; } });
+  const dispose = helmApp(body, g, { onTarget: (r) => { g.helmTarget = Math.abs(r - PHOTON_SPHERE) < SNAP ? PHOTON_SPHERE : r; st.locked = false; } }); // a near miss snaps to 1.5 rₛ
   const orbit = h('canvas.fp-feed', { style: { aspectRatio: '1 / 1', maxWidth: '360px', margin: '0 auto' } }); orbit.width = orbit.height = 400;
   const side = h('canvas.fp-feed'); side.width = 640; side.height = 360;
   const status = h('p.fine');
@@ -112,7 +113,7 @@ function laserApp(body, g, st) {
     fire.hidden = st.step !== 'hull';
     fire.disabled = !st.locked || flying || st.step !== 'hull' || !st.onFire;
     mast.hidden = st.step !== 'mast'; mast.disabled = !st.locked || flying || st.step !== 'mast' || !st.onFire;
-    status.textContent = st.locked ? `Field locked to the photon sphere, ${(PHOTON_SPHERE / 2).toFixed(3)} rₛ, to within a centimetre.`
+    status.textContent = st.locked ? `Field locked to the photon sphere, ${(PHOTON_SPHERE / 2).toFixed(3)} rₛ, to within a centimetre.${!flying && !st.onFire && st.step !== 'done' ? ' The laser arms in a moment: listen to WREN first.' : ''}`
       : Math.abs(g.shipR - PHOTON_SPHERE) < 0.2 ? `Altitude ${(g.shipR / 2).toFixed(3)} rₛ. Bring it to 1.500 rₛ and the field will lock.`
         : `Altitude ${(g.shipR / 2).toFixed(3)} rₛ. The laser test needs the ship at the photon sphere, 1.5 rₛ.`;
     drawOrbit(orbit.getContext('2d'), orbit.width, orbit.height, { shipR: g.shipR, pulses: st.pulses });
@@ -152,6 +153,7 @@ export async function haloAct(g, { logbook } = {}) {
   })().catch(() => {});
   await g.until(() => st.locked);
   g.waypoint = null;
+  g.objective('Photon sphere reached. Listen to WREN, then log a prediction'); // the descent is done: its hint must not fire now
   stats.halo = { ...(stats.halo || {}) };
   await g.say('WREN', 'Photon sphere. I have locked the field to it, to within a centimetre. You will see why that matters.');
   await g.say('WREN', `Look forward: the shadow now covers exactly half the sky, ${Math.round(shadowDeg(PHOTON_SPHERE))} degrees. Its edge is a circle at right angles to our nose: straight up, straight down, and straight out on either side of the hull.`);
@@ -170,6 +172,7 @@ export async function haloAct(g, { logbook } = {}) {
   await g.until(() => p1.far() >= PHOTON_LAP.far);
   p1.stopAt = PHOTON_LAP.far; p1.live = false; // caught: it goes no further
   g.audio.ping(1, 1);
+  g.objective(null); // done: the pulse is home
   stats.halo.lap = LAP_S;
   await g.say('WREN', `Caught at the stern, ${LAP_S.toFixed(1)} seconds after it left, ${HALO.LOCK_LAP_M.toFixed(1)} metres from where it set out. It went all the way round Erebus: ${fmtKm(LAP_KM)}.`);
   await g.say('WREN', pick === 0 ? 'As you predicted. That is just the circumference divided by the speed of light.'
