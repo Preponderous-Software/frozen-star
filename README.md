@@ -14,6 +14,8 @@ Everything outside the windows is a real light-ray trace through curved spacetim
 
 ![Falling through the horizon in a dream: the shadow spreads, the light crowds overhead, and at the horizon nothing happens](docs/media/gifs/dream.gif)
 
+[▶ The dream as video (MP4, 5 s)](docs/media/darkroom/dream.mp4) · [WebM](docs/media/darkroom/dream.webm)
+
 You dream of falling in. The black spreads until the light is all overhead, you cross the horizon, and nothing happens. The dream is ray-traced from a real fall from 10 rₛ, seen by someone falling, with the true aberration and colour shifts.
 
 ### Waking up aboard the Tern
@@ -42,6 +44,8 @@ Ines's capsule loses power and drifts in. Her radio messages arrive slower and r
 ### III · The descent
 
 ![The descent: the Tern lowers toward the horizon, the shadow fills the window, and the clock strip shows the relay running ahead](docs/media/gifs/descent.gif)
+
+[▶ The descent as video (MP4)](docs/media/darkroom/descent.mp4) · [WebM](docs/media/darkroom/descent.webm)
 
 Take the ship down at the helm until the far relay's clock runs twice as fast as yours, and hold it there. The shadow swallows the window, and the clock strip over it shows the relay pulling ahead. You can hear it too: the ship's clock tocks on the left, the relay's ticks on the right, two to one at 1.33 rₛ.
 
@@ -105,6 +109,8 @@ A main menu with Continue, New game, Chapters (replay any act once finished), Tr
 
 ## Gallery
 
+![Aboard the Tern: the quarters, the corridor, the lab and the bridge, in a captioned grid](docs/media/darkroom/rooms.jpg)
+
 | | | |
 |---|---|---|
 | ![The bridge, looking aft](docs/media/ship/bridge-aft-after.png) | ![The corridor, looking aft](docs/media/ship/corridor-aft-after.png) | ![The quarters' bunk](docs/media/ship/quarters-bunk-after.png) |
@@ -142,6 +148,8 @@ BASE=http://127.0.0.1:8638/ node tools/media.cjs            # everything (slow u
 BASE=http://127.0.0.1:8638/ node tools/media.cjs gifs/beacon training/   # just some
 node tools/media.cjs --list
 ```
+
+The MP4/WebM clips and the room grid in `docs/media/darkroom/` come from [darkroom](https://github.com/Preponderous-Software/darkroom) and `tools/darkroom/media.json`; [docs/media/README.md](docs/media/README.md) says how to run it, and has a pilot report on darkroom.
 
 ## Playtesting
 

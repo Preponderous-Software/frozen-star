@@ -1,0 +1,366 @@
+{
+  "description": "Frozen Star's README clips, stills and contact sheet, shot by darkroom (a partial port of tools/media.cjs, plus MP4/WebM and a room grid). Serve the repo, then: darkroom shoot tools/darkroom/media.json --var base=http://127.0.0.1:8640/",
+  "out": "../../docs/media/darkroom",
+  "vars": {
+    "base": "http://127.0.0.1:8640/"
+  },
+  "devices": {
+    "wide": {
+      "width": 960,
+      "height": 540
+    },
+    "window": {
+      "width": 800,
+      "height": 450
+    },
+    "small": {
+      "width": 640,
+      "height": 360
+    }
+  },
+  "budgets": {
+    "still_kb": 220,
+    "gif_mb": 2,
+    "mp4_kb": 600,
+    "webm_kb": 400
+  },
+  "defaults": {
+    "backend": "web",
+    "adapter": "hook",
+    "device": "desktop",
+    "url": "{base}tools/darkroom/#go=ship&cp=bridge&ts=1",
+    "waitUntil": "load",
+    "ready": "true",
+    "timeout": 1500,
+    "retries": 1,
+    "quality": 88,
+    "setup": [
+      {
+        "js": "const q = new URLSearchParams(location.hash.slice(1)); localStorage.setItem('frozen-star.settings.v1', JSON.stringify({ quality: 'high', subs: 'normal' })); if (q.get('finished')) localStorage.setItem('frozen-star.fp.v1', JSON.stringify({ cp: q.get('cp'), flags: { finished: true } })); else localStorage.removeItem('frozen-star.fp.v1'); const url = q.get('go') === 'title' ? 'index.html#title' : `index.html?debug&timescale=${q.get('ts') || 1}${q.get('cp') ? '&cp=' + q.get('cp') : ''}${q.get('lowgpu') ? '&lowgpu' : ''}#ship`; setTimeout(() => location.replace('../../' + url), 0)"
+      },
+      {
+        "wait": 5000
+      },
+      {
+        "js": "await new Promise((res, rej) => { const t0 = Date.now(); const f = () => { let ok = false; try { ok = (location.pathname.endsWith('index.html') && document.body.dataset.ready === '1' && (location.hash !== '#ship' || (window.__fs && __fs.time > 0.5))); } catch (e) {} if (ok) res(); else if (Date.now() - t0 > 300000) rej(new Error('timed out waiting for: ' + \"location.pathname.endsWith('index.html') && document.body.dataset.ready === '1' && (location.hash !== '#ship' || (window.__fs && __fs.time > 0.5))\")); else setTimeout(f, 100); }; f(); })"
+      },
+      {
+        "css": ".fp-look { display: none !important; }"
+      },
+      {
+        "js": "window.__dr = { until(fn, ms = 30000) { return new Promise((res, rej) => { const t0 = Date.now(); const f = () => { let ok = false; try { ok = fn(); } catch (e) {} if (ok) res(); else if (Date.now() - t0 > ms) rej(new Error('timed out waiting for ' + fn)); else setTimeout(f, 100); }; f(); }); }, place(x, z, yaw = 0, pitch = 0) { Object.assign(__fs.me, { x, z, yaw, pitch, vx: 0, vz: 0 }); }, skip(n) { for (let k = 0; k < n; k++) __fs.hud.skip(); }, clean() { __fs.waypoint = null; __fs.hud.clearSubs(); }, open(id) { __fs.handlers[id](__fs.ship.interactables.find((it) => it.id === id)); } }; { const raf0 = window.requestAnimationFrame.bind(window), held = []; window.requestAnimationFrame = (cb) => (__dr.hold ? (held.push(cb), 0) : raf0(cb)); __dr.freeze = () => { __fs.paused = true; __dr.hold = true; }; __dr.thaw = () => { __dr.hold = false; for (const cb of held.splice(0)) raf0(cb); }; }"
+      }
+    ]
+  },
+  "shots": [
+    {
+      "name": "title",
+      "kind": "clip",
+      "device": "small",
+      "url": "{base}tools/darkroom/#go=title",
+      "caption": "The title screen: Erebus ray-traced live behind the menu.",
+      "alt": "Animation: the title screen, a black hole with a glowing disk turning behind the menu",
+      "fps": 10,
+      "gif": {
+        "width": 640,
+        "colors": 128
+      },
+      "steps": [
+        {
+          "wait": 9000
+        },
+        {
+          "repeat": 36,
+          "steps": [
+            {
+              "frames": 5
+            },
+            {
+              "capture": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "descent",
+      "kind": "clip",
+      "device": "small",
+      "url": "{base}tools/darkroom/#go=ship&cp=rescue-done&ts=2&lowgpu=1",
+      "caption": "The descent: the Tern lowers from 10 rₛ to 1.3 rₛ and the shadow fills the window.",
+      "alt": "Animation: through the bridge window, the black hole's shadow grows until it fills most of the view",
+      "fps": 10,
+      "gif": {
+        "width": 640,
+        "colors": 128
+      },
+      "video": [
+        "mp4",
+        "webm"
+      ],
+      "poster": -1,
+      "setup+": [
+        {
+          "css": ".fp-prompt, .fp-focus, .fp-cross, .fp-objective, .fp-menu-btn { display: none !important; }"
+        },
+        {
+          "js": "await __dr.until(() => __fs.flags.helmUnlocked && __fs.mode === 'walk', 300000)"
+        },
+        {
+          "js": "__dr.place(0, -10.6, 0, 0.12); __dr.skip(4)"
+        },
+        {
+          "frames": 12
+        }
+      ],
+      "steps": [
+        {
+          "repeat": 44,
+          "steps": [
+            {
+              "js": "const k = Math.min(1, (i + 1) / 30); __fs.helmTarget = 20 * (2.6 / 20) ** k; window.__until = __fs.time + 0.2; __fs.paused = false"
+            },
+            {
+              "js": "await __dr.until(() => __fs.time >= window.__until, 120000)"
+            },
+            {
+              "js": "__fs.paused = true"
+            },
+            {
+              "frames": 2
+            },
+            {
+              "js": "__dr.freeze()"
+            },
+            {
+              "capture": true
+            },
+            {
+              "js": "__dr.thaw()"
+            }
+          ]
+        },
+        {
+          "repeat": 20,
+          "steps": [
+            {
+              "js": "__dr.freeze()"
+            },
+            {
+              "capture": true
+            },
+            {
+              "js": "__dr.thaw()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dream",
+      "kind": "clip",
+      "device": "small",
+      "url": "{base}tools/darkroom/#go=ship&cp=bridge&ts=1",
+      "caption": "The prologue dream: a fall from rest at 10 rₛ through the horizon, as the faller sees it.",
+      "alt": "Animation: falling toward a black hole, the shadow spreads below and the sky crowds into a ring overhead",
+      "fps": 8,
+      "gif": false,
+      "video": [
+        "mp4",
+        "webm"
+      ],
+      "setup+": [
+        {
+          "js": "const { lookBasis, fallerVelocity } = await import('./src/render/raytracer.js'); const { Infall } = await import('./src/physics/infall.js'); const { shipPosition, R_STATION } = await import('./src/game/world.js'); const E = new Infall(R_STATION).E, dir = shipPosition().map((v) => v / R_STATION); window.__fall = (r, line) => { const g = __fs, pos = dir.map((v) => v * r); if (!g.__fall) { g.__fall = true; g.hud.clearSubs(); g.objective(null); g.waypoint = null; g.mode = 'cutscene'; g.controls.setEnabled(false); g.hud.crosshair(false); g.hideShip = true; g.hud.skip = () => {}; g.say = () => Promise.resolve(); } if (line !== g.__line) { g.__line = line; g.hud.clearSubs(); if (line) g.hud.say('YOU', line, { style: { fontStyle: 'italic' }, dur: 999 }); } g.skyOverride = () => ({ cam: pos, basis: lookBasis(pos, [0, -0.4, 0]), V: fallerVelocity(pos, E), fov: 1.35, time: g.time, disk: true }); }; __fall(20, null)"
+        },
+        {
+          "frames": 4
+        }
+      ],
+      "steps": [
+        {
+          "repeat": 30,
+          "steps": [
+            {
+              "js": "const r = 20 * (0.9 / 20) ** ((i + 1) / 29); __fall(r, r < 2 ? '(Nothing happened.)' : r < 7 ? '(The black is spreading. The light is all overhead now.)' : '(Falling. No wind, no sound.)')"
+            },
+            {
+              "frames": 2
+            },
+            {
+              "js": "__dr.freeze()"
+            },
+            {
+              "capture": true
+            },
+            {
+              "js": "__dr.thaw()"
+            }
+          ]
+        },
+        {
+          "repeat": 12,
+          "steps": [
+            {
+              "js": "__dr.freeze()"
+            },
+            {
+              "capture": true
+            },
+            {
+              "js": "__dr.thaw()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "orpheus-feed",
+      "kind": "clip",
+      "device": "desktop",
+      "url": "{base}tools/darkroom/#go=ship&cp=helm-done&ts=4",
+      "crop": [
+        720,
+        0,
+        560,
+        720
+      ],
+      "caption": "The Orpheus feed: frames arrive further and further apart, until the last one that ever will.",
+      "alt": "Animation: a camera feed panel whose pictures update less and less often, ending with 'next frame: never'",
+      "fps": 6,
+      "gif": {
+        "width": 560,
+        "colors": 128
+      },
+      "setup+": [
+        {
+          "js": "__dr.skip(4)"
+        },
+        {
+          "js": "await __dr.until(() => typeof __fs.launchOrpheus === 'function', 60000)"
+        },
+        {
+          "js": "__fs.launchOrpheus()"
+        },
+        {
+          "js": "await __dr.until(() => !!__fs.orpheus, 60000)"
+        },
+        {
+          "js": "__dr.open('feed')"
+        },
+        {
+          "js": "await __dr.until(() => __fs.feedState().frames >= 50, 900000)"
+        }
+      ],
+      "steps": [
+        {
+          "repeat": 70,
+          "steps": [
+            {
+              "js": "if (!window.__done) { window.__f = __fs.feedState().frames; window.__until = __fs.time + 1.5; __fs.paused = false }"
+            },
+            {
+              "js": "await __dr.until(() => window.__done || __fs.feedState().frames > window.__f || __fs.time >= window.__until, 600000)"
+            },
+            {
+              "js": "__fs.paused = true; if (!isFinite(__fs.feedState().nextIn)) window.__after = (window.__after || 0) + 1; if (window.__after > 4) window.__done = true"
+            },
+            {
+              "js": "__dr.freeze()"
+            },
+            {
+              "capture": true
+            },
+            {
+              "js": "__dr.thaw()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "room",
+      "kind": "still",
+      "format": "jpg",
+      "url": "{base}tools/darkroom/#go=ship&cp=epilogue&ts=4&finished=1",
+      "each": [
+        "quarters",
+        "corridor",
+        "lab",
+        "bridge"
+      ],
+      "caption": "A room of the Tern, after the story.",
+      "alt": "A room aboard the research ship Tern",
+      "steps": [
+        {
+          "js": "await __dr.until(() => __fs.time >= 18, 600000)"
+        },
+        {
+          "js": "const at = { bridge: [0, -6.4, 0, 0.02], corridor: [0, 6.8, 0, 0], lab: [-1.6, 0.9, 1.15, 0], quarters: [1.6, 3.3, -1.95, -0.08] }[vars.value]; __dr.place(...at)"
+        },
+        {
+          "frames": 12
+        },
+        {
+          "js": "__dr.clean(); __fs.paused = true"
+        },
+        {
+          "frames": 2
+        },
+        {
+          "js": "__dr.freeze()"
+        }
+      ],
+      "device": "wide"
+    },
+    {
+      "name": "rooms",
+      "kind": "grid",
+      "of": "room",
+      "cols": 2,
+      "title": "Aboard the Tern",
+      "captions": [
+        "Quarters",
+        "Corridor",
+        "Lab",
+        "Bridge"
+      ],
+      "caption": "The four rooms of the Tern, as a captioned grid.",
+      "alt": "A two-by-two grid: the quarters, the corridor, the lab and the bridge"
+    },
+    {
+      "name": "helm-deep",
+      "kind": "still",
+      "format": "jpg",
+      "url": "{base}tools/darkroom/#go=ship&cp=rescue-done&ts=4",
+      "caption": "The helm at 1.30 rₛ: far-away clocks run more than twice as fast.",
+      "alt": "The helm console open over the bridge, the black hole filling the window behind it",
+      "steps": [
+        {
+          "js": "await __dr.until(() => __fs.flags.helmUnlocked && __fs.mode === 'walk', 300000)"
+        },
+        {
+          "js": "__dr.skip(4); __fs.helmTarget = 2.6"
+        },
+        {
+          "js": "await __dr.until(() => __fs.shipR < 2.7, 600000)"
+        },
+        {
+          "js": "__dr.open('helm'); window.__until = __fs.time + 6"
+        },
+        {
+          "js": "await __dr.until(() => __fs.time >= window.__until && __fs.mode === 'console', 300000)"
+        },
+        {
+          "js": "__fs.paused = true"
+        },
+        {
+          "frames": 2
+        },
+        {
+          "js": "__dr.freeze()"
+        }
+      ]
+    }
+  ]
+}
