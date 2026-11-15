@@ -95,7 +95,10 @@ function friendlyMass(massSun) {
 /** A familiar object of roughly this mass in kg, for scale. */
 function massLike(kg) {
   const things = [[7.3e22, 'the Moon'], [9.4e20, 'the dwarf planet Ceres'], [5e11, 'every person on Earth put together'], [6e9, 'the Great Pyramid'], [1e8, 'an aircraft carrier']];
-  return things.reduce((best, t) => (Math.abs(Math.log10(kg / t[0])) < Math.abs(Math.log10(kg / best[0])) ? t : best))[1];
+  const [m, name] = things.reduce((best, t) => (Math.abs(Math.log10(kg / t[0])) < Math.abs(Math.log10(kg / best[0])) ? t : best));
+  const k = kg / m; // say "three times" when it is not close to one
+  const word = (n) => ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][n] || String(n);
+  return k >= 1.5 ? `${name} ${Math.round(k) === 2 ? 'twice' : `${word(Math.round(k))} times`} over` : k <= 0.67 ? `${k >= 0.4 ? 'half of' : `a ${['', '', 'half', 'third', 'quarter', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][Math.round(1 / k)] || `1/${Math.round(1 / k)}`} of`} ${name}` : name;
 }
 
 const sup = (n) => String(n).replace(/-/g, '⁻').replace(/\d/g, (c) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c]);
