@@ -311,22 +311,37 @@
           "js": "__dr.freeze()"
         }
       ],
-      "device": "wide"
+      "device": "wide",
+      "setup+": [
+        {
+          "css": ".fp-objective, .fp-cross, .fp-menu-btn { display: none !important; }"
+        }
+      ]
     },
     {
       "name": "rooms",
       "kind": "grid",
-      "of": "room",
-      "cols": 2,
+      "cols": 3,
       "title": "Aboard the Tern",
-      "captions": [
-        "Quarters",
-        "Corridor",
-        "Lab",
-        "Bridge"
-      ],
-      "caption": "The four rooms of the Tern, as a captioned grid.",
-      "alt": "A two-by-two grid: the quarters, the corridor, the lab and the bridge"
+      "caption": "Three rooms of the Tern, as a captioned grid (the corridor is left out: with the HUD hidden, its ship canvas came out blank in two takes).",
+      "alt": "Three views side by side: the quarters, the lab and the bridge",
+      "tiles": [
+        {
+          "shot": "room",
+          "frame": 0,
+          "caption": "Quarters"
+        },
+        {
+          "shot": "room",
+          "frame": 2,
+          "caption": "Lab"
+        },
+        {
+          "shot": "room",
+          "frame": 3,
+          "caption": "Bridge"
+        }
+      ]
     },
     {
       "name": "helm-deep",

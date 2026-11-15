@@ -13,11 +13,15 @@ darkroom shoot tools/darkroom/media.json --var base=http://127.0.0.1:8000/   # a
 
 | Shot | Output | In the README |
 |---|---|---|
-| `dream` | `darkroom/dream.mp4`, `.webm`, `-poster.jpg`: the prologue's fall, as video | linked under the dream GIF |
-| `descent` | `darkroom/descent.mp4`, `.webm`, `.gif`, `-poster.jpg`: the descent, as video | linked under the descent GIF |
-| `room` + `rooms` | `darkroom/room-<name>.jpg`, one per room, and `darkroom/rooms.jpg`, a captioned 2×2 grid of the four rooms | the grid, in the gallery |
+| `dream` | `darkroom/dream.mp4`, `.webm`: the prologue's fall, as video | the dream GIF links to it |
+| `descent` | `darkroom/descent.mp4`, `.webm`: the descent, as video (shot with `?lowgpu`, so the sky is coarser than in the GIF) | the descent GIF links to it |
+| `room`, `rooms` | `darkroom/rooms.jpg`: a captioned grid of the quarters, the lab and the bridge, with the HUD hidden (the per-room stills are not committed) | the grid, at the top of the Gallery |
 | `helm-deep` | `darkroom/helm-deep.jpg`: the helm at 1.3 rₛ | not used (`panels/helm-deep.png` stays) |
-| `title`, `orpheus-feed` | ports of the `media.cjs` GIFs | not used (the existing GIFs are better) |
+| `title`, `orpheus-feed` | ports of the `media.cjs` GIFs | not used: the existing title GIF is better, and the `orpheus-feed` port was not run to the end in this pilot (it waits for 50 feed frames, and the machine was too loaded) |
+
+GitHub shows no player for a video that is committed to the repo. A bare relative path, a `blob` URL, a `raw` URL and a `<video>` tag were all tried through GitHub's markdown renderer, and none of them played; only uploaded attachments play inline. So the README's GIFs act as posters that link to the MP4s.
+
+The posters, the descent GIF, the title GIF and the helm still that darkroom also writes are not committed, because the existing pictures are better.
 
 Takes, state and contact sheets for review stay in `tools/darkroom/.darkroom/`, which git ignores. To review a take frame by frame, run `darkroom sheet tools/darkroom/media.json descent`.
 
@@ -46,6 +50,7 @@ This was darkroom 0.2.0, on a 20-core WSL machine with a load average between 35
 - **No way to end a clip on a condition or hold its last frame.** The Orpheus feed sets a `window.__done` flag and runs out its loop. The descent and dream hold by capturing the last frame again 12 to 20 times.
 - **Long one-line JS in JSON.** The game's helpers (`place`, `skip`, `open`, the dream's camera) become long one-line strings in `defaults.setup`. A `setupFile` or an init script file would read much better.
 - **Repeated `--only` flags** keep only the last value. Write `--only a b c`.
+- **One bad value of an `each` shot means reshooting all of them.** With the HUD hidden by `css`, the corridor's ship canvas came out blank twice, in the `each` run and again in a single-value retake; only the sky in its windows was drawn. The same pose with the HUD visible rendered correctly. This looks like a compositing quirk of the game's two stacked WebGL canvases under SwiftShader, not a darkroom bug. Grid `tiles` with `{shot, frame}` made it easy to leave the corridor out.
 
 **Gaps filed upstream**
 

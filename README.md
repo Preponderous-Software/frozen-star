@@ -12,9 +12,9 @@ Everything outside the windows is a real light-ray trace through curved spacetim
 
 ### Prologue: a dream
 
-![Falling through the horizon in a dream: the shadow spreads, the light crowds overhead, and at the horizon nothing happens](docs/media/gifs/dream.gif)
+[![Falling through the horizon in a dream: the shadow spreads, the light crowds overhead, and at the horizon nothing happens](docs/media/gifs/dream.gif)](docs/media/darkroom/dream.mp4)
 
-[▶ The dream as video (MP4, 5 s)](docs/media/darkroom/dream.mp4) · [WebM](docs/media/darkroom/dream.webm)
+*Click the GIF, or open the [MP4](docs/media/darkroom/dream.mp4) or [WebM](docs/media/darkroom/dream.webm), for a video version.*
 
 You dream of falling in. The black spreads until the light is all overhead, you cross the horizon, and nothing happens. The dream is ray-traced from a real fall from 10 rₛ, seen by someone falling, with the true aberration and colour shifts.
 
@@ -43,9 +43,9 @@ Ines's capsule loses power and drifts in. Her radio messages arrive slower and r
 
 ### III · The descent
 
-![The descent: the Tern lowers toward the horizon, the shadow fills the window, and the clock strip shows the relay running ahead](docs/media/gifs/descent.gif)
+[![The descent: the Tern lowers toward the horizon, the shadow fills the window, and the clock strip shows the relay running ahead](docs/media/gifs/descent.gif)](docs/media/darkroom/descent.mp4)
 
-[▶ The descent as video (MP4)](docs/media/darkroom/descent.mp4) · [WebM](docs/media/darkroom/descent.webm)
+*Click the GIF, or open the [MP4](docs/media/darkroom/descent.mp4) or [WebM](docs/media/darkroom/descent.webm), for a video version.*
 
 Take the ship down at the helm until the far relay's clock runs twice as fast as yours, and hold it there. The shadow swallows the window, and the clock strip over it shows the relay pulling ahead. You can hear it too: the ship's clock tocks on the left, the relay's ticks on the right, two to one at 1.33 rₛ.
 
@@ -109,7 +109,7 @@ A main menu with Continue, New game, Chapters (replay any act once finished), Tr
 
 ## Gallery
 
-![Aboard the Tern: the quarters, the corridor, the lab and the bridge, in a captioned grid](docs/media/darkroom/rooms.jpg)
+![Aboard the Tern: the quarters, the lab and the bridge, side by side](docs/media/darkroom/rooms.jpg)
 
 | | | |
 |---|---|---|
