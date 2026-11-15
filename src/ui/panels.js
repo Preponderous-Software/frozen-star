@@ -6,10 +6,13 @@ import { tidalStretch } from '../physics/body.js';
 
 const EMIT_NM = 470; // the probe's beacon is blue
 
-export function stationPanel(f, { title = 'Station · what you see', clockNote = 'station clock', subject = 'Probe' } = {}) {
+// tag: a name drawn beside the falling dot. hints: a plain-words line under each readout.
+export function stationPanel(f, { title = 'Station · what you see', clockNote = 'station clock', subject = 'Probe', tag = '', hints = false } = {}) {
   const canvas = h('canvas.field', { 'aria-label': 'What the station sees of the probe' });
   const clock = h('div.clock');
-  const seenTau = stat(`${subject} clock you see`), seenZ = stat('Redshift 1+z'), seenB = stat('Brightness'), seenR = stat('Appears at');
+  const hint = (t) => (hints ? t : undefined);
+  const seenTau = stat(`${subject} clock you see`, '–', hint('read off its light')), seenZ = stat('Redshift 1+z', '–', hint('how stretched its light is')),
+    seenB = stat('Brightness', '–', hint('of what it was beside you')), seenR = stat('Appears at', '–', hint('where that light left it'));
   const st = status('The probe hangs beside the station, ready to drop.');
   const lg = log();
   const el = h('section.view',
@@ -21,13 +24,19 @@ export function stationPanel(f, { title = 'Station · what you see', clockNote =
     const s = f.seenAt(S), z = Math.exp(s.lnz), flux = Math.exp(-4 * s.lnz), nm = EMIT_NM * z;
     view.begin().hole().station().glow(s.r, { nm, flux });
     for (const p of pulses) view.pulse(p.r, p.color);
+    if (tag && S > 0 && s.lnz <= 9) {
+      const { ctx, d, cy } = view, x = view.x(s.r);
+      ctx.font = `500 ${11 * d}px "IBM Plex Mono", ui-monospace, monospace`; ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(236,232,244,.92)'; ctx.fillText(`${tag} ▾`, x, cy - 20 * d);
+      ctx.textAlign = 'start';
+    }
     clock.innerHTML = `${S.toFixed(1)} M<small>${formatDuration(secondsFromM(S, mass))} for this hole</small>`;
     seenTau.set(`${s.tau.toFixed(3)} M`);
     seenZ.set(s.lnz < Math.log(1e4) ? z.toPrecision(4) : s.lnz < 200 ? sig(z) : `e<sup>${s.lnz.toFixed(0)}</sup>`);
     seenB.set(flux > 1e-3 ? `${(flux * 100).toPrecision(3)}%` : `10<sup>${Math.floor(-4 * s.lnz / Math.LN10)}</sup>`);
     seenR.set(`${(s.r / 2).toFixed(s.r < 2.01 ? 6 : 2)} r<sub>s</sub>`);
     if (S <= 0) st.set('The probe hangs beside the station, ready to drop.');
-    else if (s.lnz > 9) st.set('Gone. The light is stretched more than e⁹ times and too faint for any telescope. What you last saw was old light.', 'done');
+    else if (s.lnz > 9) st.set('Gone. Its light is stretched more than 8,000 times and too faint for any telescope. What you last saw was old light.', 'done');
     else if (nm > 780 && s.r > 2.3) st.set('Too red to see by eye now: its light has slid into the infrared. It is still falling, but from here it seems to crawl.', 'bad');
     else if (nm > 780) st.set('Frozen at the horizon and too red to see by eye. An infrared telescope still catches it, barely. Its clock has nearly stopped.', 'bad');
     else if (z > 1.6) st.set('Slowing and reddening. Each ping takes longer to reach you than the one before.', 'warn');

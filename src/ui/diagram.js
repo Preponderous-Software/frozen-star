@@ -11,6 +11,8 @@ export class SpacetimeDiagram {
   constructor(canvas, infall) {
     this.canvas = canvas; this.f = infall;
     this.tau = 0; this.S = 0; this.signals = []; this.rescues = []; this.showDeadline = false; this.rMax = infall.R0 + 1.5;
+    // what to call the two worldlines; a faller name also labels its dot
+    this.names = { station: 'station', faller: '' };
   }
 
   reset() { this.tau = 0; this.S = 0; this.signals = []; this.rescues = []; }
@@ -21,7 +23,7 @@ export class SpacetimeDiagram {
     if (c.isConnected && c.clientWidth) { w = Math.round(c.clientWidth * d); hh = Math.round(c.clientHeight * d); if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; } }
     else { w = c.width; hh = c.height; d = w / 640; }
     const f = this.f, nowProbe = f.tTilde(f.etaOfTau(Math.min(this.tau, f.tauEnd))), nowStation = f.stationTTilde(this.S);
-    const pad = { l: 46 * d, r: 12 * d, t: 16 * d, b: 30 * d };
+    const pad = { l: 46 * d, r: 12 * d, t: (16 + (this.top || 0)) * d, b: 30 * d }; // top: room for a title
     const kr = (hh - pad.t - pad.b) / this.rMax;
     const spanEqual = (w - pad.l - pad.r) / kr;
     const span = Math.max(50, Math.min(130, 2 * spanEqual));
@@ -88,15 +90,21 @@ export class SpacetimeDiagram {
     if (tauNow < f.tauEnd) this._cone(ctx, f.rOf(eNow), f.tTilde(eNow), 1, 'rgba(255,200,130,', 18);
     this._dot(ctx, f.rOf(eNow), f.tTilde(eNow), '#ffc882');
     this._dot(ctx, f.R0, nowStation, '#8fb8ff');
+    const pf = this.P(f.rOf(eNow), f.tTilde(eNow)), ps = this.P(f.R0, nowStation);
+    if (this.names.faller && pf[0] > pad.l + 4 * d) this._tag(ctx, this.names.faller, pf[0] + 8 * d, Math.min(pf[1] - 6 * d, h - pad.b - 4 * d), 'rgba(255,200,130,.98)');
+    this._tag(ctx, 'now', ps[0] - 30 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
     ctx.restore();
+    // the falling line has scrolled out of the window: say where it went
+    if (pf[0] < pad.l) this._label(ctx, `◂ ${this.names.faller || 'the gold line'}: earlier, off the left edge`, pad.l + 6 * d, pad.t + 10 * d, 'rgba(255,200,130,.95)');
     // axes and labels
     ctx.font = `${10 * d}px ${MONO}`;
-    for (const [r, lab] of [[0, 'r = 0'], [2, '1 rₛ'], [10, '5 rₛ'], [f.R0, `${f.R0 / 2} rₛ`]]) { ctx.fillStyle = 'rgba(155,152,180,.9)'; ctx.fillText(lab, 4 * d, this.P(r, 0)[1] + 3 * d); }
-    ctx.fillStyle = 'rgba(155,152,180,.9)'; ctx.fillText('time →', w - pad.r - 44 * d, h - 10 * d);
-    ctx.fillText(`t̃ ${t0.toFixed(0)}–${t1.toFixed(0)} M`, pad.l, h - 10 * d);
-    this._label(ctx, 'singularity', pad.l + 6 * d, y0 - 8 * d, 'rgba(255,107,92,.95)');
-    this._label(ctx, 'horizon', pad.l + 6 * d, yH - 6 * d, 'rgba(255,180,92,.95)');
-    this._label(ctx, 'station', pad.l + 6 * d, this.P(f.R0, 0)[1] - 6 * d, 'rgba(143,184,255,.95)');
+    for (const [r, lab] of [[0, 'centre'], [2, '1 rₛ'], [10, '5 rₛ'], [f.R0, `${f.R0 / 2} rₛ`]]) { ctx.fillStyle = 'rgba(155,152,180,.9)'; ctx.fillText(lab, 4 * d, this.P(r, 0)[1] + 3 * d); }
+    ctx.fillStyle = 'rgba(155,152,180,.9)';
+    ctx.textAlign = 'right'; ctx.fillText('later →', w - pad.r, h - 10 * d); ctx.textAlign = 'start';
+    ctx.fillText(`time → (${(t1 - t0).toFixed(0)} M across) · up: distance from centre`, pad.l, h - 10 * d);
+    this._label(ctx, 'singularity: the end of every path inside', pad.l + 6 * d, y0 - 8 * d, 'rgba(255,107,92,.95)');
+    this._label(ctx, 'horizon: no way back below this', pad.l + 6 * d, yH - 6 * d, 'rgba(255,180,92,.95)');
+    this._label(ctx, this.names.station, pad.l + 6 * d, this.P(f.R0, 0)[1] - 6 * d, 'rgba(143,184,255,.95)');
   }
 
   _outgoing(ctx, s, nowStation) {
@@ -128,5 +136,12 @@ export class SpacetimeDiagram {
   }
 
   _dot(ctx, r, T, color) { const d = this.g.d; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(...this.P(r, T), 4.5 * d, 0, 7); ctx.fill(); }
+  /** A label on a dark plate, for names that sit on top of busy lines. */
+  _tag(ctx, text, x, y, color) {
+    const d = this.g.d; ctx.font = `500 ${10.5 * d}px ${MONO}`; const tw = ctx.measureText(text).width;
+    x = Math.min(x, this.g.w - this.g.pad.r - tw - 4 * d);
+    ctx.fillStyle = 'rgba(8,10,20,.82)'; ctx.fillRect(x - 3 * d, y - 10 * d, tw + 6 * d, 14 * d);
+    ctx.fillStyle = color; ctx.fillText(text, x, y);
+  }
   _label(ctx, text, x, y, color) { ctx.fillStyle = color; ctx.font = `${10 * this.g.d}px ${MONO}`; ctx.fillText(text, x, y); }
 }
