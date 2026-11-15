@@ -8,6 +8,14 @@ The old Soviet name for black holes was "frozen stars", after the frozen image a
 
 Everything outside the windows is a real light-ray trace through curved spacetime, and everything happens at its true speed: at 120,000 suns, one unit of black-hole time (GM/c³) is 0.59 seconds.
 
+## Download
+
+- **Play in your browser:** https://frozen-star.play.danielstephenson.dev
+- **Windows:** download `frozen-star-<version>-win-x64.zip` from the [latest release](https://github.com/Preponderous-Software/frozen-star/releases/latest), unzip it and double-click `Frozen Star.exe`. The app is not signed, so if Windows says it protected your PC, choose "More info", then "Run anyway".
+- **Any computer, offline:** `frozen-star-<version>-web.zip` from the same release is the site itself. Unzip it, serve the folder (`python3 -m http.server 8000`) and open http://localhost:8000/.
+
+The game needs WebGL 2. Each download has a `.sha256` file next to it; the changes are in [CHANGELOG.md](CHANGELOG.md).
+
 ## The story
 
 ### Prologue: a dream
