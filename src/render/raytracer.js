@@ -30,7 +30,8 @@ void derivs(vec3 x, vec3 p, float E, out vec3 dx, out vec3 dp) {
 }
 
 float hash13(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
-vec3 hash33(vec3 p) { p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
+// sin-free hash (Hoskins): sin() of large arguments is imprecise on many GPUs, which scrambles or drops stars
+vec3 hash33(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
 float noise(vec3 p) {
   vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(hash13(i), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
@@ -49,9 +50,10 @@ vec3 blackbody(float T) {
 // Light from a source of temperature T and brightness I, received with frequency ratio g.
 vec3 shifted(float T, float I, float g) {
   if (uShift == 0) g = 1.0;
+  g = max(g, 0.0); // pow() of a negative number is undefined in GLSL; some GPUs return NaN
   float To = T * g;
   float vis = To < 2200.0 ? pow(max(To, 0.0) / 2200.0, 3.0) : 1.0; // most of the light has left the visible band
-  return blackbody(To) * I * min(pow(g, 4.0), 400.0) * vis;
+  return blackbody(To) * I * min((g * g) * (g * g), 400.0) * vis;
 }
 
 vec3 sky(vec3 d, float g) {
@@ -63,20 +65,20 @@ vec3 sky(vec3 d, float g) {
     if (h.x > (layer == 0 ? 0.86 : 0.93)) {
       vec3 off = (h - 0.5) * 0.6;
       float dist = length(f - off);
-      float I = smoothstep(0.16, 0.0, dist) * (layer == 0 ? 0.9 : 0.4) * (0.3 + h.y);
+      float I = (1.0 - smoothstep(0.0, 0.16, dist)) * (layer == 0 ? 0.9 : 0.4) * (0.3 + h.y);
       col += shifted(mix(3200.0, 14000.0, h.z * h.z), I, g);
     }
   }
   // Galactic band
   vec3 nG = normalize(vec3(0.25, 0.92, 0.3));
-  float band = exp(-pow(dot(d, nG), 2.0) / 0.012);
+  float dn = dot(d, nG); float band = exp(-dn * dn / 0.012); // not pow(): its base can be negative
   float dust = fbm(d * 5.0);
   col += shifted(4800.0, band * (0.015 + 0.06 * fbm(d * 2.5 + 7.0)) * smoothstep(0.35, 0.75, dust + 0.15), g);
   if (uGrid == 1) {
     float lat = asin(clamp(d.y, -1.0, 1.0)), lon = atan(d.z, d.x);
     float step = 3.14159265 / 12.0;
     float la = abs(fract(lat / step + 0.5) - 0.5) * step, lo = abs(fract(lon / step + 0.5) - 0.5) * step * cos(lat);
-    float line = smoothstep(0.012, 0.0, min(la, lo));
+    float line = (1.0 - smoothstep(0.0, 0.012, min(la, lo)));
     col += shifted(9000.0, line * 0.25, g);
   }
   return col;
@@ -92,7 +94,7 @@ vec4 diskSample(vec3 xh, vec3 p, float E, float gCam) {
   float prof = pow(r / 6.0, -0.75) * pow(max(1.0 - sqrt(6.0 / r), 0.0), 0.25) / 0.488;
   float phi = atan(xh.z, xh.x) + Omega * uTime * 3.0;
   float streak = 0.55 + 0.75 * fbm(vec3(r * 1.7, cos(phi) * 2.2, sin(phi) * 2.2));
-  float edge = smoothstep(uDiskOuter, uDiskOuter - 5.0, r) * smoothstep(6.0, 6.6, r);
+  float edge = (1.0 - smoothstep(uDiskOuter - 5.0, uDiskOuter, r)) * smoothstep(6.0, 6.6, r);
   float T = 4600.0 * prof;
   vec3 c = shifted(T, 0.09 * prof * prof * streak, g);
   return vec4(c, clamp(edge * (0.55 + 0.45 * streak), 0.0, 1.0));
@@ -152,6 +154,8 @@ void main() {
   float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = max(mix(vec3(lum), col, 1.45), 0.0); // film-like saturation so shifts read clearly
   col = pow(col, vec3(1.0 / 2.2));
+  // a NaN from anywhere above would otherwise show as a black or garbage pixel on some GPUs
+  if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
   outColor = vec4(col, 1.0);
 }`;
 
