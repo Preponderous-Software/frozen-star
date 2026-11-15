@@ -179,7 +179,7 @@ export function mountGame(root, { checkpoint } = {}) {
   function renderMenu(view) {
     const btn = (label, fn, id) => h('button', { type: 'button', id, onclick: fn }, label);
     if (view === 'main') {
-      menu.replaceChildren(
+      menu.replaceChildren(...[
         h('p.eyebrow', 'Paused'),
         h('h3', 'Frozen Star'),
         btn('Resume', resume, 'fp-resume'),
@@ -187,7 +187,7 @@ export function mountGame(root, { checkpoint } = {}) {
         btn('Controls', () => renderMenu('controls')),
         h('a.button', { href: '#title' }, 'Main menu'),
         isDesktop ? btn('Quit', () => window.close()) : null,
-        h('p.fine', 'Progress saves automatically at each chapter.'));
+        h('p.fine', 'Progress saves automatically at each chapter.')].filter(Boolean));
       menu.querySelector('#fp-resume').focus();
     } else if (view === 'controls') {
       menu.replaceChildren(h('p.eyebrow', 'Controls'),

@@ -59,7 +59,7 @@ export function createHud(root) {
     },
     /** A title card in the middle of the screen. */
     card(title, sub, sec = 3.5) {
-      card.replaceChildren(h('h2', title), sub ? h('p', sub) : null); card.hidden = false;
+      card.replaceChildren(...[h('h2', title), sub ? h('p', sub) : null].filter(Boolean)); card.hidden = false;
       card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
       return new Promise((r) => setTimeout(() => { card.hidden = true; r(); }, sec * 1000));
     },
