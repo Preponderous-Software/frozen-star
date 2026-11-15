@@ -18,9 +18,6 @@ for %%a in (%*) do (
 )
 set "URL=http://127.0.0.1:%FS_PORT%/%QUERY%%HASH%"
 
-rem Already running? Just open the browser.
-curl.exe -s -o NUL "http://127.0.0.1:%FS_PORT%/index.html" && (start "" "%URL%" & exit /b 0)
-
 where py >nul 2>nul || (
     echo Frozen Star needs Python 3 to serve its files. Installing it with winget ...
     winget install --id Python.Python.3.13 -e --accept-source-agreements --accept-package-agreements || (echo Install it from https://www.python.org/downloads/ & pause & exit /b 1)
@@ -38,7 +35,11 @@ if exist "%FS_SRC%\index.html" (
 )
 if not exist "%FS_DIR%\index.html" (echo No copy of Frozen Star yet. Start WSL and run this again. & pause & exit /b 1)
 
+rem Already running? The files above are fresh and the server never caches, so just open the browser.
+curl.exe -s -o NUL "http://127.0.0.1:%FS_PORT%/index.html" && (start "" "%URL%" & exit /b 0)
+
 title Frozen Star
 rem Windows Python can map .js to text/plain from the registry, which browsers refuse for modules.
-py -3 -c "import functools,http.server,os,sys,webbrowser; H=http.server.SimpleHTTPRequestHandler; H.extensions_map.update({'.js':'text/javascript','.css':'text/css','.html':'text/html'}); s=http.server.ThreadingHTTPServer(('127.0.0.1',int(sys.argv[2])),functools.partial(H,directory=sys.argv[1])); print('Frozen Star is running at',sys.argv[3]); print('Close this window to stop it.'); os.environ.get('FS_NO_BROWSER') or webbrowser.open(sys.argv[3]); s.serve_forever()" "%FS_DIR%" "%FS_PORT%" "%URL%"
+rem no-store: the browser always fetches the current files, so an update shows on the next load.
+py -3 -c "import functools,http.server,os,sys,webbrowser; B=http.server.SimpleHTTPRequestHandler; B.extensions_map.update({'.js':'text/javascript','.css':'text/css','.html':'text/html'}); H=type('H',(B,),{'end_headers':lambda self:(self.send_header('Cache-Control','no-store'),B.end_headers(self))[1]}); s=http.server.ThreadingHTTPServer(('127.0.0.1',int(sys.argv[2])),functools.partial(H,directory=sys.argv[1])); print('Frozen Star is running at',sys.argv[3]); print('Close this window to stop it.'); os.environ.get('FS_NO_BROWSER') or webbrowser.open(sys.argv[3]); s.serve_forever()" "%FS_DIR%" "%FS_PORT%" "%URL%"
 if errorlevel 1 pause
