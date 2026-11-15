@@ -1,38 +1,95 @@
 // The settings form, shared by the pause menu and the main menu.
+// Choices are drawn as on-page buttons rather than native dropdowns: native popups render as empty
+// boxes in some browsers and are awkward with a thumb or a gamepad.
 import { h } from '../ui/dom.js';
-import { saveSettings } from './settings.js';
+import { saveSettings, DEFAULTS } from './settings.js';
 
 export function settingsForm(settings, onChange, { onBack } = {}) {
   const changed = () => { saveSettings(settings); onChange?.(settings); };
+  const sync = [];
   const row = (label, input, out) => h('label.fp-set', h('span', label), input, out || null);
-  const range = (id, min, max, step, val, fmt, set) => {
-    const out = h('output', fmt(val));
-    const i = h('input', { type: 'range', id, min, max, step, value: val });
-    i.addEventListener('input', () => { set(+i.value); out.textContent = fmt(+i.value); changed(); });
-    return [i, out];
+  const range = (id, min, max, step, key, fmt) => {
+    const out = h('output', { for: id });
+    const i = h('input', { type: 'range', id, min, max, step, value: settings[key] });
+    const show = () => { out.textContent = fmt(+i.value); i.style.setProperty('--fill', `${((+i.value - min) / (max - min)) * 100}%`); };
+    i.addEventListener('input', () => { settings[key] = +i.value; show(); changed(); });
+    sync.push(() => { i.value = settings[key]; show(); });
+    show();
+    return row(label(id), i, out);
   };
-  const select = (id, val, opts, set) => {
-    const sel = h('select', { id }, opts.map(([v, l]) => h('option', { value: v, selected: v === val }, l)));
-    sel.addEventListener('change', () => { set(sel.value); changed(); });
-    return sel;
+  // a row of buttons that behaves like a radio group (arrow keys and the d-pad move along it)
+  const choice = (id, key, opts) => {
+    const btns = opts.map(([v, l]) => h('button.fp-seg-b', { type: 'button', role: 'radio', 'data-v': v }, l));
+    const paint = () => btns.forEach((b) => { const on = b.dataset.v === settings[key]; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
+    const pick = (b) => { settings[key] = b.dataset.v; paint(); changed(); };
+    btns.forEach((b, n) => {
+      b.addEventListener('click', () => pick(b));
+      b.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault(); e.stopPropagation();
+        const nb = btns[(n + d + btns.length) % btns.length]; pick(nb); nb.focus();
+      });
+    });
+    sync.push(paint); paint();
+    return h('div.fp-set.fp-set-choice', h('span', { id: id + '-l' }, label(id)), h('div.fp-seg', { id, role: 'radiogroup', 'aria-labelledby': id + '-l' }, btns));
   };
-  const inv = h('input', { type: 'checkbox', id: 'fp-invert', checked: settings.invertY });
-  inv.addEventListener('change', () => { settings.invertY = inv.checked; changed(); });
-  const fs = h('button', { type: 'button', id: 'fp-fullscreen' }, document.fullscreenElement ? 'Leave fullscreen' : 'Fullscreen');
-  fs.addEventListener('click', () => {
+  const toggle = (id, key) => {
+    const b = h('button.fp-switch', { type: 'button', role: 'switch', id }, h('i'));
+    const paint = () => b.setAttribute('aria-checked', String(!!settings[key]));
+    b.addEventListener('click', () => { settings[key] = !settings[key]; paint(); changed(); });
+    sync.push(paint); paint();
+    return h('div.fp-set.fp-set-switch', h('span', { id: id + '-l' }, label(id)), b);
+  };
+  const LABELS = { 'fp-sens': 'Look speed', 'fp-fov': 'Field of view', 'fp-vol': 'Volume', 'fp-invert': 'Invert look up and down', 'fp-subsize': 'Subtitle size', 'fp-quality': 'Graphics' };
+  const label = (id) => LABELS[id];
+  const invert = toggle('fp-invert', 'invertY');
+  invert.querySelector('button').setAttribute('aria-labelledby', 'fp-invert-l');
+
+  const canFs = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+  const fsLabel = () => (document.fullscreenElement ? 'Leave fullscreen' : 'Go fullscreen');
+  const fs = canFs ? h('button.fp-wide', { type: 'button', id: 'fp-fullscreen' }, fsLabel()) : null;
+  fs?.addEventListener('click', () => {
     const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
-    p?.then?.(() => { fs.textContent = document.fullscreenElement ? 'Leave fullscreen' : 'Fullscreen'; }).catch?.(() => {});
+    p?.then?.(() => { fs.textContent = fsLabel(); }).catch?.(() => {});
   });
+  const reset = h('button.fp-wide.fp-quiet', { type: 'button', id: 'fp-reset' }, 'Reset to defaults');
+  reset.addEventListener('click', () => { Object.assign(settings, DEFAULTS); sync.forEach((f) => f()); changed(); });
+
+  const group = (title, ...kids) => h('fieldset.fp-group', h('legend', title), kids);
   return h('div.fp-settings',
     h('p.eyebrow', 'Settings'),
-    row('Look speed', ...range('fp-sens', 0.2, 3, 0.05, settings.sens, (v) => `${v.toFixed(2)}×`, (v) => { settings.sens = v; })),
-    row('Field of view', ...range('fp-fov', 55, 95, 1, settings.fov, (v) => `${v}°`, (v) => { settings.fov = v; })),
-    row('Volume', ...range('fp-vol', 0, 1, 0.05, settings.volume, (v) => `${Math.round(v * 100)}%`, (v) => { settings.volume = v; })),
-    row('Invert look', inv),
-    row('Subtitles', select('fp-subsize', settings.subs, [['normal', 'Normal'], ['large', 'Large']], (v) => { settings.subs = v; })),
-    row('Graphics', select('fp-quality', settings.quality, [['auto', 'Automatic'], ['low', 'Fast (blurrier sky)'], ['high', 'Sharp (slower)']], (v) => { settings.quality = v; })),
-    fs,
-    onBack ? h('button', { type: 'button', onclick: onBack }, 'Back') : null);
+    group('Looking around',
+      range('fp-sens', 0.2, 3, 0.05, 'sens', (v) => `${v.toFixed(2)}×`),
+      range('fp-fov', 55, 95, 1, 'fov', (v) => `${v}°`),
+      invert),
+    group('Sound and text',
+      range('fp-vol', 0, 1, 0.05, 'volume', (v) => (v === 0 ? 'Off' : `${Math.round(v * 100)}%`)),
+      choice('fp-subsize', 'subs', [['normal', 'Normal'], ['large', 'Large']])),
+    group('Picture',
+      choice('fp-quality', 'quality', [['auto', 'Auto'], ['low', 'Fast'], ['high', 'Sharp']]),
+      h('p.fp-note', 'Fast draws a blurrier sky for slower computers. Sharp needs a strong graphics card.'),
+      fs),
+    reset,
+    h('p.fp-note', 'Settings are saved in this browser and apply straight away.'),
+    onBack ? h('button.fp-wide', { type: 'button', onclick: onBack }, 'Back') : null);
+}
+
+/** What every button does, for keyboard and mouse, a gamepad, and touch. */
+export const CONTROL_ROWS = [
+  ['Walk', 'W A S D or arrow keys', 'Left stick', 'Left thumb pad'],
+  ['Look', 'Mouse (click to capture)', 'Right stick', 'Drag'],
+  ['Use', 'E', 'A', 'Use button'],
+  ['Run', 'Shift', 'Click left stick', '–'],
+  ['Answer', '1 2 3', 'D-pad', 'Tap'],
+  ['Skip a line', 'Space', '–', 'Tap the subtitles'],
+  ['Back / pause', 'Esc', 'B / Start', '☰ button'],
+];
+
+export function controlsTable() {
+  return h('table.fp-controls',
+    h('thead', h('tr', h('th', { scope: 'col' }, h('span.sr', 'Action')), h('th', { scope: 'col' }, 'Keyboard'), h('th', { scope: 'col' }, 'Gamepad'), h('th', { scope: 'col' }, 'Touch'))),
+    h('tbody', CONTROL_ROWS.map(([a, ...v]) => h('tr', h('th', { scope: 'row' }, a), v.map((x) => h('td', x))))));
 }
 
 export const ACTS = [
