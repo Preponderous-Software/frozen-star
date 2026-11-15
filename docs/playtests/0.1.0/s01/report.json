@@ -1,0 +1,119 @@
+{
+  "session": "s01",
+  "goal": "Play from the very beginning as a brand-new player who has never seen the game: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Note every moment of confusion, and screenshot anything that looks broken on screen.",
+  "build": {"version": "0.1.0", "commit": "c667e1e"},
+  "seed": null,
+  "durationSec": 1250,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Corridor outside the quarters door opens onto empty space: no wall, floor or ceiling",
+      "detail": "After leaving the quarters and walking straight on (x=-0.66, z=4.05, yaw 87, room=corridor) the whole view ahead is open starfield and galaxy band, with no wall, floor, ceiling or window frame. A lone wall panel floats on the right and a dark pillar sits on the left. Turning right shows the real corridor, and from that angle the area on the left is a big black opening with the panel hanging in space. I expected a corridor wall, or at least a framed window.",
+      "repro": "pt start ...; pt key Return; skip or watch the dream; pt await WORLD; turn left to the quarters door (Door 3 m marker); pt walkto door; pt hold w 6; pt shot",
+      "screenshot": "shots/corridor_hole.png",
+      "tick": 3762
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Black-hole ray trace in the dream: inner lensed ring ends in hard cuts, bright slivers at the shadow edges",
+      "detail": "All through the dream, thin bright vertical slivers and notches sit on the left and right edges of the shadow where the disk crosses it. Near the end of the dream the lensed ring under the shadow stops abruptly with square-cut ends (about x=425 and x=855, y=355) instead of closing or fading, and the left edge of the shadow is a jagged stair-step. Plain low resolution would blur this, not cut it, so it looks like a march cutoff or seam.",
+      "repro": "pt start ...; pt key Return; pt await DREAM; pt wait 20..60; pt shot",
+      "screenshot": "shots/dream_ring_cut.png",
+      "tick": 1629
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Same shadow-edge seam is visible through the bridge front window",
+      "detail": "Standing at the probe console facing the front window (yaw -6): a bright vertical sliver at the right inner edge of the shadow (x~735, y~380-420) and a hooked bright fragment at the lower left (x~450, y~450), the same artifact as in the dream. It stays still frame to frame.",
+      "repro": "reach the bridge; walk to the probe console; turn to face the front window; pt shot",
+      "screenshot": "shots/bridge_window_seam.png",
+      "tick": 7123
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Optional 'study the spacetime map' objective completes by itself in about 10 s; a stale Map waypoint stays",
+      "detail": "Objective 4 'Optional: study the spacetime map (port wall)' started at tick 12783 and was marked completed at tick 13389 although I stood still and never touched the map console. The objective box disappeared, but a 'Map 4 m' waypoint kept pointing left. I expected the optional objective to wait until I used the map, or to say it had been skipped.",
+      "repro": "drop K-1; stay at the probe console until 'Watch the probe fall' completes; do nothing for 10 s; pt events 30",
+      "screenshot": "shots/optional_autocomplete.png",
+      "tick": 13389
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Probe console leads with 'M', 'r_s' and 's for this hole' and never explains them",
+      "detail": "After launch the panel's biggest numbers are '2.1 M', '1.22 s for this hole', 'APPEARS AT 10.00 r_s' and 'proper time tau'. As a new player I could not tell what M or r_s measure. WREN's line 'every ten M of its own time, about six seconds' is the only hint, and it is gone in seconds. Also the top-right menu button sits on top of the panel's scrollbar.",
+      "repro": "pt walkto the probe console; e; click Launch Beacon K-1; pt shot",
+      "screenshot": "shots/units_M.png",
+      "tick": 6669
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Quarters porthole shows an almost black view with a hard grey strip, and E does nothing",
+      "detail": "At wake-up the porthole straight ahead (2.7 m) shows mostly black, a dim brown arc and a hard-edged pale grey vertical strip down the inside left of the frame. Ines then promises a 'ridiculous view'. Pressing E while looking at it did nothing and showed no prompt, even though the controls help says E uses the porthole.",
+      "repro": "pt await WORLD; pt key e (facing the porthole at start); pt shot",
+      "screenshot": "shots/porthole_bar.png",
+      "tick": 2677
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "'Click to look around' pill overlaps the K-1 probe label in the window",
+      "detail": "After Esc from the console, mouse capture is released and the 'Click to look around' pill reappears at screen centre, exactly over the K-1 world label (1+z / clock / third status line). The two texts print on top of each other.",
+      "repro": "at the probe console launch K-1; Esc; face the front window; pt shot",
+      "screenshot": "shots/label_overlap.png",
+      "tick": 11151
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "No objective on screen for about 13 game seconds after reaching the bridge",
+      "detail": "'Go to the bridge' completes at tick 4410 and the chapter card plays, but the next objective only appears at tick 5200. In between the HUD is empty and I did not know whether to wait or explore. WREN's 'drop beacon probe K-1' line helped.",
+      "repro": "walk to the bridge; pt shot every few seconds; pt events",
+      "screenshot": "shots/bridge4.png",
+      "tick": 5072
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Small dark panel with three yellow lights floats in the port bridge window",
+      "detail": "In the left (port) bridge window, next to the probe console, a small dark rectangle with three yellow squares hangs inside the window area with nothing holding it, apparently in space or on the glass.",
+      "repro": "on the bridge, walk to the probe console and face it; look at the left window",
+      "screenshot": "shots/probe4.png",
+      "tick": 6200
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Very low frame and tick rate; walking and turning are sluggish and turning is unpredictable",
+      "detail": "fps reported 10 and the game ran at about 10-12 ticks per real second (machine load average about 31, so partly the environment). The dream showed solid black for about 20 real seconds before the first frame. A 1 s turn key-hold turned anywhere from 10 to 90 degrees, which made aiming at consoles fiddly.",
+      "repro": "pt status; pt hold Right 1 several times and compare yawDeg",
+      "screenshot": "shots/dream2.png",
+      "tick": 21
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 4,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 73.5,
+      "Drop the beacon probe (probe console, left)": 108.23,
+      "Watch the probe fall": 213.05,
+      "Optional: study the spacetime map (port wall)": 223.15
+    },
+    "dreamGameSeconds": 27.85,
+    "observedFps": 10
+  },
+  "fun": 3,
+  "verdict": "The opening works: the dream is striking, the HUD objective and door/bridge waypoints made the way to the bridge clear, and the probe fall paid off (WREN and Ines explain that the probe crossed the horizon in about 58 s of its own time while its picture lingers, reddening and fading). What hurts most is graphical: a corridor outside the quarters that opens straight onto empty space, and recurring hard seams in the black-hole ray trace (dream and bridge window). After that, the console's unexplained units (M, r_s) and an optional map objective that completes itself are the biggest sources of new-player confusion.",
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That time and light behave strangely near a black hole. A probe dropped toward the hole keeps its own clock ticking normally and crosses the horizon in under a minute of its own time. Seen from the ship, its signal gets redshifted (1+z climbing), its pings arrive further and further apart, and its picture slows, reddens and fades at the edge of the shadow long after the probe itself is gone, because what you see is 'old light'."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "The probe console right after launch. It fills with numbers in 'M' and 'r_s' ('2.1 M', '1.22 s for this hole', 'proper time tau') and nothing explains those units, so I could not tell which number mattered. A close second was walking out of the quarters into what looked like open space, and the optional map objective vanishing before I could do it."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "Yes. (1) In the corridor just outside the quarters door (x=-0.66, z=4.05, facing yaw 87, straight across from the door), the wall, floor and ceiling were missing and I saw open starfield with a wall panel floating in it. (2) In the dream, the black-hole render had bright vertical slivers at the shadow edges, and near the end the lensed inner ring stopped with hard square cuts at both ends. (3) The same slivers showed through the bridge front window, seen from the probe console facing forward (yaw -6). (4) The quarters porthole at wake-up (facing yaw -6) was almost black with a hard grey strip down its left inner edge. (5) On the bridge, the 'Click to look around' pill printed on top of the K-1 probe label. (6) A small panel with three yellow lights floated in the port bridge window. Separately, a black bar appeared at the top of the screen when the mouse was captured, which looked like the browser's pointer-lock banner rather than the game."}
+  ]
+}

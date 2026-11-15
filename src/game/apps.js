@@ -76,10 +76,10 @@ export function drawClocks(ctx, w, hh, g) {
   ctx.fillStyle = '#070a14'; ctx.fillRect(0, 0, w, hh);
   const fmt = (s) => { const t = 6 * 3600 + 40 * 60 + s; const hhh = Math.floor(t / 3600) % 24, m = Math.floor(t / 60) % 60, sec = Math.floor(t % 60); return `${String(hhh).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`; };
   const rate = 1 / hoverRate(g.shipR);
-  ctx.font = `500 ${hh * 0.55}px ${MONO}`; ctx.textBaseline = 'middle';
+  ctx.font = `500 ${hh * 0.5}px ${MONO}`; ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffc882'; ctx.fillText(`SHIP ${fmt(g.clocks.ship)}`, w * 0.02, hh / 2);
-  ctx.fillStyle = '#8fb8ff'; ctx.fillText(`RELAY ${fmt(g.clocks.relay)}`, w * 0.36, hh / 2);
-  ctx.fillStyle = rate > 1.5 ? '#ff6b5c' : '#ece8f4'; ctx.fillText(`×${rate.toFixed(rate < 10 ? 3 : 1)}   ${(g.shipR / 2).toFixed(2)} rs`, w * 0.72, hh / 2);
+  ctx.fillStyle = '#8fb8ff'; ctx.fillText(`RELAY ${fmt(g.clocks.relay)}`, w * 0.33, hh / 2);
+  ctx.fillStyle = rate > 1.5 ? '#ff6b5c' : '#ece8f4'; ctx.fillText(`×${rate.toFixed(rate < 10 ? 3 : 1)}  ${(g.shipR / 2).toFixed(2)} rs`, w * 0.66, hh / 2);
   ctx.textBaseline = 'alphabetic';
 }
 
@@ -89,7 +89,7 @@ export function datapadApp(body) {
   body.append(
     h('p.eyebrow', 'Datapad · expedition brief'),
     h('h3', 'Tern expedition to Erebus'),
-    h('p', 'Erebus is an intermediate-mass black hole of about 120,000 suns, drifting alone. Its horizon is 350,000 km across, a little wider than the Moon\'s orbit is far.'),
+    h('p', 'Erebus is an intermediate-mass black hole of about 120,000 suns, drifting alone. Its horizon is 354,000 km in radius, close to the distance from the Earth to the Moon. Distances aboard are given in rₛ, horizon radii: we hold station at 10 rₛ.'),
     h('p', 'You are the expedition\'s relativist. The question you came to settle is an old one: from far away, nothing is ever seen to fall into a black hole. It slows, reddens and freezes at the edge. Does it fall in anyway?'),
     h('p', 'Plan for today: drop beacon probe K-1 and log its signal; capsule survey of the disk light (Ines); descent trial (field permitting); Orpheus camera probe.'),
     h('p.fine', 'At this mass one unit of black-hole time, GM/c³, is 0.59 seconds. Everything you see happens at its true speed.'),
@@ -118,7 +118,8 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
       const own = h('b'), seen = h('b'), gap = h('p.fp-gap');
       const head = h('div.fp-twoclocks',
         h('div', h('span', 'Its own clock'), own),
-        h('div', h('span', 'Its clock, as you see it'), seen), gap);
+        h('div', h('span', 'Its clock, as you see it'), seen), gap,
+        h('p.fp-legend', 'M is the black hole\'s natural unit of time: 1 M = 0.59 s at Erebus. rₛ is the horizon\'s radius (354,000 km); the ship holds at 10 rₛ.'));
       panels = { run: r, st, pr, own, seen, gap };
       wrap.append(head, st.el, pr.el);
     }
@@ -144,19 +145,27 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
 export function commsApp(body, g, { run, onFire, showMap }) {
   const r = run();
   if (!r) { body.append(h('p.eyebrow', 'Comms'), h('p', 'Channel open. No traffic.')); return null; }
-  const st = stationPanel(r.f, { title: 'Capsule · what you see', clockNote: 'ship clock' });
+  const st = stationPanel(r.f, { title: 'Capsule · what you see', clockNote: 'ship clock', subject: 'Her' });
+  const after = h('p.fp-gap', { hidden: true });
   const fire = h('button.danger.big#fp-fire', { onclick: () => { onFire(); fire.disabled = true; fire.textContent = 'Recall beam fired'; } }, 'Fire recall beam');
   if (r.fired != null) { fire.disabled = true; fire.textContent = 'Recall beam fired'; }
   const msgs = h('div.fp-msgs');
   let diag = null, diagCanvas = null;
-  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, st.el, h('p.who', 'Ines, as received'), msgs);
+  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, after, st.el, h('p.fp-legend', 'rₛ is the horizon\'s radius; the ship holds at 10 rₛ. M is black-hole time: 1 M = 0.59 s.'), h('p.who', 'Ines, as received'), msgs);
   if (showMap) {
     diagCanvas = h('canvas.diagram.small'); diag = new SpacetimeDiagram(diagCanvas, r.f); diag.showDeadline = true;
     body.append(h('p.who', 'Spacetime map'), diagCanvas, h('p.fine', 'The red dashed line is the last inward light ray that meets her outside the horizon.'));
   }
   let n = 0;
+  let frozenAt = null;
   const stop = loop(() => {
-    st.update(r.S(), { mass: HOLE.mass });
+    const S = r.S();
+    if (r.saved) {
+      after.hidden = false;
+      if (S < r.saved.seenAt) { after.textContent = 'Beam delivered. The picture below is old light from before it reached her: it will keep falling until the light of her engine burn arrives.'; after.className = 'fp-gap warn'; }
+      else { if (frozenAt == null) frozenAt = r.saved.seenAt; after.textContent = `Engine burn seen at ${(r.saved.r / 2).toFixed(2)} rₛ. She is climbing out and coming home.`; after.className = 'fp-gap'; }
+    }
+    st.update(frozenAt ?? S, { mass: HOLE.mass });
     while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.text)); }
     if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
   });
@@ -174,13 +183,14 @@ export function mapApp(body, g, { run }) {
 }
 
 export function helmApp(body, g, { onTarget }) {
-  const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.001, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => `${sig(1 + 10 ** x, 4)} rₛ` });
+  const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.001, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => (x >= Math.log10(9) - 0.002 ? '10 rₛ' : `${sig(1 + 10 ** x, 4)} rₛ`) });
+  const mark = h('p.fp-legend', 'The relay clock runs twice as fast as yours below 1.33 rₛ, and four times as fast below 1.03 rₛ. The field cannot hold the ship below about 1.03 rₛ.');
   target.input.addEventListener('input', () => onTarget(2 * (1 + 10 ** target.value)));
   const sR = stat('Altitude now'), sRate = stat('Relay clock runs'), sField = stat('Field strength'), sTide = stat('Stretch across the hull');
   const up = h('button#fp-home', { onclick: () => { target.value = Math.log10(9); onTarget(R_STATION); } }, 'Return to 10 rₛ');
   const rearC = h('canvas.fp-feed', { hidden: true }); rearC.width = 640; rearC.height = 360;
-  const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this patch.');
-  body.append(h('p.eyebrow', 'Helm · station-keeping field'), target.el, up, h('div.stats.col', sR.el, sRate.el, sField.el, sTide.el), rearC, rearNote,
+  const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this view; the bright ring is the inner edge of the accretion disk, which now surrounds the ship.');
+  body.append(h('p.eyebrow', 'Helm · station-keeping field'), target.el, mark, up, h('div.stats.col', sR.el, sRate.el, sField.el, sTide.el), rearC, rearNote,
     h('p.fine', 'The field pushes every atom aboard equally, so nobody feels it. Pushing everything at once is indistinguishable from standing still: that is the equivalence principle.'));
   return loop(() => {
     const deep = !!g.rear && g.shipR < 6;
@@ -267,7 +277,7 @@ export function feedApp(body, g, { feedState, feed }) {
 export function archiveApp(body, g, { chapters }) {
   const host = h('div.fp-archive-host');
   let stop = null;
-  const list = h('div.fp-archive-list', chapters.map((c) => h('button.chip', { onclick: () => open(c) }, `${c.num}. ${c.title}`)));
+  const list = h('div.fp-archive-list', chapters.map((c, i) => h('button.chip', { onclick: () => open(c) }, `${i + 1}. ${c.title}`)));
   body.append(h('p.eyebrow', 'Archive · lab terminal'), h('p', 'Training simulations from the expedition library. Each one isolates one idea.'), list, host);
   function open(c) {
     stop?.(); host.replaceChildren(h('h3', c.title), h('p.fine', c.kicker));

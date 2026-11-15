@@ -54,7 +54,9 @@ export function buildShip() {
     wood: new THREE.MeshStandardMaterial({ color: 0x6b5340, roughness: 0.7 }),
     door: new THREE.MeshStandardMaterial({ color: 0xb8bdca, roughness: 0.5, metalness: 0.3, map: panelTexture('#c2c7d3', '#8d93a3', 128, 256, 3, 1) }),
     console: new THREE.MeshStandardMaterial({ color: 0x2b3044, roughness: 0.55, metalness: 0.35 }),
+    hull: new THREE.MeshStandardMaterial({ color: 0x3a3e4a, roughness: 0.7, metalness: 0.5, map: panelTexture('#3c404c', '#2a2d36', 256, 256, 2, 2) }),
   };
+  for (const m of Object.values(M)) m.dithering = true; // soften the banding of point-light falloff
 
   const box = (w, h, d, mat, x, y, z, parent = group) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); parent.add(m); return m;
@@ -173,7 +175,6 @@ export function buildShip() {
   box(0.5, 0.12, 0.7, M.sheet, 4.25, 0.66, 5.9, bunk);
   box(1.9, 0.08, 0.98, M.fabric, 2.6, 0.64, 5.9, bunk);
   box(3.1, 1.2, 0.08, M.wallDark, 3.1, 1.4, 6.42, bunk);
-  box(0.12, 0.05, 0.12, M.amber, 4.3, 1.45, 6.32);
   // desk
   box(0.7, 0.05, 1.4, M.wood, 4.6, 0.76, 3.3);
   colliders.push([4.25, 2.6, 5, 4.0], [1.15, 2.08, 2.05, 2.62]);
@@ -186,7 +187,7 @@ export function buildShip() {
   box(0.9, 2.1, 0.55, M.door, 1.6, 1.05, 2.35); // locker
   interactables.push({ id: 'datapad', pos: new THREE.Vector3(4.55, 0.85, 3.0), radius: 1.3, label: 'Read your datapad' });
   interactables.push({ id: 'photo', pos: new THREE.Vector3(4.8, 0.95, 3.7), radius: 1.2, label: 'Look at the photo' });
-  interactables.push({ id: 'porthole', pos: new THREE.Vector3(4.1, 1.45, 2.05), radius: 1.8, label: 'Look out of the porthole' });
+  interactables.push({ id: 'porthole', pos: new THREE.Vector3(4.1, 1.45, 2.05), radius: 3.2, label: 'Look out of the porthole' });
 
   // ---- Bridge consoles ----
   function makeConsole(id, x, z, ry, label, { low = false } = {}) {
@@ -214,6 +215,7 @@ export function buildShip() {
   }
   makeConsole('probe', -1.95, -11.2, 0.3, 'PROBE');
   makeConsole('helm', 0, -11.3, 0, 'HELM', { low: true });
+  { const it = interactables.find((i) => i.id === 'helm'); it.focus = { pos: new THREE.Vector3(0, 1.75, -9.4), look: new THREE.Vector3(0, 1.45, -13) }; } // at the helm, watch the window
   makeConsole('comms', 1.95, -11.2, -0.3, 'COMMS');
   // chair
   box(0.55, 0.45, 0.55, M.fabric, 0, 0.23, -9.3); box(0.55, 0.55, 0.1, M.fabric, 0, 0.72, -9.03);
@@ -258,19 +260,23 @@ export function buildShip() {
     group.add(m); return m;
   };
   // corridor handrails and ceiling pipes
+  // handrails stop at the doorways: lab door on the port side (z -1.6..-0.4), quarters to starboard (z 3.5..4.7)
+  const railRuns = { [-0.9]: [[-4.8, -1.7], [-0.3, 7.8]], [0.9]: [[-4.8, 3.4], [4.8, 7.8]] };
   for (const sx of [-0.9, 0.9]) {
-    cyl(0.025, 12.6, M.rail, sx, 1.0, 1.5, 'z');
-    for (let z = -4.5; z <= 7.5; z += 2) box(0.04, 0.04, 0.12, M.rail, sx + Math.sign(sx) * 0.05, 1.0, z);
+    for (const [a, b] of railRuns[sx]) {
+      cyl(0.025, b - a, M.rail, sx, 1.0, (a + b) / 2, 'z');
+      box(0.04, 0.04, 0.12, M.rail, sx + Math.sign(sx) * 0.05, 1.0, a + 0.08); box(0.04, 0.04, 0.12, M.rail, sx + Math.sign(sx) * 0.05, 1.0, b - 0.08);
+      box(0.04, 0.015, b - a, M.amber, sx * 1.033, 0.01, (a + b) / 2);
+    }
     cyl(0.05, 13, M.pipe, sx * 0.95, 2.36, 1.5, 'z');
   }
   cyl(0.035, 13, M.pipe, -0.78, 2.4, 1.5, 'z');
   // amber floor strips in the corridor, and under the bridge window
-  for (const sx of [-0.93, 0.93]) box(0.04, 0.015, 12.8, M.amber, sx, 0.01, 1.5);
   box(6.0, 0.03, 0.05, M.amber, 0, 0.73, -12.9);
   box(6.2, 0.06, 0.3, M.trim, 0, 0.72, -12.8);
   // status lights beside doors (they blink)
   const ledMat = (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.5 });
-  for (const [x, y, z, ry, c, rate] of [[0.94, 1.35, 3.3, -Math.PI / 2, 0x7fd6a8, 0.7], [-0.94, 1.35, -0.2, Math.PI / 2, 0x7fd6a8, 0.9], [0.8, 1.4, -4.94, 0, 0x8fb8ff, 0.5], [0, 1.5, 7.94, Math.PI, 0xff6b5c, 1.6], [-3.3, 2.2, -10.5, Math.PI / 2, 0xffb45c, 0.35]]) {
+  for (const [x, y, z, ry, c, rate] of [[0.94, 1.35, 3.3, -Math.PI / 2, 0x7fd6a8, 0.7], [-0.94, 1.35, -0.2, Math.PI / 2, 0x7fd6a8, 0.9], [0.8, 1.4, -4.94, 0, 0x8fb8ff, 0.5], [0, 1.5, 7.94, Math.PI, 0xff6b5c, 1.6], [-3.32, 2.0, -7.9, Math.PI / 2, 0xffb45c, 0.35]]) {
     const plate = box(0.16, 0.24, 0.02, M.trim, x, y, z); plate.rotation.y = ry;
     for (let k = 0; k < 3; k++) {
       const led = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 0.01), ledMat(k === 2 ? 0xffb45c : c));
@@ -287,6 +293,20 @@ export function buildShip() {
   // bridge: overhead cable trays and floor plates
   box(6.4, 0.05, 0.4, M.trim, 0, 3.1, -9);
   box(0.4, 0.05, 7.6, M.trim, -2.9, 3.1, -9); box(0.4, 0.05, 7.6, M.trim, 2.9, 3.1, -9);
+
+  // ---- hull: the outside faces of walls that a window can see, so no wall shows its inside to space ----
+  const skin = (w, hh, x, y, z, ry) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), M.hull); m.position.set(x, y, z); m.rotation.y = ry; group.add(m); };
+  skin(4.2, 2.6, -3.0, 1.25, 1.58, 0);            // lab's aft wall, seen from the corridor windows
+  skin(2.5, 3.3, -2.25, 1.6, -4.92, 0);           // bridge back wall, port of the corridor
+  skin(2.5, 3.3, 2.25, 1.6, -4.92, 0);            // bridge back wall, starboard (seen from the porthole)
+  for (const sx of [1, -1]) {                       // bridge side walls, outside (leaving the side windows clear)
+    skin(4.2, 3.3, sx * 3.48, 1.6, -7.1, sx * Math.PI / 2);
+    skin(0.5, 3.3, sx * 3.48, 1.6, -12.75, sx * Math.PI / 2);
+    skin(3.3, 0.9, sx * 3.48, 0.45, -10.85, sx * Math.PI / 2);   // below the window
+    skin(3.3, 0.6, sx * 3.48, 2.9, -10.85, sx * Math.PI / 2);    // above it
+  }
+  const roof = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 5.1), M.hull); roof.rotation.x = -Math.PI / 2; roof.position.set(-3.0, 2.56, -1.0); group.add(roof);
+  const roofB = new THREE.Mesh(new THREE.PlaneGeometry(6.9, 8.1), M.hull); roofB.rotation.x = -Math.PI / 2; roofB.position.set(0, 3.26, -9.0); group.add(roofB);
 
   const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30333f, 0.9); group.add(hemi);
 

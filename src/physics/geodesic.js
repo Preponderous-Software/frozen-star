@@ -52,7 +52,7 @@ export function trace(x0, look, { V = [0, 0, 0], disk = null, maxSteps = 4000, r
     const r = len(x);
     const [k1x, k1p] = derivs(x, p, E);
     // Step a set distance in space (backwards in λ): fine near the horizon and the hole, coarse far out.
-    const h = -(0.02 * Math.min(r, 8) + 0.09 * Math.max(0, r - 8)) / len(k1x);
+    const h = -(0.035 * Math.min(r, 8) + 0.09 * Math.max(0, r - 8)) / len(k1x);
     const [k2x, k2p] = derivs(add(x, k1x, h / 2), add(p, k1p, h / 2), E);
     const [k3x, k3p] = derivs(add(x, k2x, h / 2), add(p, k2p, h / 2), E);
     const [k4x, k4p] = derivs(add(x, k3x, h), add(p, k3p, h), E);

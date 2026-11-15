@@ -201,7 +201,7 @@ export function mountGame(root, { checkpoint } = {}) {
 
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
-  let skyRect = null;
+  let skyRect = null, lastLockedAt = 0;
   let last = performance.now(), raf = 0, alive = true, skyAvg = 16, skyFrames = 0, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
@@ -241,7 +241,8 @@ export function mountGame(root, { checkpoint } = {}) {
     for (const t of g.ticks) t(dt);
     if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after) { objState.hinted = true; hud.say('WREN', objState.hint); }
     const inp = controls.read(dt);
-    hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1);
+    if (controls.locked) lastLockedAt = g.time;
+    hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && g.time - lastLockedAt < 12);
     if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
     if (g.mode === 'walk' && g.paused) {
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);

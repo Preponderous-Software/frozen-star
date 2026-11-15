@@ -17,6 +17,8 @@ Then you wake in your quarters aboard the Tern (screen `WORLD`). Profiles starte
 
 Practical notes:
 
+- The top 57 pixels of every screenshot are Chromium's "Chrome for Testing" notice, not the game: ignore it.
+
 - Turning: the arrow keys are reliable (`pt face DEG` uses them). Up/Down arrows walk, they
   do not tilt; tilt the view with the mouse after clicking the game once.
 - `pt walkto console`, `pt walkto item` or `pt walkto door` walks to the nearest one; the

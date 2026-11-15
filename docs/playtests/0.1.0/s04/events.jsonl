@@ -1,0 +1,44 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794715873488, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794715873492, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 262, "wallTimeMs": 1794715896045, "who": "WREN", "text": "The station-keeping field can take us lower. Below 1.33 r\u209b, every second aboard is two seconds on the relay far away."}
+{"type": "objective_started", "tick": 753, "wallTimeMs": 1794715971219, "number": 1, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "screen", "tick": 1627, "wallTimeMs": 1794716077487, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 2452, "wallTimeMs": 1794716173949, "who": "WREN", "text": "Relay clock at double speed. Hold here for twenty seconds."}
+{"type": "objective_completed", "tick": 2452, "wallTimeMs": 1794716173987, "number": 1, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "objective_started", "tick": 2452, "wallTimeMs": 1794716173988, "number": 2, "title": "Hold for 20 seconds"}
+{"type": "dialogue", "tick": 3660, "wallTimeMs": 1794716354998, "who": "INES", "text": "The window's gone completely black. WREN, is the camera broken?"}
+{"type": "dialogue", "tick": 3966, "wallTimeMs": 1794716403572, "who": "WREN", "text": "No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera."}
+{"type": "screen", "tick": 4050, "wallTimeMs": 1794716416987, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 4080, "wallTimeMs": 1794716420487, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 4487, "wallTimeMs": 1794716472987, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 4511, "wallTimeMs": 1794716475967, "who": "INES", "text": "Okay. That's enough. Take us back up."}
+{"type": "objective_completed", "tick": 4733, "wallTimeMs": 1794716505487, "number": 2, "title": "Hold for 20 seconds"}
+{"type": "objective_started", "tick": 4733, "wallTimeMs": 1794716505488, "number": 3, "title": "Return to 10 r\u209b (helm)"}
+{"type": "dialogue", "tick": 5218, "wallTimeMs": 1794716533000, "who": "WREN", "text": "Back at station. The rest of the universe aged 63 seconds more than we did down there."}
+{"type": "screen", "tick": 5491, "wallTimeMs": 1794716551487, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 5509, "wallTimeMs": 1794716553488, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "checkpoint", "tick": 5599, "wallTimeMs": 1794716564487, "checkpoint": "helm-done"}
+{"type": "card", "tick": 5599, "wallTimeMs": 1794716564489, "title": "IV \u00b7 Orpheus", "subtitle": "The last probe has a camera."}
+{"type": "objective_completed", "tick": 5599, "wallTimeMs": 1794716564503, "number": 3, "title": "Return to 10 r\u209b (helm)"}
+{"type": "dialogue", "tick": 5599, "wallTimeMs": 1794716564495, "who": "INES", "text": "One probe left. Orpheus. It has a camera, and it streams."}
+{"type": "screen", "tick": 5725, "wallTimeMs": 1794716584987, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 5887, "wallTimeMs": 1794716610452, "who": "WREN", "text": "Orpheus is loaded at the probe console. Its feed will show on the starboard screen."}
+{"type": "objective_started", "tick": 6263, "wallTimeMs": 1794716670259, "number": 4, "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)"}
+{"type": "screen", "tick": 6318, "wallTimeMs": 1794716676487, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 6348, "wallTimeMs": 1794716679496, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 6360, "wallTimeMs": 1794716680987, "from": "WORLD", "to": "CONSOLE"}
+{"type": "objective_completed", "tick": 6432, "wallTimeMs": 1794716690091, "number": 4, "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)"}
+{"type": "objective_started", "tick": 6432, "wallTimeMs": 1794716690100, "number": 5, "title": "Watch the Orpheus feed (starboard screen)"}
+{"type": "screen", "tick": 6487, "wallTimeMs": 1794716698487, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 6517, "wallTimeMs": 1794716703487, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 7156, "wallTimeMs": 1794716762987, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 9683, "wallTimeMs": 1794716952383, "who": "WREN", "text": "Frames are arriving further apart. The signal is being stretched as it climbs out."}
+{"type": "dialogue", "tick": 10193, "wallTimeMs": 1794716973642, "who": "YOU", "text": "(That view. That's what I dreamt.)"}
+{"type": "dialogue", "tick": 12149, "wallTimeMs": 1794717047019, "who": "INES", "text": "So that last frame is all we get. Did it fall in, or is it stuck there?"}
+{"type": "objective_completed", "tick": 12155, "wallTimeMs": 1794717047202, "number": 5, "title": "Watch the Orpheus feed (starboard screen)"}
+{"type": "screen", "tick": 12491, "wallTimeMs": 1794717056676, "from": "CONSOLE", "to": "CHOICE"}
+{"type": "dialogue", "tick": 14884, "wallTimeMs": 1794717114708, "who": "INES", "text": "And the rest of the trip, the part inside... nobody out here will ever see it."}
+{"type": "screen", "tick": 14890, "wallTimeMs": 1794717114788, "from": "CHOICE", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 15238, "wallTimeMs": 1794717121893, "who": "WREN", "text": "No one outside ever will. Only Orpheus saw it."}
+{"type": "dialogue", "tick": 15489, "wallTimeMs": 1794717126678, "who": "YOU", "text": "(Only Orpheus. And me, in a dream.)"}
+{"type": "checkpoint", "tick": 15489, "wallTimeMs": 1794717126678, "checkpoint": "epilogue"}

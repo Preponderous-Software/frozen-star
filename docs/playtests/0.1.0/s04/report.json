@@ -1,0 +1,126 @@
+{
+  "session": "s04",
+  "goal": "The descent and Orpheus: take the ship down at the helm, come back up, then launch Orpheus and watch its feed to the end. Note whether you understood what you saw, and screenshot any visual problems, especially in the window and on the screens.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "c667e1e"
+  },
+  "seed": null,
+  "durationSec": 1260,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "'Launch Orpheus' button on the probe console does nothing on first visit",
+      "detail": "After the helm chapter ended (card 'IV . Orpheus' at tick 5599) I opened the probe console. The panel showed 'Launch Orpheus' but no objective was on screen. Four clicks and a mouse-hold over ~45 s real time did nothing: no launch, no message, no disabled look. WREN even said 'Orpheus is loaded at the probe console' while I was clicking. After Step back and pressing E again, objective 4 appeared and the first click launched. Expected: the button works, or looks disabled and says why.",
+      "repro": "pt start ... --checkpoint rescue-done; complete the helm descent and return; walk to the probe console during the chapter-IV card/dialogue, pt key e, pt click 1000 283 (repeat); then click Step back, pt key e, pt click 1000 283",
+      "screenshot": "shots/launch-dead.png",
+      "tick": 6305
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "'Hold for 20 seconds' never completes on its own and has no countdown; Ines then says to go back up while the objective still says hold",
+      "detail": "Objective 2 started at tick 2452. The 20 game seconds had passed by about tick 3650, but the objective only completed at tick 4733, when I clicked 'Return to 10 rs'. Meanwhile Ines said 'Okay. That's enough. Take us back up.' (tick 4511) while the box still read 'Hold for 20 seconds'. There is no timer or progress anywhere. At ~6-8 ticks/s this was more than 3 real minutes with no sign of progress. Expected: a visible countdown, and the objective switching to 'Return to 10 rs' when the hold is done.",
+      "repro": "pt start ... --checkpoint rescue-done; walk to helm, pt key e; drag the hold slider below 1.33 rs; wait; watch the objective box and subtitles",
+      "screenshot": "shots/hold-objective-stuck.png",
+      "tick": 4715
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Esc does not leave the helm console once the slider has focus",
+      "detail": "The panel says 'Esc or Q to step back'. After I dragged the slider, pressing Esc only put a focus ring on the slider and the panel stayed open. I had to click the Step back button.",
+      "repro": "At helm: pt drag 985 166 900 166 1.5 1; later pt key Escape",
+      "screenshot": "shots/esc-eaten.png",
+      "tick": 4050
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm slider is very nonlinear and goes far past the 2x target with no guidance",
+      "detail": "On opening, the target reads 9.997 rs while ALTITUDE NOW reads 10.000 rs, with the thumb pinned at the right end. A short drag left (about a third of the track) set the target to 1.164 rs, deep below the 1.33 rs goal, and the ship dropped there (stretch 1.85 g, relay x2.66). Nothing on the slider marks where x2 is, so it is easy to overshoot. The 3D view behind the helm panel is a close-up of the desk, so the window is hidden during the whole descent.",
+      "repro": "At helm: pt drag 985 166 900 166 1.5 1",
+      "screenshot": "shots/helm-panel-slider.png",
+      "tick": 1939
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Rear-camera image at 1.16 rs does not obviously match its caption",
+      "detail": "The helm panel shows 'REAR CAMERA . looking away from Erebus' with the caption 'every star in the sky is squeezed into this patch', but the picture is a big lensed ring with a dark middle that looks like a black-hole shadow, not a small bright patch of sky. WREN's line ('the shadow covers more than half the sky...') helped, but I could not tell what I was looking at from the image alone.",
+      "repro": "At helm, descend below ~1.2 rs; look at the panel",
+      "screenshot": "shots/rear-camera.png",
+      "tick": 2734
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No objective shown after returning to 10 rs; walking into consoles is fiddly",
+      "detail": "After the return, the objective box vanished until I reopened the probe console. Also, getting to the helm took about 3 real minutes. pt walkto console went to the nearest console (map). Holding W near the probe/helm desks moved me only ~0.25 m/s, as if I was sliding along their edges.",
+      "repro": "pt start ... --checkpoint rescue-done; pt walkto console; then try to reach helm with pt face/pt hold w",
+      "screenshot": "shots/stuck.png",
+      "tick": 1251
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Unexplained jargon on the Orpheus marker and feed ('1+z', 'tau ... M')",
+      "detail": "The world marker reads 'Orpheus 1+z 1.01 . its clock 2.7 M' and the feed caption reads 'sent at tau 72.00 M'. A player is never told what 1+z or M mean. Also the in-world PROBE screen still says 'ORPHEUS ready' after launch.",
+      "repro": "Launch Orpheus, step back, look out of the forward window; open the feed",
+      "screenshot": "shots/probe-screen-stale.png",
+      "tick": 6625
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Final choice box overlaps the feed panel; ~17 s of silence after 'Next frame due: never'",
+      "detail": "Frame 65 (from 1.211 rs) arrived and the status changed to 'never' at about tick 11100. Ines's question and the objective completion only came at tick 12149, which felt like dead air. The 'What do you tell Ines?' box then sits across the 3D view and the panel divider, covering the feed caption and the frame counter.",
+      "repro": "Watch the Orpheus feed to the end",
+      "screenshot": "shots/choice-overlap.png",
+      "tick": 14866
+    },
+    {
+      "severity": "polish",
+      "category": "perf",
+      "title": "Game ran at ~6-8 ticks/s for most of the session, which makes timed story beats very long",
+      "detail": "fps 10, ticks rose ~36-50 per 5 s for most of the run (it sped up to ~20+/s near the end). Because the story waits on game time, the 20 s hold and the Orpheus fall took several real minutes each.",
+      "repro": "pt status / pt state during the helm hold",
+      "screenshot": "shots/hold-no-timer.png",
+      "tick": 3202
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 5,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Take the Tern down until the relay clock runs twice as fast (helm)": 40.9,
+      "Hold for 20 seconds": 78.9,
+      "Return to 10 rₛ (helm)": 93.3,
+      "Launch Orpheus (probe console), then watch its feed (starboard screen)": 107.2,
+      "Watch the Orpheus feed (starboard screen)": 202.6
+    },
+    "minAltitudeRs": 1.164,
+    "maxRelayRate": 2.661,
+    "orpheusFramesReceived": 65,
+    "orpheusLastFrameRs": 1.211,
+    "relayAgedExtraSec": 63
+  },
+  "fun": 4,
+  "verdict": "The Orpheus feed is the highlight: frames arrive further apart, the picture gets noisy, and it stops on 'Next frame due: never'. It teaches the frozen-star idea without a lecture, and the closing choice lands. The descent works too ('the universe aged 63 seconds more than we did'), but the helm slider is easy to overshoot, the 20 s hold has no timer and only completes when you climb, and the Launch Orpheus button was dead on my first visit.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "Gravitational time dilation and the event horizon. Going lower makes your clock run slow compared with the far-away relay: x2 below about 1.33 rs, and the universe aged 63 s more than us during the dip. You do not feel the field because it pushes everything equally (equivalence principle). Very low, the black hole's shadow fills most of the sky. A falling probe's signals arrive further and further apart and fainter until the last frame never gets followed: from outside it looks frozen at the edge even though it fell in."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The probe console right after the descent. 'Launch Orpheus' did nothing for four clicks while WREN said Orpheus was loaded, and there was no objective on screen. Second most confusing: 'Hold for 20 seconds' had no timer, and Ines told me to take us back up while the objective still said hold. Also the rear-camera image at 1.16 rs: the caption says all stars are squeezed into a patch, but it looks like a big ring with a dark centre."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Nothing badly broken. The ray-traced windows were blurry, as expected. They went fully black at 1.16 rs (bridge, facing the forward window), which the dialogue explains. (1) At the helm console the 3D view behind the panel is a close-up of the helm desk, so you cannot see the window during the descent. (2) At the feed console (starboard, facing the screens) the in-world screens are cut off by the panel and drawn at a skewed angle. (3) The final choice box straddles the 3D view and the panel, covering the feed caption. (4) The in-world PROBE screen still says 'ORPHEUS ready' after launch. A 'Chrome for Testing' banner covers the top ~55 px of every screenshot; it looks like a harness artifact, not the game."
+    }
+  ]
+}
