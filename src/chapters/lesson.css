@@ -19,3 +19,9 @@
 .lx-readout { font: 13px var(--mono); color: var(--muted); }
 .lx-readout b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
 canvas.lx-orbit { width: 100%; height: clamp(300px, 46vw, 480px); display: block; border-radius: 8px; touch-action: none; }
+/* a prediction's outcome: said plainly, in colour, where the question was asked */
+.lx-why.lx-verdict { display: grid; gap: 4px; border-left-width: 5px; }
+.lx-why.lx-verdict.right { background: rgba(127, 214, 168, 0.08); color: var(--ok); }
+.lx-why.lx-verdict.wrong { background: rgba(255, 107, 92, 0.08); color: var(--red); }
+.lx-verdict-head { font: 600 16px var(--display); }
+.lx-why.lx-verdict > span { color: var(--fg); }

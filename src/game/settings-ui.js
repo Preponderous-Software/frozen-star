@@ -77,13 +77,15 @@ export function settingsForm(settings, onChange, { onBack } = {}) {
 
 /** What every button does, for keyboard and mouse, a gamepad, and touch. */
 export const CONTROL_ROWS = [
-  ['Walk', 'W A S D or arrow keys', 'Left stick', 'Left thumb pad'],
+  ['Walk', 'W S, or ↑ ↓', 'Left stick', 'Left thumb pad'],
+  ['Step sideways', 'A D', 'Left stick', 'Left thumb pad'],
+  ['Turn', '← →', 'Right stick', 'Drag'],
   ['Look', 'Mouse (click to capture)', 'Right stick', 'Drag'],
-  ['Use', 'E', 'A', 'Use button'],
+  ['Use', 'E or Enter', 'A', 'Use button'],
   ['Run', 'Shift', 'Click left stick', '–'],
   ['Answer', '1 2 3', 'D-pad', 'Tap'],
   ['Skip a line', 'Space', '–', 'Tap the subtitles'],
-  ['Back / pause', 'Esc', 'B / Start', '☰ button'],
+  ['Back / pause', 'Esc or Q', 'B / Start', '☰ button'],
 ];
 
 export function controlsTable() {

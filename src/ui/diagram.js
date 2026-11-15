@@ -92,7 +92,12 @@ export class SpacetimeDiagram {
     this._dot(ctx, f.R0, nowStation, '#8fb8ff');
     const pf = this.P(f.rOf(eNow), f.tTilde(eNow)), ps = this.P(f.R0, nowStation);
     if (this.names.faller && pf[0] > pad.l + 4 * d) this._tag(ctx, this.names.faller, pf[0] + 8 * d, Math.min(pf[1] - 6 * d, h - pad.b - 4 * d), 'rgba(255,200,130,.98)');
-    this._tag(ctx, 'now', ps[0] - 30 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
+    // at the start "now" sits where the station's own label is: say both in one tag instead of two on top of each other
+    ctx.font = `${10 * d}px ${MONO}`;
+    const stationEnd = pad.l + 6 * d + ctx.measureText(this.names.station).width + 6 * d;
+    const nowMerged = !!this.names.station && ps[0] - 30 * d < stationEnd;
+    if (nowMerged) this._tag(ctx, `${this.names.station} · now`, pad.l + 6 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
+    else this._tag(ctx, 'now', ps[0] - 30 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
     ctx.restore();
     // the falling line has scrolled out of the window: say where it went
     if (pf[0] < pad.l) this._label(ctx, `◂ ${this.names.faller || 'the gold line'}: earlier, off the left edge`, pad.l + 6 * d, pad.t + 10 * d, 'rgba(255,200,130,.95)');
@@ -104,7 +109,7 @@ export class SpacetimeDiagram {
     ctx.fillText(`time → (${(t1 - t0).toFixed(0)} M across) · up: distance from centre`, pad.l, h - 10 * d);
     this._label(ctx, 'singularity: the end of every path inside', pad.l + 6 * d, y0 - 8 * d, 'rgba(255,107,92,.95)');
     this._label(ctx, 'horizon: no way back below this', pad.l + 6 * d, yH - 6 * d, 'rgba(255,180,92,.95)');
-    this._label(ctx, this.names.station, pad.l + 6 * d, this.P(f.R0, 0)[1] - 6 * d, 'rgba(143,184,255,.95)');
+    if (!nowMerged) this._label(ctx, this.names.station, pad.l + 6 * d, this.P(f.R0, 0)[1] - 6 * d, 'rgba(143,184,255,.95)');
   }
 
   _outgoing(ctx, s, nowStation) {

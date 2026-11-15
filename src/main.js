@@ -15,6 +15,7 @@ import { mountGame } from './game/game.js';
 import { settingsForm, controlsTable, ACTS } from './game/settings-ui.js';
 import { loadSettings } from './game/settings.js';
 import { padNav } from './ui/padnav.js';
+import { RESTORE_WAIT_MS } from './ui/view3d.js';
 
 export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, bendLight, intoTheDark, evaporation];
 const app = $('#app');
@@ -46,15 +47,32 @@ function heroFrame(w, hgt) {
   return { fov, x: 0.5, y: aspect < 0.6 ? 0.17 : aspect < 0.8 ? 0.24 : 0.34 };
 }
 
-/** The animated black hole behind the menus. Calls onLit once the first frames are on screen. Returns a disposer. */
-function heroBackdrop(canvas, onLit) {
-  let view = null, raf = 0, alive = true, t = 0, last = performance.now(), avg = 16, frames = 0;
-  try { view = new BlackHoleView(canvas, { scale: 0.5 }); view.set({ steps: 500, fov: 0.9 }); } catch { view = null; }
+/**
+ * The animated black hole behind the menus. Calls onLit(true) once the first frames are on screen, onLit(false)
+ * when there is no ray tracer (the painted glow stays), and onLost('waiting' | 'gone') if the GPU context is
+ * taken away. If it comes back, the view rebuilds itself and onLit(true) fires again. Returns a disposer.
+ */
+function heroBackdrop(canvas, onLit, onLost) {
+  let view = null, raf = 0, alive = true, t = 0, last = performance.now(), avg = 16, frames = 0, giveUp = 0;
+  const lost = () => {
+    frames = 0; onLost?.('waiting');
+    clearTimeout(giveUp); giveUp = setTimeout(() => { if (view?.lost) onLost?.('gone'); }, RESTORE_WAIT_MS);
+  };
+  const restored = () => {
+    clearTimeout(giveUp);
+    // a still backdrop has stopped its loop: start it again so the restored view draws (and re-checks its speed)
+    if (alive && canvas.dataset.still) { delete canvas.dataset.still; avg = 16; raf = requestAnimationFrame(tick); }
+  };
+  try { view = new BlackHoleView(canvas, { scale: 0.5, onLost: lost, onRestored: restored }); view.set({ steps: 500, fov: 0.9 }); } catch (e) {
+    view = null; if (e?.reason === 'lost') onLost?.('gone');
+  }
   if (!view) { onLit?.(false); return () => {}; }
   const reduce = reduceMotion();
   const tick = (now) => {
     if (!alive) return;
     t += reduce ? 0 : Math.min(0.1, (now - last) / 1000); last = now;
+    raf = requestAnimationFrame(tick);
+    if (view.lost) return; // keep ticking: the view draws again by itself if the context is restored
     const { fov, x, y } = heroFrame(canvas.clientWidth, canvas.clientHeight);
     const a = -0.35 + t * 0.05, r = 32, pos = [Math.sin(a) * r, 2.6 + Math.sin(t * 0.07) * 0.8, -Math.cos(a) * r];
     // aim off the hole so it lands at screen point (x, y); the shader maps uv.y in [-0.5, 0.5] across fov
@@ -63,14 +81,17 @@ function heroBackdrop(canvas, onLit) {
     const target = [-Math.cos(a) * side, -1.2 + lift, -Math.sin(a) * side];
     view.set({ cam: pos, basis: lookBasis(pos, target), V: hoverVelocity(pos), time: t, disk: true, fov });
     const dtMs = (now - (tick.prev || now)); tick.prev = now;
-    try { view.render(); } catch { alive = false; onLit?.(false); return; }
+    try { view.render(); } catch { alive = false; cancelAnimationFrame(raf); onLit?.(false); return; }
     avg = avg * 0.85 + dtMs * 0.15;
     if (++frames === 2) onLit?.(true);
-    if (frames % 15 === 0) { const sc = view.state.scale; if (avg > 36 && sc > 0.2) view.set({ scale: Math.max(0.2, sc * 0.8) }); else if (avg < 22 && sc < 0.75) view.set({ scale: sc * 1.07 }); }
-    raf = requestAnimationFrame(tick);
+    if (frames % 15 === 0) { const sc = view.state.scale; if (avg > 36 && sc > 0.2) view.set({ scale: Math.max(0.2, sc * (avg > 100 ? 0.5 : 0.8)) }); else if (avg < 22 && sc < 0.75) view.set({ scale: sc * 1.07 }); }
+    // A starved GPU stalls the page's main thread on every frame, and clicks on the menu then land seconds
+    // late (a playtest saw "the first click did nothing"). If even the smallest render is that slow, keep
+    // the last frame as a still picture and stop drawing, so the menu answers at once.
+    if ((frames > 20 && avg > 90 && view.state.scale <= 0.2) || (frames > 6 && avg > 400)) { cancelAnimationFrame(raf); canvas.dataset.still = '1'; return; }
   };
   raf = requestAnimationFrame(tick);
-  return () => { alive = false; cancelAnimationFrame(raf); view?.dispose(); };
+  return () => { alive = false; clearTimeout(giveUp); cancelAnimationFrame(raf); view?.dispose(); };
 }
 
 const ROMAN = ['Prologue', 'Chapter I', 'Chapter II', 'Chapter III', 'Chapter IV', 'Epilogue'];
@@ -114,6 +135,7 @@ function titleScreen() {
   function closePanel() {
     if (panel.hidden) return;
     panel.hidden = true;
+    panel.parentElement?.classList.remove('panel-open');
     for (const b of items) b.classList.remove('open');
     (opener && items.includes(opener) ? opener : items[0]).focus({ preventScroll: true });
   }
@@ -126,6 +148,7 @@ function titleScreen() {
       const body = h('div.panel-body');
       const show = (name) => {
         for (const t of tabs.children) { const on = t.dataset.tab === name; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; }
+        const title = panel.querySelector('#menu-panel-title'); if (title) title.textContent = name === 'controls' ? 'Controls' : 'Options';
         body.replaceChildren(name === 'controls'
           ? h('div.controls-ref', controlsTable(), h('p.fp-note', 'Keys cannot be changed yet. A gamepad works anywhere a mouse does: the d-pad moves through menus, A chooses, B goes back.'))
           : settingsForm(loadSettings(), null));
@@ -141,8 +164,9 @@ function titleScreen() {
     } else if (which === 'about') {
       panel.replaceChildren(head('About', 'Frozen Star'),
         h('div.panel-body.prose',
-          h('p', 'Everything in the game follows the Schwarzschild solution of general relativity: fall times, redshift, the rescue deadline, tides, hovering clocks, and every pixel of the view outside, which is a light ray traced through curved spacetime.'),
-          h('p', 'Erebus is fictional. At 120,000 suns, one unit of black-hole time is 0.59 seconds, so what you see happens at its true speed.'),
+          h('p', 'Everything in the game follows Einstein\'s general relativity, his theory of gravity as curved space and time. It uses the exact answer the theory gives for a black hole that does not spin, found by Karl Schwarzschild in 1916.'),
+          h('p', 'That one answer sets how long things take to fall, how light stretches and reddens as it climbs out, the rescue deadline, the tides that pull on a body, and how slowly a clock runs near the hole. Every pixel outside the windows is a ray of light followed backwards through that curved space.'),
+          h('p', 'Erebus is made up, but it is built to real numbers: it has the mass of 120,000 Suns, and its horizon is about 354,000 km from the centre, almost as far as the Moon is from the Earth. The lessons measure time in M, the time light takes to cross half that distance: 0.59 seconds for Erebus. Nothing is sped up or slowed down: what you see happens at its true speed.'),
           h('h4', 'Credits'),
           h('dl.credits',
             h('dt', 'Created by'), h('dd', 'Daniel McCoy Stephenson, Preponderous Software'),
@@ -167,8 +191,9 @@ function titleScreen() {
           h('button.fp-wide', { type: 'button', onclick: () => closePanel() }, 'Keep my story')));
     } else {
       // Acts unlock as the story reaches them; the rest are listed, locked, so players know what lies ahead.
-      const reached = finished ? ACTS.length - 1 : here;
-      panel.replaceChildren(head('Chapters', finished ? 'Every chapter' : 'The story so far'),
+      // The Prologue is always open: it is where the story starts.
+      const reached = finished ? ACTS.length - 1 : Math.max(0, here);
+      panel.replaceChildren(head('Chapters', finished ? 'Every chapter' : save ? 'The story so far' : 'The story ahead'),
         h('ol.act-list', ACTS.map(([cp, name, sub], i) => {
           const open = i <= reached;
           const b = h('button.act' + (open ? '' : '.locked') + (i === here && !finished ? '.here' : ''), { type: 'button', disabled: !open, onclick: () => startAt(cp, i === 0 && !save) },
@@ -180,6 +205,7 @@ function titleScreen() {
         backBtn());
     }
     panel.hidden = false;
+    panel.parentElement?.classList.add('panel-open'); // a class, not :has(): Chrome left the old fill on the primary item
     if (wasHidden) { panel.classList.remove('in'); void panel.offsetWidth; panel.classList.add('in'); }
     panel.scrollTop = 0;
     panel.querySelector('.panel-body button, .panel-body input, .act:not(:disabled), .panel-tab, .panel-actions button')?.focus({ preventScroll: true });
@@ -213,7 +239,13 @@ function titleScreen() {
   };
   addEventListener('keydown', keys);
   if (!window.matchMedia?.('(pointer: coarse)').matches) items[0].focus({ preventScroll: true });
-  const stop = heroBackdrop(canvas, (ok) => { el.classList.add(ok ? 'lit' : 'no-rt'); });
+  // if the GPU context is lost the painted glow takes over; if it never comes back, say so and offer a reload
+  const glNote = h('p.gl-note', { hidden: true, role: 'status' }, 'The graphics driver restarted. ',
+    h('button', { type: 'button', onclick: () => location.reload() }, 'Reload'), ' to bring the black hole back.');
+  el.append(glNote);
+  const stop = heroBackdrop(canvas,
+    (ok) => { el.classList.toggle('lit', ok); el.classList.toggle('no-rt', !ok); if (ok) glNote.hidden = true; },
+    (state) => { el.classList.remove('lit'); el.classList.add('no-rt'); glNote.hidden = state !== 'gone'; });
   const stopPad = padNav({ container: () => (panel.hidden ? el.querySelector('.menu-items') : panel), onBack: closePanel });
   document.body.dataset.ready = '1';
   return () => { stop(); stopPad(); removeEventListener('keydown', keys); removeEventListener('resize', placeGlow); document.body.classList.remove('fs-menu'); };
@@ -289,7 +321,7 @@ function chapterScreen(ch) {
     },
     debrief({ title, body: paras }) {
       debrief.replaceChildren(
-        h('p.eyebrow', 'Debrief'), h('h3', title), ...paras.map((p) => h('p', p)),
+        h('p.eyebrow', 'Debrief'), h('h3', title), ...paras.filter(Boolean).map((p) => h('p', p)),
         h('div.debrief-actions',
           next ? h('a.button.primary', { href: `#${next.id}` }, `Next: ${next.title}`) : h('a.button.primary', { href: '#ship' }, 'Board the Tern'),
           h('a.button', { href: '#training' }, 'All lessons')));

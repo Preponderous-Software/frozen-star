@@ -14,7 +14,7 @@ export default {
   mount(root, ctx) {
     const f = new Infall(20);
     const A9 = f.messageArrival(PING * PINGS);
-    let mass = HOLES[1].mass, running = false, S = 0, tau = 0, got = 0, guess = null, gone = false;
+    let lastVerdict = null, mass = HOLES[1].mass, running = false, S = 0, tau = 0, got = 0, guess = null, gone = false;
 
     const station = stationPanel(f), probe = probePanel(f);
     const diagCanvas = h('canvas.diagram', { 'aria-label': 'Spacetime diagram of the fall' });
@@ -32,18 +32,20 @@ export default {
       ['About 300 M', false, 'Too late. The delay does grow without limit, but only for light sent from right at the horizon. Ping 9 leaves a little above it, so it still gets out in reasonable time.'],
       ['Never: it is too close to the horizon', false, 'Ping 9 is sent while the probe is still outside the horizon, so it does get out. Only light sent from on or inside the horizon never arrives.'],
     ];
-    let verdict = null;
+    let verdict = null, picked = -1;
+    const rightIdx = options.findIndex(([, ok]) => ok);
     const q = makeQuiz({
       id: 'tc-q', lock: false,
       prompt: h('span', 'The probe sends a ping every ', h('b', '10 M'), ' of its own time, nine in all, the last a few M before it reaches the horizon. When will ping 9 reach the station?'),
       choices: options.map(([l, ok]) => [l, ok, '']),
-      onAnswer(ok, i) { guess = ok; verdict = options[i][2]; q.buttons.forEach((b, j) => { b.classList.toggle('picked', j === i); b.classList.remove('right', 'wrong'); }); q.why.className = 'lx-why'; q.why.replaceChildren('Prediction locked in. Now press ', h('b', 'Drop the probe'), ' and watch the station log.'); },
+      onAnswer(ok, i) { guess = ok; picked = i; verdict = options[i][2]; q.buttons.forEach((b, j) => { b.classList.toggle('picked', j === i); b.classList.remove('right', 'wrong'); }); q.why.className = 'lx-why'; q.why.replaceChildren('Prediction locked in: ', h('b', options[i][0]), '. Now press ', h('b', 'Drop the probe'), '. The answer appears here when ping 9 reaches the station.'); },
     });
     const quiz = q.el;
     drop.addEventListener('click', () => {
       S = 0; tau = 0; got = 0; gone = false; running = true; diagram.reset();
       station.log.clear(); probe.log.clear(); drop.textContent = 'Drop again';
       q.buttons.forEach((b) => (b.disabled = true));
+      if (verdict) { q.why.className = 'lx-why'; q.why.replaceChildren('Your prediction: ', h('b', options[picked][0]), '. Waiting for ping 9…'); }
     });
 
     root.append(
@@ -68,20 +70,32 @@ export default {
           got++;
           const gap = got > 1 ? f.messageArrival(got * PING) - f.messageArrival((got - 1) * PING) : null;
           station.log.add(`Ping ${got} received at ${S.toFixed(1)} M${gap ? `, ${gap.toFixed(1)} M after the last (sent 10 M apart)` : ''}`, 'got');
+          if (verdict && got < PINGS) q.why.replaceChildren('Your prediction: ', h('b', options[picked][0]), `. Ping ${got} of ${PINGS} arrived at ${S.toFixed(1)} M. Waiting for ping 9…`);
           if (got === PINGS) {
             ctx.goal(0, true);
             if (guess === true) ctx.goal(1, true);
             station.log.add(guess === true ? 'Your prediction was right.' : guess === false ? `Your prediction missed: ping 9 arrived at ${A9.toFixed(1)} M.` : 'No prediction this time.', guess ? 'got' : 'never');
-            if (verdict) { q.why.hidden = false; q.why.className = 'lx-why ' + (guess ? 'right' : 'wrong'); q.why.replaceChildren(h('b', guess ? 'Right. ' : `Not quite: it arrived at ${A9.toFixed(1)} M. `), verdict); q.buttons.forEach((b) => { if (b.classList.contains('picked')) b.classList.add(guess ? 'right' : 'wrong'); }); }
+            if (verdict) {
+              // the outcome, said plainly where the question was asked: right or wrong, the true answer, and why
+              q.why.hidden = false; q.why.className = 'lx-why lx-verdict ' + (guess ? 'right' : 'wrong');
+              q.why.replaceChildren(
+                h('b.lx-verdict-head', guess ? `Right: ping 9 arrived at ${A9.toFixed(1)} M.` : `Wrong: you picked "${options[picked][0]}", but ping 9 arrived at ${A9.toFixed(1)} M.`),
+                h('span', verdict),
+                guess ? null : h('span', ' ', options[rightIdx][2]));
+              q.buttons.forEach((b, j) => { if (j === picked) b.classList.add(guess ? 'right' : 'wrong'); if (j === rightIdx) b.classList.add('right'); });
+              lastVerdict = { ok: guess, label: options[picked][0], why: verdict };
+            }
           }
         }
         if (!gone && f.seenAt(S).lnz > 9) {
           gone = true; ctx.goal(2, true); running = S < 400;
           // a fresh prediction for the next drop
-          guess = null; verdict = null; q.buttons.forEach((b) => { b.disabled = false; b.classList.remove('picked'); });
+          guess = null; verdict = null; picked = -1; q.buttons.forEach((b) => { b.disabled = false; b.classList.remove('picked'); });
+          const said = lastVerdict; lastVerdict = null;
           ctx.debrief({
             title: 'Both clocks were right',
             body: [
+              said ? `Your prediction, "${said.label}", was ${said.ok ? 'right' : 'wrong'}: ping 9 reached the station at ${A9.toFixed(1)} M, though it was sent at 90 M on the probe's clock.` : null,
               `On its own clock the probe crossed the horizon at ${f.tauH.toFixed(1)} M and reached the centre just ${(f.tauEnd - f.tauH).toFixed(1)} M later. For ${holeName()} that is ${secs(f.tauEnd)} from drop to centre.`,
               'The station never saw it cross. Light from close to the horizon needs longer and longer to climb out, so each ping arrived later than the last, and the image slowed, reddened and dimmed.',
               `The image did not stay frozen for long. Its light was stretched more and more, and by ${S.toFixed(0)} M on the station clock (${secs(S)} for ${holeName()}) it had faded below anything a telescope could catch. "You never see it fall in" is a statement about light, not about the probe.`,

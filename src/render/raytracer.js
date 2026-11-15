@@ -175,12 +175,61 @@ function compile(gl, type, src) {
   return s;
 }
 
+// Has a WebGL 2 context ever worked in this tab (or earlier in this browser session)? If one did and a new one
+// cannot be made, the graphics driver crashed or was reset: that is not "this device has no WebGL 2".
+let glWorked = false;
+try { glWorked = sessionStorage.getItem('frozen-star.gl-ok') === '1'; } catch { /* storage off */ }
+function markGlWorked() { glWorked = true; try { sessionStorage.setItem('frozen-star.gl-ok', '1'); } catch { /* storage off */ } }
+
+/** Thrown when no context can be made. `reason` is 'lost' (the driver restarted) or 'unsupported' (no WebGL 2 here). */
+export class GLUnavailable extends Error {
+  constructor(reason) {
+    super(reason === 'lost'
+      ? 'The graphics driver restarted, and the browser has not given the 3D view back yet.'
+      : 'This device does not support WebGL 2, which the black hole renderer needs.');
+    this.reason = reason;
+  }
+}
+
 export class BlackHoleView {
+  /**
+   * opts.onLost() / opts.onRestored() are called when the browser takes the GPU context away (driver crash,
+   * GPU reset, too many contexts) and when it gives it back. The view rebuilds its GL resources by itself on
+   * restore; render() does nothing while the context is lost.
+   */
   constructor(canvas, opts = {}) {
     this.canvas = canvas;
+    this.opts = opts;
+    this.lost = false;
     const gl = canvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: !!opts.preserve });
-    if (!gl) throw new Error('This device does not support WebGL 2, which the black hole renderer needs.');
+    if (!gl) throw new GLUnavailable(glWorked ? 'lost' : 'unsupported');
+    if (gl.isContextLost()) throw new GLUnavailable('lost');
     this.gl = gl;
+    this._onLost = (e) => {
+      e.preventDefault(); // without this the browser never offers the context back
+      this.lost = true;
+      if (!this.disposed) this.opts.onLost?.();
+    };
+    this._onRestored = () => {
+      if (this.disposed) return;
+      try { this._build(); this.lost = false; this.opts.onRestored?.(); } catch (err) { console.warn('Could not rebuild the 3D view:', err); }
+    };
+    canvas.addEventListener('webglcontextlost', this._onLost);
+    canvas.addEventListener('webglcontextrestored', this._onRestored);
+    this._build();
+    markGlWorked();
+    this.state = {
+      cam: [0, 0, -30], basis: lookBasis([0, 0, -30], [0, 0, 0]), V: [0, 0, 0], fov: 1.0, time: 0,
+      disk: true, grid: false, shift: true, steps: 600, exposure: 1.5, diskOuter: 22,
+      scale: opts.scale ?? Math.min(1, 1.25 / (window.devicePixelRatio || 1)),
+    };
+    // ?lowgpu: a small, cheap render for weak machines (and the headless screenshot tour).
+    if (LOW_GPU) Object.assign(this.state, { scale: 0.2, steps: 360 });
+  }
+
+  /** Compile the program and upload the triangle. Runs at start and again after a lost context comes back. */
+  _build() {
+    const gl = this.gl;
     const prog = gl.createProgram();
     gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
     gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
@@ -195,13 +244,6 @@ export class BlackHoleView {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
     for (const n of ['uRes', 'uCam', 'uBasis', 'uV', 'uFov', 'uTime', 'uDisk', 'uGrid', 'uShift', 'uSteps', 'uExposure', 'uDiskOuter']) this.u[n] = gl.getUniformLocation(prog, n);
-    this.state = {
-      cam: [0, 0, -30], basis: lookBasis([0, 0, -30], [0, 0, 0]), V: [0, 0, 0], fov: 1.0, time: 0,
-      disk: true, grid: false, shift: true, steps: 600, exposure: 1.5, diskOuter: 22,
-      scale: opts.scale ?? Math.min(1, 1.25 / (window.devicePixelRatio || 1)),
-    };
-    // ?lowgpu: a small, cheap render for weak machines (and the headless screenshot tour).
-    if (LOW_GPU) Object.assign(this.state, { scale: 0.2, steps: 360 });
   }
 
   set(patch) {
@@ -218,6 +260,7 @@ export class BlackHoleView {
 
   /** Draw. `scissor` = [x0, y0, x1, y1] in 0..1 of the canvas (bottom-left origin) limits the work to that rectangle. */
   render(scissor) {
+    if (this.lost || this.disposed) return;
     this.resize();
     const { gl, u, state: st } = this;
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -249,7 +292,13 @@ export class BlackHoleView {
     gl.disable(gl.SCISSOR_TEST);
   }
 
-  dispose() { this.gl.getExtension('WEBGL_lose_context')?.loseContext(); }
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.canvas.removeEventListener('webglcontextlost', this._onLost);
+    this.canvas.removeEventListener('webglcontextrestored', this._onRestored);
+    if (!this.gl.isContextLost()) this.gl.getExtension('WEBGL_lose_context')?.loseContext();
+  }
 }
 
 // ---- Camera helpers ----
