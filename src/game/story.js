@@ -11,8 +11,10 @@ import {
   datapadApp, probeApp, commsApp, mapApp, helmApp, createFeed, drawFeed, feedApp, archiveApp, createRearCam, drawRear,
 } from './apps.js';
 import { CHAPTER_LIST } from './chapters-list.js';
+import { haloAct, HALO } from './act-halo.js';
 
-const ORDER = ['start', 'bridge', 'probe-done', 'rescue-done', 'helm-done', 'epilogue'];
+// 'halo' (the photon-sphere postscript) comes after the story's end: older saves never hold it.
+const ORDER = ['start', 'bridge', 'probe-done', 'rescue-done', 'helm-done', 'epilogue', 'halo'];
 const secs = (m) => m * SEC_PER_M;
 const consolePos = (g, id) => g.ship.interactables.find((i) => i.id === id).pos.clone();
 
@@ -34,7 +36,7 @@ export async function runStory(g, cp) {
   if (at <= 2) { chapter('II', 'The rescue', 'Ines takes the capsule out.'); await rescueAct(g); }
   if (at <= 3) { chapter('III', 'The descent', 'Closer to the edge.'); await helmAct(g); }
   if (at <= 4) { chapter('IV', 'Orpheus', 'The last probe has a camera.'); await orpheusAct(g); }
-  await epilogue(g);
+  await epilogue(g, cp === 'halo');
 }
 
 // ---------- always-on things ----------
@@ -560,14 +562,22 @@ async function orpheusAct(g) {
 }
 
 // ---------- epilogue ----------
-async function epilogue(g) {
+async function epilogue(g, haloNow) {
   g.flags.helmUnlocked = true; g.flags.mapUnlocked = true; g.flags.orpheusReady = true; g.flags.beaconDone = true; g.flags.inesHome = true;
   const first = !g.flags.finished;
-  g.flags.finished = true; g.save('epilogue');
-  await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
-  if (first) await logbook(g);
-  g.objective('Explore the Tern. The lab archive has more.');
+  g.flags.finished = true;
+  if (!haloNow) {
+    g.save('epilogue');
+    await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
+    if (first) await logbook(g);
+  }
+  const explore = () => g.objective('Explore the Tern. The lab archive has more.');
+  explore();
   freeRoam(g);
+  // postscript: the photon sphere, offered once the player has had a little time to themselves
+  const halo = () => haloAct(g, { logbook: () => logbook(g) }).then(explore);
+  if (haloNow) { g.hud.card('Postscript · The photon sphere', 'Where light goes in circles.', 3); await halo(); }
+  else if (!g.flags.haloDone) (async () => { await g.wait(25); await g.until(() => g.quiet(4)); g.hud.card('Postscript · The photon sphere', 'Where light goes in circles.', 3); await halo(); })().catch(() => {});
 }
 
 // ---------- after the story: small things to find ----------
@@ -647,6 +657,12 @@ function logbook(g) {
       `It crossed the horizon ${s(f.tauH)} s after launch by its own clock, and reached the centre ${inside} s later. Nothing it saw inside can ever reach us.`,
       pick),
   );
+  if (st.halo?.lap) {
+    ul.append(row('Photon sphere',
+      `At 1.5 rₛ the shadow covered exactly half the sky. Your laser pulse came back round to the stern ${st.halo.lap.toFixed(1)} s after it left.${st.halo.mast ? ' The pulse from the mast, one metre higher, missed and left for the stars.' : ''}`,
+      `It went once round Erebus, ${(HALO.LAP_KM / 1e6).toFixed(2)} million km, at the speed of light. The relay far away counted ${HALO.LAP_FAR_S.toFixed(1)} s. The orbit is unstable: a metre off becomes ${Math.round(HALO.MAST_LAP1)} m after one lap.`,
+      st.halo.prediction === 'right' ? 'You predicted the lap time.' : ''));
+  }
   box.append(ul);
   if (st.shipT > 60 && st.relayT > st.shipT) {
     const c = document.createElement('p'); c.className = 'fp-logbook-foot';
