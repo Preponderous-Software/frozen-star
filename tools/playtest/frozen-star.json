@@ -1,0 +1,74 @@
+{
+  "$comment": "Frozen Star in Chromium's app mode under playtester's x11 driver. tools/playtest-launch.sh serves the game and opens the window; the probe (?probe) is written by tools/serve.py.",
+  "name": "frozen-star",
+  "title": "Frozen Star",
+  "description": "a first-person game about general relativity: you wake aboard a research ship holding station above a black hole, drop probes, rescue a pilot and watch a camera probe's feed freeze at the horizon",
+  "repository": "Preponderous-Software/frozen-star",
+  "driver": "x11",
+  "build": {
+    "command": "npm test",
+    "requires": ["node", "python3"]
+  },
+  "launch": {
+    "command": ["{game_dir}/tools/playtest-launch.sh"],
+    "args": ["--data", "{data_dir}", "--width", "{width}", "--height", "{height}"],
+    "cwd": "{game_dir}",
+    "start_timeout_sec": 60,
+    "settle_sec": 4,
+    "lp_threads": 4
+  },
+  "window": {
+    "title_regex": "^Frozen Star",
+    "width": 1280,
+    "height": 720
+  },
+  "probe": {
+    "flag": "--playtest-out",
+    "ticks_per_second": 60,
+    "world_screens": ["WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK"],
+    "screens": ["TITLE", "TRAINING", "OBSERVATORY", "LESSON", "WORLD", "CONSOLE", "CUTSCENE", "PAUSE", "CHOICE", "DREAM", "LOGBOOK"],
+    "since": "Frozen Star 0.1.0 (?probe)"
+  },
+  "movement": {
+    "turn": {"method": "keys", "left": "Left", "right": "Right", "degrees_per_second": 103},
+    "yaw_increases": "left",
+    "forward_key": "w",
+    "speed_field": "speed",
+    "default_speed": 2.2,
+    "interact_key": "e",
+    "interact_range": 1.9,
+    "stop_distance": 1.3,
+    "face_tolerance": 6,
+    "nearest_kinds": ["console", "item", "door"]
+  },
+  "process_name": "playtest-launch.sh",
+  "crash_patterns": ["Uncaught (TypeError|ReferenceError|RangeError)", "GPU process (crashed|exited)", "WebGL.*CONTEXT_LOST"],
+  "agent_notes": "frozen-star.md",
+  "cheats": "Do not use ?debug or the debug URL parameters, and do not edit localStorage, unless your goal says so.",
+  "smoke": {
+    "description": "Start on the bridge, walk to the nearest console, use it, step back",
+    "args": ["--checkpoint", "bridge"],
+    "steps": [
+      ["await", "WORLD", "120"],
+      ["shot", "01-bridge"],
+      ["walkto", "console", "40"],
+      ["key", "e"],
+      ["await", "CONSOLE", "20"],
+      ["shot", "02-console"],
+      ["key", "Escape"],
+      ["await", "WORLD", "20"]
+    ]
+  },
+  "goals": [
+    {"goal": "Play from the very beginning as a brand-new player who has never seen the game: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Note every moment of confusion, and screenshot anything that looks broken on screen.", "budget_min": 30},
+    {"goal": "Graphics hunt. Walk every room of the ship (bridge, corridor, quarters, lab) and look in every direction, including up at the ceiling, down at the floor and out of every window. Screenshot and describe anything that looks wrong: flicker, gaps or seams between walls, surfaces fighting each other, black or garbled windows, the sky in a window not lining up as you turn, stretched or blurry textures, text or UI overlapping.", "budget_min": 25, "args": ["--checkpoint", "bridge"]},
+    {"goal": "The rescue: Ines's capsule loses power. Save her with the recall beam from the comms console. Note whether you understood why waiting fails, and whether anything on screen looked broken.", "budget_min": 20, "args": ["--checkpoint", "probe-done"]},
+    {"goal": "The descent and Orpheus: take the ship down at the helm, come back up, then launch Orpheus and watch its feed to the end. Note whether you understood what you saw, and screenshot any visual problems, especially in the window and on the screens.", "budget_min": 25, "args": ["--checkpoint", "rescue-done"]}
+  ],
+  "questions": [
+    "In your own words, what was the game teaching?",
+    "Which moment was the most confusing, and why?",
+    "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+  ],
+  "evidence_dir": "docs/playtests"
+}

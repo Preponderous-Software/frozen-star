@@ -400,6 +400,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const urlCp = new URLSearchParams(location.search).get('cp');
   const start = urlCp || checkpoint || saved?.cp || 'start';
   if (/[?&]debug\b/.test(location.search)) window.__fs = g;
+  if (/[?&]probe\b/.test(location.search)) window.__fsGame = g;
   if (saved?.flags) Object.assign(g.flags, saved.flags);
   runStory(g, start).catch((e) => { if (!g.aborted) console.error(e); });
 

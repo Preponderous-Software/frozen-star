@@ -179,3 +179,4 @@ function route() {
 
 window.addEventListener('hashchange', route);
 route();
+if (/[?&]probe\b/.test(location.search)) import('./game/probe.js').then((m) => m.startProbe());
