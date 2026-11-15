@@ -413,7 +413,9 @@ async function rescueAttempt(g) {
     await g.say('INES', 'You know what scares me? On your screen I looked fine the whole time. If you\'d waited until I looked like I was in trouble...');
     await g.say('WREN', 'It would have been far too late. By the deadline, her picture was still only a third of the way down.');
   } else {
-    await g.say('WREN', result ? `The beam reached the capsule at ${(result.r / 2).toFixed(2)} rₛ. Inside the horizon. Her engine cannot help her there.` : 'You did not fire. She crossed the horizon long ago.');
+    await g.say('WREN', !result ? 'You did not fire. She crossed the horizon long ago.'
+      : result.r > 0.01 ? `The beam reached the capsule at ${(result.r / 2).toFixed(2)} rₛ. Inside the horizon. Her engine cannot help her there.`
+        : 'The beam never caught her. By her own clock she had already crossed the horizon and reached the centre.');
     await g.until(() => queue.every((q) => q.done || !isFinite(q.at)) || run.S() > 200);
     await g.wait(3);
     g.ticks.delete(tick); removeMarker();
