@@ -15,6 +15,8 @@ import { createAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { settingsForm } from './settings-ui.js';
 import { padNav } from '../ui/padnav.js';
+import { createPhoto } from './photo.js';
+import { watchGame, noteUse, onUnlock, discoveriesView } from './discoveries.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
 const T0 = performance.now();
@@ -66,7 +68,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const hud = createHud(el);
   g.hud = hud;
   const audio = createAudio(); g.audio = audio;
-  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (!g.paused) hud.skip(); } });
+  const controls = createControls(el, { onBack: () => { if (g.photo) g.photo.exit(); else if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (!g.paused && !g.photo) hud.skip(); } });
   // ---- settings ----
   let settings = loadSettings();
   function applySettings() {
@@ -178,6 +180,7 @@ export function mountGame(root, { checkpoint } = {}) {
     if (g.mode !== 'walk' || !focusIt) return;
     const fn = g.handlers[focusIt.id];
     audio.click();
+    noteUse(focusIt.id, g);
     fn?.(focusIt);
   }
 
@@ -197,13 +200,13 @@ export function mountGame(root, { checkpoint } = {}) {
   const stopPad = padNav({
     container: () => (g.paused ? menu : hud.choosing ? el.querySelector('.fp-choice') : el.querySelector('.fp-logbook') || (g.mode === 'console' ? panel : null)),
     onBack: () => { if (g.paused) resume(); else if (g.mode === 'console') closeApp(); },
-    onStart: () => { if (g.paused) resume(); else if (g.mode === 'walk' || g.mode === 'console') setPaused(true); },
+    onStart: () => { if (g.photo) g.photo.exit(); else if (g.paused) resume(); else if (g.mode === 'walk' || g.mode === 'console') setPaused(true); },
   });
   menuBtn.addEventListener('click', () => (g.paused ? resume() : setPaused(true)));
   let wasLocked = false;
   const onLockChange = () => {
     const locked = document.pointerLockElement === el;
-    if (wasLocked && !locked && g.mode === 'walk' && !g.paused && !hud.choosing && !menuSuppress) setPaused(true);
+    if (wasLocked && !locked && g.mode === 'walk' && !g.paused && !hud.choosing && !menuSuppress && !g.photo) setPaused(true);
     wasLocked = locked;
   };
   let menuSuppress = false;
@@ -216,6 +219,8 @@ export function mountGame(root, { checkpoint } = {}) {
         h('p.eyebrow', 'Paused'),
         h('h3', 'Frozen Star'),
         btn('Resume', resume, 'fp-resume'),
+        g.mode === 'walk' && !hud.choosing ? btn('Photo mode', () => { setPaused(false); photo.enter(); }, 'fp-photo-btn') : null,
+        btn('Discoveries', () => renderMenu('discoveries'), 'fp-disc-btn'),
         btn('Settings', () => renderMenu('settings'), 'fp-settings'),
         btn('Controls', () => renderMenu('controls')),
         btn('Main menu', (e) => {
@@ -229,8 +234,11 @@ export function mountGame(root, { checkpoint } = {}) {
     } else if (view === 'controls') {
       menu.replaceChildren(h('p.eyebrow', 'Controls'),
         h('dl.fp-keys',
-          ...[['Walk', 'W A S D · ↑ ↓ · left stick · left thumb'], ['Look', 'Mouse (click to capture) · ← → turn · right stick · drag'], ['Answer', '1 2 3 · click · d-pad'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
+          ...[['Walk', 'W A S D · ↑ ↓ · left stick · left thumb'], ['Look', 'Mouse (click to capture) · ← → turn · right stick · drag'], ['Answer', '1 2 3 · click · d-pad'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Photo mode', 'P · Select button'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
         btn('Back', () => renderMenu('main')));
+    } else if (view === 'discoveries') {
+      menu.replaceChildren(h('p.eyebrow', 'Discoveries'), discoveriesView(), btn('Back', () => renderMenu('main'), 'fp-disc-back'));
+      menu.querySelector('#fp-disc-back').focus({ preventScroll: true }); menu.scrollTop = 0;
     } else if (view === 'settings') {
       menu.replaceChildren(settingsForm(settings, () => applySettings(), { onBack: () => renderMenu('main') }));
     }
@@ -264,13 +272,17 @@ export function mountGame(root, { checkpoint } = {}) {
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize); ro.observe(el); applySettings();
+  const photo = createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCanvas, threeCanvas, controls, audio, resize, invertY: () => settings.invertY });
+  g.ticks.add(watchGame(g));
+  const stopDisc = onUnlock((d) => hud.toast(`Discovery · ${d.title}`, { sub: d.fact, cls: 'disc-toast', sec: 5 }));
 
   let frameN = 0;
   function frame(now) {
     if (!alive) return;
     if (frameN < 3) mark('frame ' + frameN); frameN++;
     const realDt = Math.min(0.1, (now - last) / 1000) * TIME_SCALE; last = now;
-    const dt = g.paused ? 0 : realDt;
+    photo.pollPad();
+    const dt = g.paused || photo.on ? 0 : realDt; // photo mode stops world time
     hud.tick(dt);
     g.time += dt; g.dt = dt;
     if (!g.physicsPaused) g.physicsTime += dt;
@@ -282,11 +294,12 @@ export function mountGame(root, { checkpoint } = {}) {
     }
     for (const t of g.ticks) t(dt);
     if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after) { objState.hinted = true; hud.say('WREN', objState.hint); }
-    const inp = controls.read(dt);
+    const inp = controls.read(photo.on ? realDt : dt);
     if (controls.locked) lastLockedAt = g.time;
     hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && g.time - lastLockedAt < 12);
     if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
-    if (g.mode === 'walk' && g.paused) {
+    if (photo.on) photo.update(realDt, inp);
+    else if (g.mode === 'walk' && g.paused) {
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
       hud.prompt(null); controls.showUse(null);
     } else if (g.mode === 'walk') {
@@ -457,7 +470,7 @@ export function mountGame(root, { checkpoint } = {}) {
   return () => {
     alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); stopPad(); document.removeEventListener('pointerlockchange', onLockChange);
     for (const w of waiters) w.rej(new Error('aborted'));
-    appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
+    photo.dispose(); stopDisc(); appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
     document.body.classList.remove('fp-active');
   };
 }
