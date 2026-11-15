@@ -301,7 +301,7 @@ async function rescueAttempt(g) {
       q.done = true;
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
       const style = inesStyle(f, q.tau);
-      run.log.push({ text: q.text, style }); g.audio.radio(); g.say('INES', q.text, { style });
+      run.log.push({ text: q.text, style }); g.audio.radio(f.onePlusZ(f.rOfTau(q.tau)), q.text.length); g.say('INES', q.text, { style });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);
@@ -323,7 +323,7 @@ async function rescueAttempt(g) {
     await g.say('WREN', 'Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.');
     await g.until(() => run.S() >= run.saved.seenAt);
     const lit = 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!';
-    run.log.push({ text: lit }); g.audio.radio();
+    run.log.push({ text: lit }); g.audio.radio(f.onePlusZ(f.rOfTau(run.saved.tau)), lit.length);
     await g.say('INES', lit);
     await g.say('WREN', `You fired ${Math.round(secs(D - run.fired))} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
     g.ticks.delete(tick);

@@ -15,7 +15,6 @@ import { createAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { settingsForm } from './settings-ui.js';
 import { padNav } from '../ui/padnav.js';
-import { hoverAccel } from '../physics/body.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
 const T0 = performance.now();
@@ -399,7 +398,7 @@ export function mountGame(root, { checkpoint } = {}) {
     if (frameN <= 3) mark('pre-render');
     if (!(g.skyOverride && g.hideShip)) renderer.render(scene, camera);
     if (frameN <= 3) mark('rendered');
-    audio.setHum(g.hideShip ? 0.08 : g.inRoom('bridge') ? 1 : 0.7, 1 + 0.08 * Math.max(0, Math.log10(hoverAccel(g.shipR, 1.2e5) / hoverAccel(R_STATION, 1.2e5))));
+    audio.scene(g);
     // adaptive resolution for the ship view: aim for 30+ fps
     frameAvg = frameAvg * 0.95 + (realDt / TIME_SCALE) * 1000 * 0.05; dprTimer += realDt / TIME_SCALE;
     if (dprTimer > 2) {
