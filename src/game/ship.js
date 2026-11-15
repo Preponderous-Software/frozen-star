@@ -54,7 +54,7 @@ export function buildShip() {
     wood: new THREE.MeshStandardMaterial({ color: 0x6b5340, roughness: 0.7 }),
     door: new THREE.MeshStandardMaterial({ color: 0xb8bdca, roughness: 0.5, metalness: 0.3, map: panelTexture('#c2c7d3', '#8d93a3', 128, 256, 3, 1) }),
     console: new THREE.MeshStandardMaterial({ color: 0x2b3044, roughness: 0.55, metalness: 0.35 }),
-    hull: new THREE.MeshStandardMaterial({ color: 0x3a3e4a, roughness: 0.7, metalness: 0.5, map: panelTexture('#3c404c', '#2a2d36', 256, 256, 2, 2) }),
+    hull: (() => { const t = panelTexture('#3c404c', '#2a2d36', 256, 256, 2, 2); return new THREE.MeshStandardMaterial({ color: 0x3a3e4a, roughness: 0.7, metalness: 0.5, map: t, emissive: 0x5a5f70, emissiveMap: t, emissiveIntensity: 1.5 }); })(), // lit faintly by the disk, so its panels read as hull, not a hole in the view
   };
   for (const m of Object.values(M)) m.dithering = true; // soften the banding of point-light falloff
 
@@ -215,7 +215,7 @@ export function buildShip() {
   }
   makeConsole('probe', -1.95, -11.2, 0.3, 'PROBE');
   makeConsole('helm', 0, -11.3, 0, 'HELM', { low: true });
-  { const it = interactables.find((i) => i.id === 'helm'); it.focus = { pos: new THREE.Vector3(0, 1.75, -9.4), look: new THREE.Vector3(0, 1.45, -13) }; } // at the helm, watch the window
+  { const it = interactables.find((i) => i.id === 'helm'); it.radius = 2.8; /* usable from behind the chair */ it.focus = { pos: new THREE.Vector3(0, 1.75, -9.4), look: new THREE.Vector3(0, 1.45, -13) }; } // at the helm, watch the window
   makeConsole('comms', 1.95, -11.2, -0.3, 'COMMS');
   // chair
   box(0.55, 0.45, 0.55, M.fabric, 0, 0.23, -9.3); box(0.55, 0.55, 0.1, M.fabric, 0, 0.72, -9.03);
@@ -246,6 +246,7 @@ export function buildShip() {
   const archTex = new THREE.CanvasTexture(archC); archTex.colorSpace = THREE.SRGBColorSpace;
   const archScr = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.72), new THREE.MeshBasicMaterial({ map: archTex, toneMapped: false }));
   archScr.position.set(0, 1.4, -0.2); term.add(archScr);
+  box(1.3, 0.82, 0.05, M.console, 0, 1.4, -0.235, term); box(0.14, 0.5, 0.08, M.console, 0, 0.95, -0.25, term); // a bezel and a stand, so the screen sits on the console, not on the window
   screens.archive = { canvas: archC, ctx: archC.getContext('2d'), tex: archTex, mesh: archScr, w: 640, h: 384 };
   term.updateMatrixWorld(true);
   colliders.push(aabbOf(term));
@@ -299,6 +300,11 @@ export function buildShip() {
   skin(4.2, 2.6, -3.0, 1.25, 1.58, 0);            // lab's aft wall, seen from the corridor windows
   skin(2.5, 3.3, -2.25, 1.6, -4.92, 0);           // bridge back wall, port of the corridor
   skin(2.5, 3.3, 2.25, 1.6, -4.92, 0);            // bridge back wall, starboard (seen from the porthole)
+  // running lights on the bridge's aft corner, so from the porthole it reads as the ship's bow
+  for (const [x, y, c] of [[3.42, 3.15, 0xff4a4a], [3.42, 0.15, 0xff4a4a], [1.1, 3.15, 0xffb45c]]) {
+    const led = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.04), ledMat(c)); led.position.set(x, y, -4.88); group.add(led);
+    blinkers.push({ mat: led.material, rate: 0.6, phase: x });
+  }
   for (const sx of [1, -1]) {                       // bridge side walls, outside (leaving the side windows clear)
     skin(4.2, 3.3, sx * 3.48, 1.6, -7.1, sx * Math.PI / 2);
     skin(0.5, 3.3, sx * 3.48, 1.6, -12.75, sx * Math.PI / 2);

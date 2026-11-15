@@ -1,0 +1,130 @@
+{
+  "session": "s04",
+  "goal": "Menus and options. From the title menu, try everything that is not the story: Settings (change sensitivity, field of view, volume, subtitle size, quality, invert Y and check each one actually takes effect in game), Chapters, Training, Observatory and About. Then start the game, open the pause menu with Escape, browse its tabs, resume, and quit back to the title and use Continue. Note anything confusing, broken, unlabeled or that does not respond.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "d654778"
+  },
+  "seed": null,
+  "durationSec": 534,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No Chapters entry on the title menu, fresh or after reaching chapter I",
+      "detail": "The goal lists Chapters as a menu item, but the title menu only offers Wake up/Continue, New game, Settings, Training simulations, Observatory and About, both on a fresh save and after the bridge checkpoint (Continue: Beacon K-1). No chapter select was found anywhere, including the pause menu. If it unlocks later, nothing on screen says so.",
+      "repro": "pt start ...; pt shot title; reach the bridge; Esc; click Main menu; pt shot title_continue",
+      "screenshot": "shots/title_continue.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Pause > Main menu throws away progress before the first checkpoint without asking",
+      "detail": "After the dream and about 15 s in the quarters, Pause > Main menu went straight back to the title with no confirmation. The title showed 'Wake up' again with no Continue, so the dream had to be replayed. The pause panel's footnote says progress saves at each chapter, but the button itself gives no warning that unsaved progress will be lost.",
+      "repro": "pt start ...; pt key Return; skip dream; pt await WORLD; pt key Escape; pt click 1077 364; pt shot no_continue",
+      "screenshot": "shots/no_continue.png",
+      "tick": 2007
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Quitting to title logs a false objective_completed for 'Go to the bridge'",
+      "detail": "Quitting from the quarters via Pause > Main menu emitted objective_completed number 1 'Go to the bridge' at tick 2007, although the bridge was never reached. The next new game then numbered the same objective 2, and after Continue the probe objective was 4. Probe/telemetry only, but it would skew any objective metrics.",
+      "repro": "pt start ...; Wake up; skip dream; Esc; Main menu; pt events 10",
+      "screenshot": "shots/no_continue.png",
+      "tick": 2007
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Pause > Controls says arrows walk; key turning and 1/2/3 answers are missing",
+      "detail": "Controls lists 'Walk: W A S D or arrows', but Left/Right arrows turn the view. Turning on the keyboard is not listed, and neither is 1/2/3 for answering questions.",
+      "repro": "in WORLD: pt key Escape; pt click 1077 319; pt shot pause_controls",
+      "screenshot": "shots/pause_controls.png",
+      "tick": 1726
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Use prompt and target brackets follow the porthole, not the crosshair",
+      "detail": "With the centre dot on the bookshelf, the prompt still read 'E Look out of the porthole' and the orange brackets sat on the porthole well to the left of centre. It is unclear what E will act on.",
+      "repro": "quarters: click the game; pt look 100 0; pt shot prompt_mismatch",
+      "screenshot": "shots/prompt_mismatch.png",
+      "tick": 1760
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Subtitles/Graphics dropdown opens as an empty black box",
+      "detail": "Clicking the Subtitles or Graphics select in Settings opens a black popup with no option labels. Options could only be picked blind with Up/Down + Return. This may be the headless native-popup renderer, but a custom list or segmented buttons would avoid it. Also, 'Wake up' stays filled orange while the Settings panel is open, so two items look selected.",
+      "repro": "title: click Settings; click 1000 434; pt shot subsel",
+      "screenshot": "shots/dropdown_black.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Crosshair brackets cover the use-prompt text",
+      "detail": "On first waking, the orange target brackets draw on top of the 'E Look out of the porthole' prompt and hide part of the words.",
+      "repro": "Wake up; skip dream; pt await WORLD; pt shot crosshair_prompt",
+      "screenshot": "shots/crosshair_prompt.png",
+      "tick": 1039
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "'WASD to walk, E to use, Esc to pause' hint never goes away",
+      "detail": "The control hint stays mid-screen through the whole quarters and corridor section, even after walking, pausing and using a door, and it covers the view of the corridor.",
+      "repro": "Wake up; skip dream; walk to the corridor; pt shot corridor",
+      "screenshot": "shots/corridor.png",
+      "tick": 1700
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Training 'Two Clocks' uses the unit 'M' without explaining it",
+      "detail": "The lesson says a ping is sent every '10 M', playback runs at '8 M/s', and the answers are 'about 109 M' and so on. Nothing on screen says what M is. The About page explains the unit only indirectly ('one unit of black-hole time is 0.59 seconds').",
+      "repro": "title: Training simulations; click lesson 1; pt shot lesson1_units",
+      "screenshot": "shots/lesson1_units.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "About is subtitled 'Credits' but names no people",
+      "detail": "The About panel has physics notes, references and libraries, but no credits for the people who made the game.",
+      "repro": "title: click About; pt shot about",
+      "screenshot": "shots/about.png",
+      "tick": null
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 40.15
+    },
+    "settingsVerifiedInGame": 5,
+    "settingsUnverifiable": 1,
+    "lookDegPer100pxAt2_35x": 29.7,
+    "lookDegPer100pxAt0_35x": 4.4
+  },
+  "fun": 4,
+  "verdict": "The menus are clean and responsive. Every setting I could check works: look speed scales exactly (29.7 vs 4.4 degrees per 100 px at 2.35x vs 0.35x), invert look flips the pitch, field of view changes live behind the pause menu, subtitle size changes the subtitles, settings are kept between title and game, and Continue resumes at the Beacon K-1 checkpoint. Volume could not be checked because the headless run has no audio. The main gaps: there is no Chapters menu anywhere, Main menu throws away progress before the first checkpoint without asking, the Controls page has small mistakes, and the use prompt does not follow the crosshair.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "Time dilation near a black hole. The training lesson compares a falling probe's own clock with the station's clock: pings sent every 10 units of the probe's time reach the station further and further apart. The Observatory shows how the black hole bends light, with the warped sky grid and the disk image wrapped over and under the shadow. The story opening sets you ten Schwarzschild radii above the hole. I only saw the start of the story, so I could not tell more than that."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Looking for Chapters: no menu item with that name exists, before or after reaching chapter I, so I could not tell whether it is locked, removed or somewhere else. Close behind: quitting to the main menu from the quarters silently threw away my progress (Wake up again, no Continue). A smaller one: the 'M' time unit in the Two Clocks lesson is never explained."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "1) Title > Settings: opening the Subtitles or Graphics dropdown showed an empty black box instead of the option list. 2) Quarters, just after waking, facing the porthole (yaw about -6): the orange target brackets overlapped the 'E Look out of the porthole' prompt text. 3) Quarters, facing the bookshelf (yaw about -35): the prompt still offered the porthole, with the brackets on the porthole to the left of the crosshair. 4) After capturing the mouse, a black bar appeared at the top centre of the view for a moment, probably the browser's pointer-lock notice. 5) The WASD/E/Esc hint stayed on screen the whole time in the quarters and corridor. Apart from software-render blur, the ray-traced black hole looked correct in the dream, the portholes, the bridge windows and the Observatory."
+    }
+  ]
+}

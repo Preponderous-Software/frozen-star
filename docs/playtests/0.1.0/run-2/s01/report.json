@@ -1,0 +1,113 @@
+{
+  "session": "s01",
+  "goal": "The descent and Orpheus: take the ship down at the helm, come back up, then launch Orpheus and watch its feed to the end. Note whether you understood what you saw, and screenshot any visual problems, especially in the window and on the screens.",
+  "build": {"version": "0.1.0", "commit": "d654778"},
+  "seed": null,
+  "durationSec": 1224,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "20 s hold creates a new objective every second (objectives #2 to #23)",
+      "detail": "Reaching 1.29 rs completes objective 1, then 'Hold for 20 seconds' (#2) starts and completes 6 ticks later, followed by 'Hold at twice the relay rate: 20 s to go' (#3), '19 s to go' (#4) ... '1 s to go' (#22), 'Held for 20 seconds' (#23). Each countdown second is logged as a separate objective_started/objective_completed pair, so the objective counter jumps from 1 to 24 in one chapter. On screen it reads like a countdown, which is fine; the bookkeeping is not (any objective counter, achievement or analytics will be inflated). Expected one objective with a countdown in its text.",
+      "repro": "pt start --checkpoint rescue-done; walk around the helm chair to the helm; E; drag the 'Hold station at' slider to ~1.2 rs; pt events 30",
+      "screenshot": "shots/hold-objective.png",
+      "tick": 3142
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm chair blocks a straight approach to the helm; no use prompt from behind it",
+      "detail": "Walking straight forward from the spawn, the player stops at 2.6 m from the helm against the helm chair, looking at the helm with no 'E Use' prompt. E does nothing, and pt walkto console reports 'stuck'. You have to strafe left and come round the chair (prompt appears at ~0.7 m). The objective tells you to go to the helm, so the first approach most players make is the one that fails.",
+      "repro": "pt start --checkpoint rescue-done; pt hold w 6; pt key e (nothing); pt walkto console -> stuck at 2.58 m",
+      "screenshot": "shots/e2.png",
+      "tick": 1551
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Objective box disappears for ~11 game seconds after the hold ends",
+      "detail": "'Held for 20 seconds' completes at tick 4347 and the objective HUD empties. Ines asks 'is the camera broken?' about the black windows; WREN's answer comes ~5 s later, then Ines says 'Take us back up', and the 'Return to 10 rs (helm)' objective only appears at tick 5021. For that stretch the player has no on-screen instruction, while the windows are pitch black. I clicked 'Return to 10 rs' before the objective appeared and it did not register (see the panel-scroll finding).",
+      "repro": "Continue from the hold above; pt state during ticks 4350-5020 shows objective: null",
+      "screenshot": "shots/no-objective-after-hold.png",
+      "tick": 4628
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm panel overflows once the rear camera appears; scrolled text shows through the Step back header, and a click missed",
+      "detail": "Below ~2.6 rs a REAR CAMERA image is added to the helm panel, which then scrolls. In the scrolled state the 'Hold station at' slider row and value show garbled behind the translucent 'Step back' header. My first click on 'Return to 10 rs' at (810,262) did nothing because the panel had moved under the pointer; a second click at (810,188) worked. Expected an opaque sticky header, or a layout that keeps the Return button and slider where they were.",
+      "repro": "At the helm, descend below 2.6 rs, scroll or wait; pt shot",
+      "screenshot": "shots/panel-scroll-overlap.png",
+      "tick": 5175
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "WREN says 'No more frames are coming' one frame before the last frame arrives",
+      "detail": "At tick 10771 WREN says no more frames are coming, but the feed panel still reads 'Next frame due: 1.2 s / 1.3 s' with 64 frames received. Frame 65 (sent at tau 97.50 M from 1.211 rs) then arrives, and only after that does the panel read 'Next frame due: never'. The line should come after the final frame, or the panel should agree with it.",
+      "repro": "Launch Orpheus at the probe console, open the feed console (starboard screen), wait ~4000 ticks; compare subtitles with the panel text",
+      "screenshot": "shots/feed-next-frame-contradiction.png",
+      "tick": 11557
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "'Watch the Orpheus feed' objective never completes after the feed ends",
+      "detail": "The feed reached 'Next frame due: never' (frame 65, tick ~11900) and WREN delivered the closing line, but objective #25 'Watch the Orpheus feed (starboard screen)' was still open at tick 12103 when I stopped. It may complete later, but nothing on screen said what to do next or how long to wait.",
+      "repro": "As above; pt state at tick ~12000",
+      "screenshot": "shots/feed-final.png",
+      "tick": 12103
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Probe console screen says 'K-1 ready' when Orpheus is the only probe left",
+      "detail": "Ines: 'One probe left. Orpheus.' The in-world probe console screen still lists 'K-1 ready' and 'ORPHEUS ready'. The panel describes Orpheus as carrying 'a clock and a beacon' and does not mention the camera that this chapter is about.",
+      "repro": "After helm-done, walk to the probe console; pt shot",
+      "screenshot": "shots/probe-k1-ready.png",
+      "tick": 6565
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Every bridge window is solid black at 1.2 rs; the explanation comes late",
+      "detail": "Facing forward and to the side (about yaw -30 to -165) at 1.22 rs, every window is pure black with at most one or two stars. This looks physically right (the shadow fills more than half the sky), and the helm's rear-camera caption plus WREN's later line explain it. But you only see the caption if you stay at the helm, and WREN's explanation comes ~20 game seconds after the windows go black, so on the walkabout it looked like a rendering failure. Ines asking 'is the camera broken?' shows the designer expected this; it could come sooner.",
+      "repro": "Descend to 1.217 rs, Esc, turn around the bridge; pt shot",
+      "screenshot": "shots/window-side.png",
+      "tick": 3600
+    },
+    {
+      "severity": "polish",
+      "category": "perf",
+      "title": "Console panels render ~3 s after E; the game ran at 8-15 tps",
+      "detail": "After E at the helm and probe consoles, state.json already shows screen CONSOLE and the panel text, but the panel does not show in screenshots for 2-3 s. The game ran at about 8-15 ticks a second on this shared machine (fps reported 10), so the story's real-time waits (the 20 s hold, the asymptotic last 0.5 rs of the climb back, Orpheus's ~60 s fall) took several wall-clock minutes. Possibly just the harness load.",
+      "repro": "pt key e at a console; pt shot immediately",
+      "screenshot": "shots/helmopen.png",
+      "tick": 2443
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 24,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Take the Tern down until the relay clock runs twice as fast (helm)": 52.3,
+      "Held for 20 seconds": 72.5,
+      "Return to 10 rₛ (helm)": 99.5
+    },
+    "lowestAltitudeRs": 1.217,
+    "maxRelayRate": 2.369,
+    "orpheusFramesReceived": 65,
+    "orpheusLastFrameAltitudeRs": 1.211,
+    "orpheusLastFrameTauM": 97.5,
+    "typicalTps": 12
+  },
+  "fun": 4,
+  "verdict": "The descent and Orpheus land. Watching the helm's rear camera squeeze the sky into a ring, then Orpheus's frames arrive further apart, noisier and finally 'never' at 1.211 rs, made the time-dilation and horizon ideas click without a lecture. The main problems are bookkeeping and pacing: 20 per-second hold objectives, an objective gap while every window is black, WREN announcing the end one frame early, and a feed objective that never closed. A smaller one: the helm chair blocks a straight approach to the helm.",
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "Gravitational time dilation and the event horizon as seen from outside. Lower in the hole's gravity your clock runs slow compared with the far-away relay (x2 below 1.33 rs, 'the universe aged 45 seconds more than we did'). Hovering close, the black hole's shadow covers most of the sky and all the stars get squeezed into a patch behind you. And something falling in never visibly crosses the horizon for an outside watcher: its camera frames arrive ever further apart, redder/fainter and noisier, and the last ones never arrive, while the probe's own clock says it crosses in finite time (tau ~98 M). Also the equivalence principle: the field pushes every atom equally, so you feel nothing."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "Just after the 20-second hold. Every window on the bridge had gone solid black, the objective box was empty, and the only hint was Ines asking whether the camera was broken. For several seconds I could not tell if the renderer had failed or this was the physics. WREN's explanation and the 'take us back up' objective came later. Also confusing: the objective count racing up one per second during the hold, and WREN saying 'no more frames' while the panel still said 'next frame due 1.3 s'."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "(1) Bridge at 1.22 rs, standing by the helm facing forward and then turning right through the comms console to the starboard wall (yaw about -30 to -165): all windows pure black. Probably correct physics, but it looks broken until explained. (2) Helm panel, after the rear camera appeared: the scrolled 'Hold station at' slider row shows garbled through the translucent Step back header at the top of the panel. (3) Probe console in-world screen (facing it from the left of the helm): it reads 'K-1 ready' when only Orpheus is left. (4) The black hole in the forward windows at 10 rs and on the Orpheus feed was blurry but otherwise looked right: no flicker, holes or colour garbage. Pointer-lock briefly drew a black bar across the top of the view right after clicking to capture the mouse."}
+  ]
+}

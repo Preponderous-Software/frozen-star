@@ -107,7 +107,8 @@ export function mountGame(root, { checkpoint } = {}) {
     g.mode = 'console'; controls.setEnabled(false); hud.crosshair(false); hud.prompt(null); controls.showUse(null);
     g.pose.pos.set(g.me.x, g.eye, g.me.z); g.pose.yaw = g.me.yaw; g.pose.pitch = g.me.pitch;
     const a = lookAngles(it.focus.pos, it.focus.look);
-    await g.tweenTo(it.focus.pos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
+    const tween = g.tweenTo(it.focus.pos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
+    await Promise.race([tween, g.wait(0.25)]); // the panel opens while the camera is still settling
     panel.replaceChildren(); panel.hidden = false; audio.open();
     const close = h('button.fp-close', { type: 'button', onclick: () => closeApp() }, '← Step back');
     const body = h('div.fp-app');
@@ -131,12 +132,18 @@ export function mountGame(root, { checkpoint } = {}) {
   function findInteractable() {
     const eye = new THREE.Vector3(g.me.x, g.eye, g.me.z);
     const dir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(g.me.pitch, g.me.yaw, 0, 'YXZ'));
-    let best = null, bestScore = 0.82;
+    let best = null, bestScore = -1;
     for (const it of ship.interactables) {
       if (it.disabled || !g.handlers[it.id]) continue;
       const to = it.pos.clone().sub(eye), d = to.length();
       if (d > it.radius) continue;
-      const score = to.normalize().dot(dir) + 0.06 * (1 - d / it.radius);
+      // the look must land near the thing sideways: a cone that narrows with distance (about 32° at 1 m,
+      // 22° at 2 m). Up and down stays lenient, so a desk item counts without staring at the floor.
+      const hd = Math.hypot(to.x, to.z), hl = Math.hypot(dir.x, dir.z) || 1;
+      if (hd > 0.05 && (to.x * dir.x + to.z * dir.z) / (hd * hl) < Math.cos(Math.min(0.6, 0.14 + Math.atan(0.45 / Math.max(0.3, d))))) continue;
+      const cos = to.normalize().dot(dir);
+      if (cos < 0.6) continue;
+      const score = cos + 0.06 * (1 - d / it.radius);
       if (score > bestScore) { bestScore = score; best = it; }
     }
     return best;
@@ -185,14 +192,18 @@ export function mountGame(root, { checkpoint } = {}) {
         btn('Resume', resume, 'fp-resume'),
         btn('Settings', () => renderMenu('settings'), 'fp-settings'),
         btn('Controls', () => renderMenu('controls')),
-        h('a.button', { href: '#title' }, 'Main menu'),
+        btn('Main menu', (e) => {
+          // two clicks: anything since the last chapter checkpoint is lost
+          if (e.currentTarget.dataset.armed) { location.hash = '#title'; return; }
+          e.currentTarget.dataset.armed = '1'; e.currentTarget.textContent = 'Main menu: click again (you go back to the last chapter)';
+        }),
         isDesktop ? btn('Quit', () => window.close()) : null,
         h('p.fine', 'Progress saves automatically at each chapter.')].filter(Boolean));
       menu.querySelector('#fp-resume').focus();
     } else if (view === 'controls') {
       menu.replaceChildren(h('p.eyebrow', 'Controls'),
         h('dl.fp-keys',
-          ...[['Walk', 'W A S D or arrows · left stick · left thumb'], ['Look', 'Mouse (click to capture) · right stick · drag'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
+          ...[['Walk', 'W A S D · ↑ ↓ · left stick · left thumb'], ['Look', 'Mouse (click to capture) · ← → turn · right stick · drag'], ['Answer', '1 2 3 · click · d-pad'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
         btn('Back', () => renderMenu('main')));
     } else if (view === 'settings') {
       menu.replaceChildren(settingsForm(settings, () => applySettings(), { onBack: () => renderMenu('main') }));

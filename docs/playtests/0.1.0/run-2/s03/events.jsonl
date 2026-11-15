@@ -1,0 +1,88 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794724898992, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794724898993, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 382, "wallTimeMs": 1794724923657, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "dialogue", "tick": 939, "wallTimeMs": 1794724955169, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 939, "wallTimeMs": 1794724955181, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 945, "wallTimeMs": 1794724956541, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 1015, "wallTimeMs": 1794724960131, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 1267, "wallTimeMs": 1794724981493, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 1664, "wallTimeMs": 1794725017433, "who": "WREN", "text": "The recall beam is on the comms console, to the right of the helm."}
+{"type": "dialogue", "tick": 1670, "wallTimeMs": 1794725017915, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}
+{"type": "dialogue", "tick": 2168, "wallTimeMs": 1794725057306, "who": "INES", "text": "Halfway to the edge of the shadow, I think. The data's beautiful."}
+{"type": "screen", "tick": 2670, "wallTimeMs": 1794725117491, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 2688, "wallTimeMs": 1794725120222, "who": "INES", "text": "Doc, the stars behind me are going blue. Is that right?"}
+{"type": "dialogue", "tick": 3192, "wallTimeMs": 1794725201125, "who": "INES", "text": "Still okay. Still waiting. Don't fire yet."}
+{"type": "dialogue", "tick": 3636, "wallTimeMs": 1794725281115, "who": "INES", "text": "Everything overhead is so bright I can barely read the instruments."}
+{"type": "dialogue", "tick": 3951, "wallTimeMs": 1794725331274, "who": "INES", "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!"}
+{"type": "objective_completed", "tick": 3951, "wallTimeMs": 1794725331494, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 4071, "wallTimeMs": 1794725347926, "who": "INES", "text": "The black fills most of the window now."}
+{"type": "dialogue", "tick": 4239, "wallTimeMs": 1794725371599, "who": "WREN", "text": "You fired 5 seconds before the last possible moment. At that moment your screen showed her 6.9 r\u209b out, looking almost normal."}
+{"type": "dialogue", "tick": 4749, "wallTimeMs": 1794725469480, "who": "WREN", "text": "Her picture on the comms screen will keep falling for a while, and a few of her older messages are still on their way. That is old light: she is already climbing."}
+{"type": "screen", "tick": 4821, "wallTimeMs": 1794725481991, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 4845, "wallTimeMs": 1794725485991, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "card", "tick": 5299, "wallTimeMs": 1794725557810, "title": "Twenty minutes later", "subtitle": null}
+{"type": "dialogue", "tick": 5321, "wallTimeMs": 1794725561712, "who": "INES", "text": "Docked. Hands still shaking."}
+{"type": "dialogue", "tick": 5513, "wallTimeMs": 1794725587014, "who": "INES", "text": "You know what scares me? On your screen I looked fine the whole time. If you'd waited until I looked like I was in trouble..."}
+{"type": "dialogue", "tick": 6022, "wallTimeMs": 1794725649454, "who": "WREN", "text": "It would have been far too late. By the deadline, her picture was still only a third of the way down."}
+{"type": "checkpoint", "tick": 6454, "wallTimeMs": 1794725703073, "checkpoint": "rescue-done"}
+{"type": "card", "tick": 6454, "wallTimeMs": 1794725703074, "title": "III \u00b7 The descent", "subtitle": "Closer to the edge."}
+{"type": "dialogue", "tick": 6454, "wallTimeMs": 1794725704885, "who": "INES", "text": "I want to see that again. Without dying this time."}
+{"type": "dialogue", "tick": 6720, "wallTimeMs": 1794725735698, "who": "WREN", "text": "The station-keeping field can take us lower. Below 1.33 r\u209b, every second aboard is two seconds on the relay far away."}
+{"type": "objective_started", "tick": 7208, "wallTimeMs": 1794725778992, "number": 2, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "screen", "tick": 7796, "wallTimeMs": 1794725823491, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 8312, "wallTimeMs": 1794725901132, "who": "WREN", "text": "Relay clock at double speed. Hold here for twenty seconds."}
+{"type": "objective_started", "tick": 8318, "wallTimeMs": 1794725901496, "number": 3, "title": "Hold at twice the relay rate: 20 s to go"}
+{"type": "objective_completed", "tick": 8318, "wallTimeMs": 1794725901495, "number": 2, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "objective_completed", "tick": 8372, "wallTimeMs": 1794725907991, "number": 3, "title": "Hold at twice the relay rate: 20 s to go"}
+{"type": "objective_started", "tick": 8372, "wallTimeMs": 1794725907992, "number": 4, "title": "Hold at twice the relay rate: 19 s to go"}
+{"type": "objective_completed", "tick": 8432, "wallTimeMs": 1794725914991, "number": 4, "title": "Hold at twice the relay rate: 19 s to go"}
+{"type": "objective_started", "tick": 8432, "wallTimeMs": 1794725914992, "number": 5, "title": "Hold at twice the relay rate: 18 s to go"}
+{"type": "objective_completed", "tick": 8492, "wallTimeMs": 1794725922991, "number": 5, "title": "Hold at twice the relay rate: 18 s to go"}
+{"type": "objective_started", "tick": 8492, "wallTimeMs": 1794725922992, "number": 6, "title": "Hold at twice the relay rate: 17 s to go"}
+{"type": "objective_completed", "tick": 8552, "wallTimeMs": 1794725930991, "number": 6, "title": "Hold at twice the relay rate: 17 s to go"}
+{"type": "objective_started", "tick": 8552, "wallTimeMs": 1794725930993, "number": 7, "title": "Hold at twice the relay rate: 16 s to go"}
+{"type": "objective_completed", "tick": 8618, "wallTimeMs": 1794725938492, "number": 7, "title": "Hold at twice the relay rate: 16 s to go"}
+{"type": "objective_started", "tick": 8618, "wallTimeMs": 1794725938493, "number": 8, "title": "Hold at twice the relay rate: 15 s to go"}
+{"type": "objective_started", "tick": 8678, "wallTimeMs": 1794725944492, "number": 9, "title": "Hold at twice the relay rate: 14 s to go"}
+{"type": "objective_completed", "tick": 8678, "wallTimeMs": 1794725944491, "number": 8, "title": "Hold at twice the relay rate: 15 s to go"}
+{"type": "objective_completed", "tick": 8738, "wallTimeMs": 1794725950991, "number": 9, "title": "Hold at twice the relay rate: 14 s to go"}
+{"type": "objective_started", "tick": 8738, "wallTimeMs": 1794725950992, "number": 10, "title": "Hold at twice the relay rate: 13 s to go"}
+{"type": "objective_completed", "tick": 8798, "wallTimeMs": 1794725958991, "number": 10, "title": "Hold at twice the relay rate: 13 s to go"}
+{"type": "objective_started", "tick": 8798, "wallTimeMs": 1794725958992, "number": 11, "title": "Hold at twice the relay rate: 12 s to go"}
+{"type": "objective_completed", "tick": 8858, "wallTimeMs": 1794725965491, "number": 11, "title": "Hold at twice the relay rate: 12 s to go"}
+{"type": "objective_started", "tick": 8858, "wallTimeMs": 1794725965492, "number": 12, "title": "Hold at twice the relay rate: 11 s to go"}
+{"type": "objective_completed", "tick": 8918, "wallTimeMs": 1794725971991, "number": 12, "title": "Hold at twice the relay rate: 11 s to go"}
+{"type": "objective_started", "tick": 8918, "wallTimeMs": 1794725971992, "number": 13, "title": "Hold at twice the relay rate: 10 s to go"}
+{"type": "objective_completed", "tick": 8978, "wallTimeMs": 1794725979492, "number": 13, "title": "Hold at twice the relay rate: 10 s to go"}
+{"type": "objective_started", "tick": 8978, "wallTimeMs": 1794725979492, "number": 14, "title": "Hold at twice the relay rate: 9 s to go"}
+{"type": "objective_completed", "tick": 9038, "wallTimeMs": 1794725985992, "number": 14, "title": "Hold at twice the relay rate: 9 s to go"}
+{"type": "objective_started", "tick": 9038, "wallTimeMs": 1794725985992, "number": 15, "title": "Hold at twice the relay rate: 8 s to go"}
+{"type": "objective_completed", "tick": 9098, "wallTimeMs": 1794725992491, "number": 15, "title": "Hold at twice the relay rate: 8 s to go"}
+{"type": "objective_started", "tick": 9098, "wallTimeMs": 1794725992492, "number": 16, "title": "Hold at twice the relay rate: 7 s to go"}
+{"type": "objective_completed", "tick": 9158, "wallTimeMs": 1794725999991, "number": 16, "title": "Hold at twice the relay rate: 7 s to go"}
+{"type": "objective_started", "tick": 9158, "wallTimeMs": 1794725999992, "number": 17, "title": "Hold at twice the relay rate: 6 s to go"}
+{"type": "objective_completed", "tick": 9218, "wallTimeMs": 1794726007991, "number": 17, "title": "Hold at twice the relay rate: 6 s to go"}
+{"type": "objective_started", "tick": 9218, "wallTimeMs": 1794726007992, "number": 18, "title": "Hold at twice the relay rate: 5 s to go"}
+{"type": "objective_completed", "tick": 9278, "wallTimeMs": 1794726016492, "number": 18, "title": "Hold at twice the relay rate: 5 s to go"}
+{"type": "objective_started", "tick": 9278, "wallTimeMs": 1794726016501, "number": 19, "title": "Hold at twice the relay rate: 4 s to go"}
+{"type": "objective_completed", "tick": 9338, "wallTimeMs": 1794726025991, "number": 19, "title": "Hold at twice the relay rate: 4 s to go"}
+{"type": "objective_started", "tick": 9338, "wallTimeMs": 1794726025992, "number": 20, "title": "Hold at twice the relay rate: 3 s to go"}
+{"type": "objective_completed", "tick": 9398, "wallTimeMs": 1794726034991, "number": 20, "title": "Hold at twice the relay rate: 3 s to go"}
+{"type": "objective_started", "tick": 9398, "wallTimeMs": 1794726034992, "number": 21, "title": "Hold at twice the relay rate: 2 s to go"}
+{"type": "objective_completed", "tick": 9452, "wallTimeMs": 1794726042491, "number": 21, "title": "Hold at twice the relay rate: 2 s to go"}
+{"type": "objective_started", "tick": 9452, "wallTimeMs": 1794726042492, "number": 22, "title": "Hold at twice the relay rate: 1 s to go"}
+{"type": "objective_completed", "tick": 9512, "wallTimeMs": 1794726048991, "number": 22, "title": "Hold at twice the relay rate: 1 s to go"}
+{"type": "objective_started", "tick": 9512, "wallTimeMs": 1794726048993, "number": 23, "title": "Held for 20 seconds"}
+{"type": "dialogue", "tick": 9518, "wallTimeMs": 1794726050389, "who": "INES", "text": "The window's gone completely black. WREN, is the camera broken?"}
+{"type": "objective_completed", "tick": 9518, "wallTimeMs": 1794726050491, "number": 23, "title": "Held for 20 seconds"}
+{"type": "dialogue", "tick": 9824, "wallTimeMs": 1794726087869, "who": "WREN", "text": "No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera."}
+{"type": "dialogue", "tick": 10370, "wallTimeMs": 1794726137353, "who": "INES", "text": "Okay. That's enough. Take us back up."}
+{"type": "objective_started", "tick": 10592, "wallTimeMs": 1794726186493, "number": 24, "title": "Return to 10 r\u209b (helm)"}
+{"type": "dialogue", "tick": 10670, "wallTimeMs": 1794726212502, "who": "WREN", "text": "Back at station. The rest of the universe aged 104 seconds more than we did down there."}
+{"type": "screen", "tick": 10862, "wallTimeMs": 1794726284491, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 10892, "wallTimeMs": 1794726295991, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 11054, "wallTimeMs": 1794726329363, "who": "INES", "text": "One probe left. Orpheus. It has a camera, and it streams."}
+{"type": "objective_completed", "tick": 11054, "wallTimeMs": 1794726329491, "number": 24, "title": "Return to 10 r\u209b (helm)"}
+{"type": "card", "tick": 11054, "wallTimeMs": 1794726329362, "title": "IV \u00b7 Orpheus", "subtitle": "The last probe has a camera."}
+{"type": "checkpoint", "tick": 11054, "wallTimeMs": 1794726329361, "checkpoint": "helm-done"}
+{"type": "dialogue", "tick": 11342, "wallTimeMs": 1794726402866, "who": "WREN", "text": "Orpheus is loaded at the probe console. Its feed will show on the starboard screen."}
