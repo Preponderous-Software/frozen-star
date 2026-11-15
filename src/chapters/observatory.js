@@ -2,6 +2,7 @@ import { h, loop, slider, stat } from '../ui/dom.js';
 import { viewport } from '../ui/view3d.js';
 import { lookBasis, hoverVelocity } from '../render/raytracer.js';
 import { sig } from '../physics/units.js';
+import { brief, WORD_RS, WORD_HORIZON } from './lesson.js';
 
 export default {
   id: 'observatory', num: 0, title: 'Observatory',
@@ -16,6 +17,11 @@ export default {
     const sShadow = stat('Shadow size'), sMode = stat('You are'), sNote = h('p.fine');
     vp.el.append(h('div.hud', sShadow.el, sMode.el));
     root.append(
+      brief({
+        goal: 'No goals here: a free camera to explore. Drag the view to circle the black hole.',
+        steps: ['Slide Distance down toward 1 rₛ and watch the black shadow swallow the sky.', 'Turn on Sky grid to see how the hole bends the starfield. Lines that pass close are bent into loops.', 'Look at the disk: the glow above and below the shadow is the far side of the disk, its light bent over the top and under the bottom.', 'Switch Motion to Falling freely and compare the shadow size with Hovering at the same distance.'],
+        words: [WORD_RS, WORD_HORIZON, ['Shadow', 'The black disk. It is about 2.6 times wider than the horizon, because light passing too close is pulled in.'], ['Accretion disk', 'Hot gas swirling around the hole. The side coming toward you looks brighter and bluer.']],
+      }),
       h('div.controls', dist.el, h('label', { for: 'ob-motion' }, h('span', 'Motion'), motion), checks.map((c) => h('label.check', { for: `ob-${c.id}` }, c.input, c.label))),
       vp.el, sNote);
     let t = 0, orbit = 0;

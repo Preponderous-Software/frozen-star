@@ -1,5 +1,6 @@
 import { h, loop, slider, stat } from '../ui/dom.js';
-import { HOLES, formatDuration, formatAccel, G_EARTH, sig } from '../physics/units.js';
+import { HOLES, formatDuration, formatAccel, G_EARTH, sig, expo } from '../physics/units.js';
+import { brief, WORD_RS, WORD_G, WORD_HORIZON, WORD_SCI } from './lesson.js';
 import { hoverRate, hoverAccel } from '../physics/body.js';
 import { viewport } from '../ui/view3d.js';
 import { yawPitchBasis, hoverVelocity } from '../render/raytracer.js';
@@ -15,17 +16,23 @@ export default {
     let hole = HOLES[1];
     const picks = h('div.picks', HOLES.map((x) => h('button.chip', { id: `hv-${x.id}`, 'aria-pressed': x === hole, onclick: (e) => { hole = x; picks.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', 'false')); e.currentTarget.setAttribute('aria-pressed', 'true'); } }, x.name)));
     // height above the horizon on a log scale: r = 2(1 + 10^x)
-    const height = slider('Hover at', { id: 'hv-height', min: -9.5, max: 1, step: 0.01, value: 0.9, fmt: (x) => `${sig(1 + 10 ** x, 6)} rₛ` });
+    // min −10: "1 hour = 7 years" needs a clock 61,362 times slow, about 2.7×10⁻¹⁰ rₛ above the horizon
+    const height = slider('Hover at', { id: 'hv-height', min: -10, max: 1, step: 0.01, value: 0.9, fmt: (x) => (x >= -2 ? `${sig(1 + 10 ** x, 4)} rₛ` : `${expo(10 ** x)} rₛ above the horizon`) });
     const vp = viewport({ label: 'The view from a ship hovering above the black hole' });
     const sRate = stat('1 hour aboard is'), sAcc = stat('Thrust needed'), sGain = stat('You gain'), sCrew = stat('Crew');
     const note = h('div.status');
     root.append(
+      brief({
+        goal: 'Clocks run slow deep in gravity. Hover your ship close to the horizon so less time passes for you than for everyone at home. The catch: the closer you hover, the harder your engines must push to hold you still, and the crew feels every bit of it.',
+        steps: ['Drag Hover at to the left to move closer to the horizon. Watch "1 hour aboard is" and "Thrust needed".', 'Keep the thrust under 10 g so the crew survives. Try different black holes.', 'For the last goal, find the famous "1 hour here is 7 years at home" from the film Interstellar.'],
+        words: [WORD_RS, WORD_HORIZON, WORD_G, ['Thrust', 'How hard the engines push to hold you in place. You feel it as weight, like standing on a planet with that much gravity.'], WORD_SCI],
+      }),
       h('div.controls', picks, height.el),
       h('div.bench.wide-left',
         h('section.view', h('div.view-head', h('span.who', 'Out of the window'), h('span.fine', 'drag to look around')), vp.el,
           h('p.fine', 'You are hovering, so you are moving outward through the infalling space. Starlight from above is squeezed into a bright patch and blueshifted. Near the horizon the shadow swallows almost the whole sky.')),
         h('section.view', h('div.view-head', h('span.who', 'Ship status'), h('span.fine#hv-name', hole.name)), h('div.stats.col', sRate.el, sAcc.el, sGain.el, sCrew.el), note,
-          h('p.fine', 'Hovering clocks run slow by √(1 − rₛ/r). The thrust needed to hold still grows without limit as you approach the horizon.'))),
+          h('p.fine', 'Your clock runs slower the closer you hover, and stops altogether at the horizon. The thrust needed to hold still also grows without limit there. Heavier holes need less thrust at the same rₛ.'))),
     );
     let t = 0, millerShown = false;
     const stop = loop((dt) => {
@@ -52,7 +59,7 @@ export default {
             ],
           });
         }
-      } else if (!ok) { note.textContent = `${formatAccel(acc)} would kill the crew. Hover higher, or find a heavier hole.`; note.className = 'status warn'; }
+      } else if (!ok) { note.textContent = `${formatAccel(acc)} would kill the crew. Hover higher${hole === HOLES[HOLES.length - 1] ? '' : ', or pick a heavier hole: at the same rₛ it needs less thrust'}.`; note.className = 'status warn'; }
       else { note.textContent = factor >= 1.1 ? 'Holding steady. Home is ageing faster than you.' : 'Holding steady. The time difference is still small this high up.'; note.className = 'status good'; }
       if (vp.view) {
         const tilt = 0.18, pos = [0, r * Math.sin(tilt), -r * Math.cos(tilt)];

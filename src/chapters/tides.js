@@ -1,6 +1,7 @@
 import { h, loop, slider, stat } from '../ui/dom.js';
 import { HOLES, formatMass, formatDuration, formatAccel, metersFromM, G_EARTH, expo, sig } from '../physics/units.js';
 import { tidalStretch, tidalRadius, maxTimeInside, minMassForSafeCrossing } from '../physics/body.js';
+import { brief, WORD_RS, WORD_G, WORD_HORIZON, WORD_SCI } from './lesson.js';
 
 const LIMIT_G = 10; // what a trained, braced pilot survives across their body
 
@@ -21,10 +22,15 @@ export default {
     drop.addEventListener('click', () => { anim = { t: 0, mass: 10 ** massS.value, real: chosen }; result = null; });
 
     root.append(
+      brief({
+        goal: `Get a pilot through the horizon in one piece, with time to spare inside. Gravity pulls harder on whatever is closer, so near a black hole your feet are pulled harder than your head. That difference stretches you. Find a black hole where the stretch stays under ${LIMIT_G} g.`,
+        steps: ['Pick a real black hole, or drag the mass slider.', 'Press Drop the pilot and watch the dot slide down the curve toward the horizon.', 'If the pilot is torn apart, ask yourself: does a heavier hole make it better or worse?'],
+        words: [WORD_G, WORD_RS, WORD_HORIZON, ['Suns (mass)', 'Black holes are weighed in suns: 4 million suns is four million times the mass of our Sun.'], WORD_SCI],
+      }),
       h('div.controls', massS.el, picks, drop),
       h('div.bench',
         h('section.view', h('div.view-head', h('span.who', 'Tidal stretch across a 2 m body'), h('span.fine', 'distance in horizon radii')), plot,
-          h('p.fine', 'Every black hole has the same curve shape. A heavier hole slides it down: at the horizon, tides scale as 1/M².')),
+          h('p.fine', 'Every black hole has the same curve shape. A heavier hole slides it down: double the mass and the stretch at the horizon drops to a quarter.')),
         h('section.view', h('div.view-head', h('span.who', 'The pilot'), h('span.fine', `survives ${LIMIT_G} g of stretch`)), figure,
           h('div.stats', sH.el, sR.el, sIn.el, sSize.el), verdict)),
     );
@@ -71,9 +77,9 @@ export default {
 
     function finish(tornOutside, M, inside, real) {
       anim = null;
-      if (tornOutside) { result = [`Torn apart ${sig(tidalRadius(M, LIMIT_G * G_EARTH) / 2)} rₛ from the centre, before reaching the horizon. Try a heavier hole.`, 'bad']; return; }
+      if (tornOutside) { result = [`Torn apart ${sig(tidalRadius(M, LIMIT_G * G_EARTH) / 2)} rₛ from the centre, before reaching the horizon. A small hole packs its mass into a tiny space, so its horizon sits very close to the centre, where the pull changes sharply across a body. Try a heavier hole.`, 'bad']; return; }
       const hour = inside >= 3600;
-      result = [`Crossed in one piece. At most ${formatDuration(inside)} until the centre${hour ? '.' : ', short of an hour.'}${hour && !real ? ' Now try it with a real black hole.' : ''}`, 'good'];
+      result = [`Crossed in one piece. At most ${formatDuration(inside)} until the centre${hour ? '.' : ', short of an hour. Heavier holes give you longer inside.'}${hour && !real ? ' Now try it with one of the real black holes.' : ''}`, 'good'];
       ctx.goal(0, true);
       if (hour) ctx.goal(1, true);
       if (hour && real) {
@@ -81,9 +87,9 @@ export default {
         ctx.debrief({
           title: 'Bigger is gentler',
           body: [
-            `Tides at the horizon scale as 1/M². Below about ${formatMass(minMassForSafeCrossing(LIMIT_G * G_EARTH))} the stretch at the horizon passes ${LIMIT_G} g, and stellar black holes shred anything long before it arrives.`,
+            `Double a black hole's mass and the stretch at its horizon drops to a quarter. Below about ${formatMass(minMassForSafeCrossing(LIMIT_G * G_EARTH))} the stretch at the horizon passes ${LIMIT_G} g, so black holes made by dying stars, a few to a few dozen suns, shred anything long before it arrives.`,
             `${real.name} is so large that its horizon is ${km(metersFromM(2, real.mass))} across, and space there is almost flat over the length of a person.`,
-            'Time inside also grows with mass. The longest any faller can last between horizon and centre is πGM/c³, if they start at rest just above the horizon. Firing rockets to "escape" only shortens it.',
+            `Time inside also grows with mass. The longest anyone can last between horizon and centre grows in step with the mass: for ${real.name} it is ${formatDuration(maxTimeInside(real.mass))}, and only for someone who falls from rest just above the horizon. Firing rockets to "escape" only shortens it.`,
           ],
         });
       }

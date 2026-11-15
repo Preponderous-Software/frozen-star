@@ -4,6 +4,7 @@ import { HOLES, formatDuration, formatAccel, secondsFromM } from '../physics/uni
 import { tidalStretch } from '../physics/body.js';
 import { viewport } from '../ui/view3d.js';
 import { yawPitchBasis, fallerVelocity } from '../render/raytracer.js';
+import { brief, wordM, WORD_RS, WORD_HORIZON } from './lesson.js';
 
 // What you see while falling. Milestones are radii in units of M.
 const CAPTIONS = [
@@ -13,13 +14,13 @@ const CAPTIONS = [
   [3, 'You are passing the photon sphere. Here, light can orbit the hole.'],
   [2.15, 'The horizon is just ahead. There is nothing there to see or feel.'],
   [1.99, 'You crossed the horizon. Nothing happened. You can still see the universe behind you; it just cannot see you.'],
-  [1.2, 'Look back up. The outside universe is shrinking into a bright patch overhead. Every path forward leads to r = 0.'],
+  [1.2, 'Look back up. The outside universe is shrinking into a bright patch overhead. Every path forward now leads to the centre.'],
   [0.4, 'The singularity is not a place ahead of you. It is a moment in your future, like tomorrow.'],
 ];
 const R_END = 0.3;
 
 export default {
-  id: 'into-the-dark', num: 6, title: 'Into the Dark',
+  id: 'into-the-dark', num: 7, title: 'Into the Dark',
   kicker: 'Fall in yourself. The view is ray-traced through curved spacetime.',
   goals: ['Cross the horizon', 'Look back up from inside', 'Ride it to the end'],
   mount(root, ctx) {
@@ -45,9 +46,17 @@ export default {
     up.addEventListener('click', () => { vp.look.yaw = Math.PI; vp.look.pitch = 0; });
     ahead.addEventListener('click', () => { vp.look.yaw = 0; vp.look.pitch = 0; });
     root.append(
+      brief({
+        goal: `Fall into ${hole.name} yourself and see what it looks like from the inside. The view is computed, ray by ray, from how light really travels near a black hole.`,
+        steps: ['Press Fall. Drag the view (or use the buttons) to look around while you fall.', 'Once you are inside the horizon, press Look up to see the universe you left behind.', 'Ride it to the end. Read the captions as you go.'],
+        words: [wordM(hole.mass, hole.name), WORD_RS, WORD_HORIZON,
+          ['Shadow', 'The black disk you see. It is bigger than the horizon, because light that passes too close gets pulled in.'],
+          ['Photon sphere', 'At 1.5 rₛ, light can circle the hole. The bright ring at the shadow\'s edge is light that skimmed it.'],
+          ['Tidal stretch', 'How much harder your feet are pulled than your head. Here it stays tiny, because this hole is so big.']],
+      }),
       h('div.controls', go, speed.el, up, ahead, h('label.check', { for: 'id-disk' }, disk, 'Accretion disk'), h('label.check', { for: 'id-grid' }, grid, 'Sky grid')),
       vp.el,
-      h('p.fine', `You fall from rest at 10 rₛ around ${hole.name}. Every pixel follows a real light ray backwards through Painlevé–Gullstrand coordinates, which stay well-behaved through the horizon, then shifts its colour by the true redshift.`),
+      h('p.fine', `You fall from rest at 10 rₛ around ${hole.name}. Every pixel follows a real light ray backwards along its curved path, through the horizon if need be, and is coloured by how much that light was stretched or squeezed on the way to you.`),
     );
 
     const stop = loop((dt) => {

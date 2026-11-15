@@ -2,7 +2,8 @@ import { h, loop, slider } from '../ui/dom.js';
 import { Infall } from '../physics/infall.js';
 import { stationPanel, probePanel } from '../ui/panels.js';
 import { SpacetimeDiagram } from '../ui/diagram.js';
-import { HOLES, formatDuration, secondsFromM } from '../physics/units.js';
+import { HOLES, formatDuration, formatMass, secondsFromM } from '../physics/units.js';
+import { brief, quiz as makeQuiz, wordM, WORD_RS, WORD_HORIZON, WORD_REDSHIFT } from './lesson.js';
 
 const PING = 10, PINGS = 9;
 
@@ -19,29 +20,38 @@ export default {
     const diagCanvas = h('canvas.diagram', { 'aria-label': 'Spacetime diagram of the fall' });
     const diagram = new SpacetimeDiagram(diagCanvas, f);
     const speed = slider('Playback', { id: 'tc-speed', min: 1, max: 30, step: 0.5, value: 8, fmt: (v) => `${v} M/s` });
-    const holeSel = h('select#tc-hole', HOLES.map((x) => h('option', { value: x.mass, selected: x.mass === mass }, `${x.name} · ${x.mass >= 1e6 ? (x.mass / 1e6).toPrecision(2) + ' million' : x.mass} suns`)));
+    const holeSel = h('select#tc-hole', HOLES.map((x) => h('option', { value: x.mass, selected: x.mass === mass }, `${x.name} · ${formatMass(x.mass)}`)));
     holeSel.addEventListener('change', () => { mass = +holeSel.value; });
     const drop = h('button.primary#tc-drop', 'Drop the probe');
 
+    const holeName = () => HOLES.find((x) => x.mass === mass)?.name ?? 'this hole';
+    const secs = (m) => formatDuration(secondsFromM(m, mass));
     const options = [
-      ['about 90 M, the same as on the probe', false],
-      [`about ${Math.round(A9)} M`, true],
-      ['about 300 M', false],
-      ['never: it is too close to the horizon', false],
+      ['About 90 M, the same as on the probe', false, 'That would be true if light took no time and clocks ran alike everywhere. But each ping starts deeper in the hole\'s gravity than the last, so it needs longer to climb out to you.'],
+      [`About ${Math.round(A9)} M`, true, `The pings leave 10 M apart on the probe's clock, but reach you further and further apart: the first two land ${(f.messageArrival(2 * PING) - f.messageArrival(PING)).toFixed(1)} M apart, the last two ${(A9 - f.messageArrival(8 * PING)).toFixed(1)} M apart.`],
+      ['About 300 M', false, 'Too late. The delay does grow without limit, but only for light sent from right at the horizon. Ping 9 leaves a little above it, so it still gets out in reasonable time.'],
+      ['Never: it is too close to the horizon', false, 'Ping 9 is sent while the probe is still outside the horizon, so it does get out. Only light sent from on or inside the horizon never arrives.'],
     ];
-    const quiz = h('div.quiz',
-      h('p.fine', 'Times here are in M, the natural time unit of a black hole: the time light takes to cross half its horizon radius (GM/c³). For Erebus, the hole in the story, 1 M is 0.59 seconds.'),
-      h('p', 'The probe sends a ping every ', h('b', '10 M'), ' of its own time and sends nine before it reaches the horizon. When will ping 9 reach the station?'),
-      h('div.choices', options.map(([label, ok], i) => h('button.choice', { id: `tc-q${i}`, onclick: (e) => { guess = ok; quiz.querySelectorAll('.choice').forEach((b) => b.classList.remove('picked')); e.currentTarget.classList.add('picked'); } }, label))),
-      h('p.fine', 'Pick an answer, then drop. You can also drop without guessing.'));
-
+    let verdict = null;
+    const q = makeQuiz({
+      id: 'tc-q', lock: false,
+      prompt: h('span', 'The probe sends a ping every ', h('b', '10 M'), ' of its own time, nine in all, the last a few M before it reaches the horizon. When will ping 9 reach the station?'),
+      choices: options.map(([l, ok]) => [l, ok, '']),
+      onAnswer(ok, i) { guess = ok; verdict = options[i][2]; q.buttons.forEach((b, j) => { b.classList.toggle('picked', j === i); b.classList.remove('right', 'wrong'); }); q.why.className = 'lx-why'; q.why.replaceChildren('Prediction locked in. Now press ', h('b', 'Drop the probe'), ' and watch the station log.'); },
+    });
+    const quiz = q.el;
     drop.addEventListener('click', () => {
       S = 0; tau = 0; got = 0; gone = false; running = true; diagram.reset();
       station.log.clear(); probe.log.clear(); drop.textContent = 'Drop again';
-      quiz.querySelectorAll('.choice').forEach((b) => (b.disabled = true));
+      q.buttons.forEach((b) => (b.disabled = true));
     });
 
     root.append(
+      brief({
+        goal: 'A probe falls from the station toward the black hole, flashing a ping every 10 M on its own clock. Find out how those pings look from the station, and why it never sees the probe fall in.',
+        steps: ['Guess when the last ping will reach the station.', 'Press Drop the probe. The left panel is what the station sees; the right is the probe\'s own clock.', 'Watch the gaps between pings in the station log, and keep watching until the probe fades from view.'],
+        words: [wordM(mass, HOLES.find((x) => x.mass === mass).name), WORD_RS, WORD_HORIZON, WORD_REDSHIFT, ['Ping', 'A short flash of light the probe sends home, like a lighthouse blink.']],
+      }),
       h('div.controls', h('label', { for: 'tc-hole' }, h('span', 'Black hole'), holeSel), speed.el, drop),
       quiz,
       h('div.bench', station.el, probe.el),
@@ -53,23 +63,28 @@ export default {
       if (running) {
         const step = dt * speed.value; S += step; tau = Math.min(f.tauEnd, tau + step);
         const sent = Math.min(PINGS, Math.floor(tau / PING));
-        while (diagram.signals.length < sent) { const k = diagram.signals.length + 1; diagram.signals.push({ tau: k * PING }); probe.log.add(`Ping ${k} sent at τ = ${k * PING} M`); }
+        while (diagram.signals.length < sent) { const k = diagram.signals.length + 1; diagram.signals.push({ tau: k * PING }); probe.log.add(`Ping ${k} sent at ${k * PING} M on the probe's clock`); }
         while (got < PINGS && S >= f.messageArrival((got + 1) * PING)) {
-          got++; station.log.add(`Ping ${got} received at ${S.toFixed(1)} M (sent at τ = ${got * PING} M)`, 'got');
+          got++;
+          const gap = got > 1 ? f.messageArrival(got * PING) - f.messageArrival((got - 1) * PING) : null;
+          station.log.add(`Ping ${got} received at ${S.toFixed(1)} M${gap ? `, ${gap.toFixed(1)} M after the last (sent 10 M apart)` : ''}`, 'got');
           if (got === PINGS) {
             ctx.goal(0, true);
             if (guess === true) ctx.goal(1, true);
-            station.log.add(guess === true ? 'Your prediction was right.' : guess === false ? `Your prediction missed: it arrived at ${A9.toFixed(1)} M. Each ping starts deeper in the hole's gravity than the last, so it takes longer to climb out, and the gaps keep growing.` : 'No prediction this time.', guess ? 'got' : 'never');
+            station.log.add(guess === true ? 'Your prediction was right.' : guess === false ? `Your prediction missed: ping 9 arrived at ${A9.toFixed(1)} M.` : 'No prediction this time.', guess ? 'got' : 'never');
+            if (verdict) { q.why.hidden = false; q.why.className = 'lx-why ' + (guess ? 'right' : 'wrong'); q.why.replaceChildren(h('b', guess ? 'Right. ' : `Not quite: it arrived at ${A9.toFixed(1)} M. `), verdict); q.buttons.forEach((b) => { if (b.classList.contains('picked')) b.classList.add(guess ? 'right' : 'wrong'); }); }
           }
         }
         if (!gone && f.seenAt(S).lnz > 9) {
           gone = true; ctx.goal(2, true); running = S < 400;
+          // a fresh prediction for the next drop
+          guess = null; verdict = null; q.buttons.forEach((b) => { b.disabled = false; b.classList.remove('picked'); });
           ctx.debrief({
             title: 'Both clocks were right',
             body: [
-              `The probe crossed the horizon at τ = ${f.tauH.toFixed(2)} M on its own clock and hit r = 0 just ${(f.tauEnd - f.tauH).toFixed(2)} M later. For ${HOLES.find((x) => x.mass === mass)?.name ?? 'this hole'} that is ${formatDuration(secondsFromM(f.tauEnd, mass))} from drop to centre.`,
+              `On its own clock the probe crossed the horizon at ${f.tauH.toFixed(1)} M and reached the centre just ${(f.tauEnd - f.tauH).toFixed(1)} M later. For ${holeName()} that is ${secs(f.tauEnd)} from drop to centre.`,
               'The station never saw it cross. Light from close to the horizon needs longer and longer to climb out, so each ping arrived later than the last, and the image slowed, reddened and dimmed.',
-              `The image did not stay frozen for long. Its redshift grew by a factor of e every few M, and by ${S.toFixed(0)} M on the station clock it was too faint to detect. "You never see it fall in" is a statement about light, not about the probe.`,
+              `The image did not stay frozen for long. Its light was stretched more and more, and by ${S.toFixed(0)} M on the station clock (${secs(S)} for ${holeName()}) it had faded below anything a telescope could catch. "You never see it fall in" is a statement about light, not about the probe.`,
             ],
           });
         }
