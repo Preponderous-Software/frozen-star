@@ -1,0 +1,78 @@
+{
+  "session": "s02",
+  "goal": "Watch Ines launch from the capsule bay (is there a build-up, can you see the capsule leave and track it?), save her with the recall beam using the deadline clock, and check the deadline numbers agree everywhere (WREN, the comms panel, after firing). Then start the descent. Note anything unclear or broken.",
+  "build": {"version": "0.1.0", "commit": "3975b28"},
+  "seed": null,
+  "durationSec": 1304,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at roughly 4-15 ticks/s; key holds for turning were dropped and the 49 s rescue took about 4 real minutes",
+      "detail": "With the machine heavily loaded (load average about 61), the game advanced only 30-60 ticks per 8 s wait for long stretches. 'pt hold Left 0.5' twice produced no turn at all (ticks 7173-7209); 'pt face' overshot or undershot by 8-24 degrees. Walking 5 m to the comms console took about 15 s of real holds. Game time stayed consistent, so the deadline was still fair, but the low frame rate (fps 10) makes short key presses unreliable. Partly an environment problem; reported so the frame-time dependence of input can be checked.",
+      "repro": "pt start --profile /root/frozen-star/tools/playtest/frozen-star.json --game-dir /root/frozen-star --checkpoint probe-done; (under load) pt hold Left 0.5; pt state (yaw unchanged)",
+      "screenshot": "shots/helm0.png",
+      "tick": 7209
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "About 46 game seconds with no objective on screen between the rescue and the descent",
+      "detail": "Objective 2 completed at tick 4204 and the objective box disappeared. Objective 3 ('Take the Tern down...') appeared only at tick 6962. In between there are a short cutscene, a 'Twenty minutes later' card, and some lines from Ines and WREN with long silences. On this slow machine that was several real minutes of standing around wondering whether I was supposed to do something.",
+      "repro": "probe-done checkpoint; fire the beam; Esc out of comms; wait; watch the objective box (top left)",
+      "screenshot": "shots/idle1.png",
+      "tick": 6450
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms capsule readouts freeze at engine burn while the caption says the picture shows her coming home",
+      "detail": "After 'Engine's lit!' the comms panel shows '82.1 M / 48.5 s for this hole', her clock 72.561 M, 1+z 1.351, brightness 30.0% and appears at 6.22 rs, and none of these change for the rest of the scene (checked at ticks 5110 and 5230). The caption says 'from here on the picture shows her coming home', and the console header says 'engine burn seen, climbing home', but the dot stays red and still. I expected the redshift to fall and the dot to move back toward the station, which would pay off the lesson visually.",
+      "repro": "probe-done; fire the beam about 39 s after the mayday; stay at comms until Ines says 'Engine's lit!'; take shots a few seconds apart",
+      "screenshot": "shots/wait2.png",
+      "tick": 5230
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No 'Use the helm' prompt while standing 0.9 m from the helm and facing it",
+      "detail": "After walking from comms, the state said helm 0.9 m at bearing -2 but no use prompt appeared (the crosshair passes over the helm). I had to step back to 1.0 m before 'E Use the helm console' appeared. Standing too close to a console should still let you use it.",
+      "repro": "after objective 3 starts, walk right up against the helm console, face it (pt face to bearing ~0), check pt state prompt; then pt hold s 1.5",
+      "screenshot": "shots/helm0.png",
+      "tick": 7257
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Helm 'Hold station at' slider is hard to set to the x2 mark",
+      "detail": "The objective asks for the relay clock to run twice as fast. The far-away-clock bar marks x2 at 1.33 rs, but the slider you actually drag is in rs and has no x2 tick. A drag to about a third of the way set 1.164 rs (beyond x2) without my meaning to. A snap point or tick at 1.33 rs on the hold slider would help.",
+      "repro": "at helm, pt drag 1230 384 900 384 1.5 1",
+      "screenshot": "shots/descent1.png",
+      "tick": 7545
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Watch Ines launch: the port side of the bridge window": 18.5,
+      "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 70.1
+    },
+    "launchBuildUpSec": 12.2,
+    "deadlineSecWren": 49,
+    "beamFiredSecAfterMayday": 39,
+    "beamFiredSecBeforeDeadline": 10,
+    "herPictureAtFiringRs": 7.56,
+    "descentStartedTick": 7545,
+    "minTicksPerSecondObserved": 4
+  },
+  "fun": 4,
+  "verdict": "The launch and rescue work well. 'Bay doors opening, watch the port side' leads into the capsule sliding past the port window with a tracker label (9 m, then '18 m, holding station'). The deadline numbers agree everywhere: WREN says 49 s, the comms bar always adds to 49 (16+33, 25+24, 37+12), it reads 'fired 39 s after, 10 s before the deadline' after firing, and WREN's debrief repeats '10 seconds' and '7.6 rs'. Ines's 'Still okay. Don't fire yet.' at 37 s creates real tension. Weak spots: the capsule readouts freeze once she starts climbing, there is a long gap with no objective before the descent, and the helm slider has no x2 mark. Note: the harness warned that the launcher was built before HEAD (3975b28), so this may be slightly old code."
+  ,
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That near a black hole what you see is old, stretched light. Ines's picture looked almost normal (7.6 rs, redshift about 1.2) right up to the point where it was nearly too late to save her, so you have to trust a computed deadline clock, not the picture. Then, with the helm, it teaches gravitational time dilation: the lower the ship holds station, the faster far-away clocks run compared with yours (x2 at 1.33 rs), and the field holding you up can't be felt (the equivalence principle)."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "The stretch after the rescue. The objective box vanished, the comms readouts froze while the text said the picture shows her coming home, and nothing on screen said what to do next until the descent objective appeared about 46 game seconds later. Second: at first I didn't know which window 'the port side of the bridge window' meant (the forward window or the left side windows). The capsule actually first shows up in the left side window."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "Nothing clearly broken. The black hole view was blurry, as expected in software rendering, with no holes or flicker. The bridge turned pinkish-red during the emergency, which looked intentional. On the bridge, facing the comms console (bow-starboard), the capsule panel numbers stopped updating after the engine burn, which looks frozen. At the helm, panels opened one or two seconds after pressing E (the first screenshot showed no panel), which I put down to low fps."}
+  ]
+}

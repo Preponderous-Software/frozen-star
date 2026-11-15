@@ -13,7 +13,8 @@ Voices, a new chapter, and a ship you can read at a glance. Playtest evidence: [
 - **Controls and accessibility:** rebind every key and gamepad button; reduce flashing, subtitle background, console text size, hold or toggle run, colour-safe redshift.
 - **Renderer:** the photon ring is a continuous line at low resolution, and the sky's resolution climbs on GPUs that hold 30 fps.
 - **Clearer opening and rescue:** WREN introduces itself as the ship's AI; Ines's launch has a build-up and the capsule is visible leaving with running lights and a tracking bracket; one deadline total everywhere.
-- **Fixes from three more AI playtest rounds:** the dream no longer starts on a long black screen (a negative first time step), hints never outlive their objective, the Postscript can be started from the helm or the logbook, lists scroll under load, photo saves are confirmed, and more.
+- **Fixes from four more AI playtest rounds:** the dream no longer starts on a long black screen (a negative first time step), hints never outlive their objective, the Postscript can be started from the helm or the logbook and its helm snaps to 1.5 rₛ, lists scroll under load, photo saves are confirmed in the photo bar, and more.
+- **Her climb home:** after the recall beam, once the light of her engine burn reaches the ship, the capsule's picture climbs back out and its redshift falls, instead of freezing at the burn.
 - **Media:** darkroom-rendered MP4/WebM clips of the dream and the descent, and a room grid.
 
 ## 0.1.0 (2026-11-15)

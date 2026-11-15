@@ -1,0 +1,104 @@
+{
+  "session": "s01",
+  "goal": "A brand-new player, from the title menu: the dream (does it start promptly, with a cue?), waking up (does WREN introduce itself as the ship's AI?), finding Ines in the capsule bay, the bridge, and dropping the beacon probe. Note any confusion, stale hints or anything broken.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "3975b28"
+  },
+  "seed": null,
+  "durationSec": 885,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "WREN's direction nudge is stale: 'Out of your door, turn right' plays when the player is already at the bridge doorway",
+      "detail": "At tick 4818 WREN says 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' I had left the quarters ~2000 ticks earlier, visited the bay intercom, and was standing 2.4 m from the bridge door. The hint seems timer-based and ignores where the player is. Expected: suppress it once the player is in the corridor, or phrase it relative to the current room.",
+      "repro": "pt start ...; pt key Return; pt await WORLD 150; leave quarters, talk to Ines at bay intercom (E), walk forward along corridor toward bridge; hint plays around tick 4800",
+      "screenshot": "shots/stale_directions.png",
+      "tick": 4818
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "WREN's 'First item on today's plan: drop beacon probe K-1' plays after the probe is already launched",
+      "detail": "On the bridge I went straight to the probe console and pressed 'Launch Beacon K-1' (~tick 5610). WREN's briefing line arrived at tick 5646, after the launch, as if I had not done it yet. The 'Drop the beacon probe' objective only ticked at tick 6000 (~6.5 game s after the launch, with the first ping), so for a few seconds the HUD still told me to do what I had just done. Expected: the briefing line plays on entering the bridge or is skipped if already launched; the objective completes on launch.",
+      "repro": "pt start ...; play to the bridge; walk to probe console promptly; E; click 'Launch Beacon K-1' (992,360); pt events",
+      "screenshot": "shots/late_plan_line.png",
+      "tick": 5646
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Ines greets twice and 'Come up to the bridge' makes it unclear where she is",
+      "detail": "Ines (labelled capsule bay) says unprompted 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.' (tick 2686), which reads as if she is on the bridge. On the bay intercom she greets again 'Morning, doc. Checklist first, then coffee. The view's on the bridge, not in here.' (tick 4008), and on the bridge 'I'm out in the capsule bay doing pre-flight.' (tick 5182). Two 'Morning, doc' greetings and the 'come up' wording muddle where she is; the speaker label does help.",
+      "repro": "pt start ...; pt key Return; pt await WORLD 150; walk out of quarters (first line plays); face the bay window and press E at 'Talk to Ines (bay intercom)'",
+      "screenshot": "shots/ines_greeting_repeat.png",
+      "tick": 4008
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "First probe console uses the unit 'M' without explaining it",
+      "detail": "The probe console's stat card says 'every 10 M' with 'a ping on its own clock, about 6 s'. 'r_s' is explained ('ten horizon radii') but 'M' is never explained, and the big '10 M' reads like '10 million'. After launch, both clocks are shown in M too. A new player has to guess that M is a unit of time.",
+      "repro": "play to the bridge; walk to probe console; press E",
+      "screenshot": "shots/probe_units.png",
+      "tick": 5560
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Dream has a 16-second silent gap after its first line",
+      "detail": "The dream starts promptly: the first subtitle '(Falling. No wind, no sound.)' shows at tick 137 (2.3 s) and the Skip button is visible. Then nothing is said until tick 1105 (16 game seconds later). The black hole picture barely changes in that time, so it feels stalled. The dream ends at tick 1699 (28 s), which is fine overall.",
+      "repro": "pt start ...; pt key Return; pt await DREAM 20; pt events (dialogue at 137, then 1105, 1501, 1639)",
+      "screenshot": "shots/dream6.png",
+      "tick": 833
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Door distance marker overlaps the controls hint text at the quarters exit",
+      "detail": "Standing at the quarters door, the 'Door 1 m' marker is drawn on top of the line 'to pause.' in the controls hint. The controls hint, the 'Click to look around' pill, the use prompt and the subtitle all stack in the middle of the screen, covering the porthole and doorways. The controls hint stays up a long time after the player starts walking. At the probe console the 'Probe 2 m' marker likewise overlaps 'Click to look around'.",
+      "repro": "pt start ...; reach WORLD; pt walkto door; pt shot",
+      "screenshot": "shots/door_marker_overlap.png",
+      "tick": 3128
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at ~4-20 ticks/s in the headless harness (host load ~55)",
+      "detail": "fps stayed at 10 and ticks/s fell to ~4 late in the session. The 28 s dream took ~110 s real time, and the probe's fall could not be watched to the end within the budget. The machine's load average was 55-58, so this is most likely host contention rather than the game. pt start also warned that playtest-launch.sh was built before HEAD (3975b28), so the build may be slightly stale.",
+      "repro": "pt start ...; pt status; uptime",
+      "screenshot": "shots/slow_tps.png",
+      "tick": 6546
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 86.5,
+      "Drop the beacon probe (probe console, left)": 100.0
+    },
+    "dreamFirstSubtitleSec": 2.3,
+    "dreamLengthSec": 28.3,
+    "wrenIntroTickSec": 29.9,
+    "longestDreamSilenceSec": 16.1
+  },
+  "fun": 4,
+  "verdict": "The opening works: the dream starts at once with a subtitle and a visible Skip button, WREN introduces itself plainly ('WREN here, the Tern's ship intelligence'), Ines is easy to find at the bay intercom, and the probe console after launch (two clocks, redshift factor, ping gaps) is excellent. The rough edges are about timing: a WREN direction hint that ignores where you are, the 'first item on today's plan' briefing arriving after you have already launched, a 16 s silent stretch in the dream, and the unit 'M' going unexplained on the first console.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That near a black hole, what you see of a falling object is delayed and stretched. The black disk out the window is the hole's shadow, about 2.5 times wider than the horizon, and the bright ring is starlight bent around it. When you drop the beacon probe, the console shows its own clock beside its clock as you see it. The picture starts falling behind, its light stretches redder (x1.00 to x1.07 while I watched), and the gaps between its pings grow longer than the interval it sends them at. I stopped before it reached the horizon."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Arriving on the bridge and launching the probe. WREN then said 'First item on today's plan: drop beacon probe K-1' as if I had not done it yet, and the objective did not tick for several seconds. On the same console, the '10 M' unit was not explained. A smaller one: Ines saying 'Come up to the bridge' made me think she was there, until the label and later lines put her in the capsule bay."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Nothing truly broken. In the quarters, facing the exit door (west, toward the corridor), the 'Door 1 m' marker sat on top of the controls hint text. At the probe console, facing forward-left toward the windows, the 'Probe 2 m' marker overlapped the 'Click to look around' pill. Once, in the corridor facing back toward engineering, a flat dark/grey slab filled the right edge of the screen; it looked like a nearby wall seen edge-on (shots/ines1.png), possibly near-plane clipping. The black hole through the windows was blurry as expected, with no flicker or holes. Twice the first screenshot after a state change (waking up, opening the console) showed the scene without the HUD or panel that state.json already reported; one frame later it matched, so it is likely render lag at 10 fps."
+    }
+  ]
+}
