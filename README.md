@@ -53,6 +53,14 @@ npm test          # node --test, no dependencies
 
 `tools/tour.cjs` (training chapters) and `tools/fp-shots.cjs` (the first-person game; `?debug&cp=<checkpoint>&timescale=N`) drive headless Chromium and save screenshots (need Playwright).
 
+## Playtesting
+
+[playtester](https://github.com/Preponderous-Software/playtester) can play Frozen Star with AI agents. The profile is `tools/playtest/frozen-star.json`; `tools/playtest-launch.sh` serves the game and opens it in Chromium's app mode, and with `?probe` the game reports what the player sees (screen, position, heading, objective, nearest consoles) through `tools/serve.py`:
+
+```sh
+pt smoke --profile tools/playtest/frozen-star.json --game-dir .
+```
+
 ## License
 
 MIT, see [LICENSE](LICENSE). three.js (vendored in `vendor/three`) is MIT licensed by the three.js authors.

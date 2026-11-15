@@ -20,11 +20,13 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   const isTouch = () => matchMedia('(hover: none)').matches || 'ontouchstart' in window;
 
   const kd = (e) => {
-    if (!enabled || e.target.closest?.('input, select, textarea')) return;
+    if (e.target.closest?.('input, select, textarea')) return;
     const k = e.code;
+    // Back (step away from a console, pause, resume) and skip work even while walking is disabled.
+    if (k === 'Escape' || k === 'KeyQ') { backEdge = true; onBack?.(); return; }
+    if (k === 'Space') { onSkip?.(); if (!enabled) return; }
+    if (!enabled) return;
     if (k === 'KeyE' || k === 'Enter') { interactEdge = true; onInteract?.(); }
-    if (k === 'Escape' || k === 'KeyQ') { backEdge = true; onBack?.(); }
-    if (k === 'Space') onSkip?.();
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space'].includes(k)) e.preventDefault();
     keys.add(k);
   };
