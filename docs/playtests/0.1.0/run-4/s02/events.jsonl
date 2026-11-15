@@ -1,0 +1,44 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794762169849, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794762169851, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 381, "wallTimeMs": 1794762227729, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "dialogue", "tick": 947, "wallTimeMs": 1794762303140, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 947, "wallTimeMs": 1794762303155, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 947, "wallTimeMs": 1794762303348, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "screen", "tick": 995, "wallTimeMs": 1794762313761, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 1019, "wallTimeMs": 1794762319519, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 1271, "wallTimeMs": 1794762377515, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 1493, "wallTimeMs": 1794762426302, "who": "WREN", "text": "I can compute the deadline: the beam must leave within 49 seconds of her mayday. The clock is on the comms console. Her picture will not tell you."}
+{"type": "dialogue", "tick": 1679, "wallTimeMs": 1794762464393, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}
+{"type": "dialogue", "tick": 2177, "wallTimeMs": 1794762574702, "who": "INES", "text": "Halfway to the edge of the shadow, I think. The data's beautiful."}
+{"type": "dialogue", "tick": 2675, "wallTimeMs": 1794762700110, "who": "WREN", "text": "Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them."}
+{"type": "objective_completed", "tick": 2675, "wallTimeMs": 1794762700349, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 2693, "wallTimeMs": 1794762704018, "who": "INES", "text": "Doc, the stars behind me are going blue. Is that right?"}
+{"type": "screen", "tick": 3191, "wallTimeMs": 1794762822848, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 3221, "wallTimeMs": 1794762832348, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 3227, "wallTimeMs": 1794762832671, "who": "INES", "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!"}
+{"type": "dialogue", "tick": 3515, "wallTimeMs": 1794762922346, "who": "WREN", "text": "You fired 22 seconds before the last possible moment. At that moment your screen showed her 8.8 r\u209b out, looking almost normal."}
+{"type": "screen", "tick": 3959, "wallTimeMs": 1794763113112, "from": "WORLD", "to": "CONSOLE"}
+{"type": "card", "tick": 4031, "wallTimeMs": 1794763135361, "title": "Twenty minutes later", "subtitle": null}
+{"type": "dialogue", "tick": 4037, "wallTimeMs": 1794763135401, "who": "WREN", "text": "Descent is locked until the survey plan calls for it, Doctor. Erebus will keep."}
+{"type": "screen", "tick": 4043, "wallTimeMs": 1794763137348, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "dialogue", "tick": 4055, "wallTimeMs": 1794763141130, "who": "INES", "text": "Docked. Hands still shaking."}
+{"type": "screen", "tick": 4075, "wallTimeMs": 1794763151348, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 4249, "wallTimeMs": 1794763202694, "who": "INES", "text": "You know what scares me? On your screen I looked fine the whole time. If you'd waited until I looked like I was in trouble..."}
+{"type": "screen", "tick": 4660, "wallTimeMs": 1794763304797, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 4732, "wallTimeMs": 1794763325863, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "dialogue", "tick": 4762, "wallTimeMs": 1794763333796, "who": "WREN", "text": "It would have been far too late. By the deadline, her picture was still only a third of the way down."}
+{"type": "screen", "tick": 4762, "wallTimeMs": 1794763333848, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "checkpoint", "tick": 5192, "wallTimeMs": 1794763449539, "checkpoint": "rescue-done"}
+{"type": "card", "tick": 5192, "wallTimeMs": 1794763449540, "title": "III \u00b7 The descent", "subtitle": "Closer to the edge."}
+{"type": "dialogue", "tick": 5192, "wallTimeMs": 1794763457313, "who": "INES", "text": "I want to see that again. Without dying this time."}
+{"type": "screen", "tick": 5345, "wallTimeMs": 1794763496848, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 5455, "wallTimeMs": 1794763531565, "who": "WREN", "text": "The station-keeping field can take us lower. Below 1.33 r\u209b, every second aboard is two seconds on the relay far away."}
+{"type": "objective_started", "tick": 5941, "wallTimeMs": 1794763681348, "number": 2, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "dialogue", "tick": 6023, "wallTimeMs": 1794763704145, "who": "WREN", "text": "Relay clock at double speed. Hold here for twenty seconds."}
+{"type": "objective_completed", "tick": 6023, "wallTimeMs": 1794763704348, "number": 2, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "objective_started", "tick": 6023, "wallTimeMs": 1794763704351, "number": 3, "title": "Hold at twice the relay rate for 20 seconds (helm)"}
+{"type": "dialogue", "tick": 6311, "wallTimeMs": 1794763779442, "who": "INES", "text": "The window's gone completely black. WREN, is the camera broken?"}
+{"type": "dialogue", "tick": 6617, "wallTimeMs": 1794763847522, "who": "WREN", "text": "No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera."}
+{"type": "dialogue", "tick": 7233, "wallTimeMs": 1794763961457, "who": "INES", "text": "Okay. That's enough. Take us back up."}
+{"type": "objective_completed", "tick": 7237, "wallTimeMs": 1794763961848, "number": 3, "title": "Hold at twice the relay rate for 20 seconds (helm)"}
+{"type": "objective_started", "tick": 7237, "wallTimeMs": 1794763961849, "number": 4, "title": "Return to 10 r\u209b (helm)"}

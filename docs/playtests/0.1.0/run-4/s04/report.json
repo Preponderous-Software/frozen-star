@@ -1,0 +1,129 @@
+{
+  "session": "s04",
+  "goal": "Everything outside the story: the title screen, Settings (each option and its effect), Chapters, About, the Observatory and every Training simulation including the new Bend the Light lesson. Try each lesson's goal and quiz. Judge whether a curious teenager with no physics background would understand them, and note anything confusing, broken or unreadable.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "2d0528f"
+  },
+  "seed": null,
+  "durationSec": 1045,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Observatory and Into the Dark say 'This device does not support WebGL 2' after the GPU process is lost mid-session",
+      "detail": "After Title > Training > Two Clocks > Bend the Light, the top-nav Observatory showed a black panel: 'The 3D view needs WebGL 2. This device does not support WebGL 2, which the black hole renderer needs.' Lesson 7 Into the Dark showed the same. Earlier in the same session the title screen ray-traced the black hole fine; afterwards the title fell back to a flat 2D disc. chrome.log shows 'GPU process exited unexpectedly' three times (machine load avg ~62), so the root cause is likely environmental, but the game treats a lost context as 'unsupported device', never retries, and gives no reload hint. Expected: recover from context loss, or say the view stopped and offer a reload. Readouts (shadow size 152 deg, your clock) kept updating.",
+      "repro": "pt start ...; open Training, play Two Clocks and Bend the Light; click Observatory in the top nav; scroll to the view. Then Training > 7 Into the Dark.",
+      "screenshot": "shots/obs_webgl2.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Settings > Controls says arrow keys walk and has no Turn row",
+      "detail": "Keyboard Walk row reads 'W A S D or arrow keys', but Left/Right arrows turn (about 103 deg/s). No row lists turning. The panel heading also still says 'Options' while the Controls tab is selected.",
+      "repro": "Title > Settings > Controls tab",
+      "screenshot": "shots/controls_table.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Title menu: first click on Settings / Chapters did nothing; second click opened it",
+      "detail": "Clicking Settings (335,543) once only hovered it; an identical second click opened the panel. Chapters behaved the same. About opened on the first click. It may be lag on a loaded machine, but it happened twice.",
+      "repro": "pt click 335 543; pt shot; pt click 335 543",
+      "screenshot": "shots/chapters_locked.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Chapters on a fresh save locks even the Prologue; 'See the story ahead' shows nothing ahead",
+      "detail": "Every entry, including the Prologue, shows a lock and 'Reach it in the story to unlock'. The menu subtitle promises 'See the story ahead' but the panel title is 'The story so far'. Expected: the Prologue unlocked, or wording that matches.",
+      "repro": "Fresh profile; Title > Chapters",
+      "screenshot": "shots/chapters_locked.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Two Clocks: wrong prediction is never explained on screen",
+      "detail": "I locked in 'About 300 M'. After the run the 'Predict when ping 9 arrives' star stayed empty, but the quiz area only ever said 'Prediction locked in.' Nothing said I was wrong or what the right answer was (the log showed ping 8 at 92.7 M). Bend the Light and Evaporation do give a 'Right.' plus explanation. Note: lessons were very laggy here, so the reveal may sit somewhere I did not scroll to.",
+      "repro": "Training > 1 Two Clocks; pick About 300 M; Drop the probe; wait for the probe to vanish",
+      "screenshot": "shots/l1j.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Two Clocks spacetime diagram: 'now' and 'station' labels overlap at the start",
+      "detail": "Before the drop, the 'now' and 'station' labels at 10 rs, time 0 are drawn on top of each other and can't be read.",
+      "repro": "Training > Two Clocks; scroll to the Spacetime diagram before dropping",
+      "screenshot": "shots/l1_spacetime_labels.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Bend the Light diagram shows 'edge: aim 2.598 rs', which gives away the quiz; '535 times closer' is unexplained",
+      "detail": "The lesson itself works well (2.51 rs swallowed, 2.61 rs bent 286 deg, fine-tune -0.01 gave 390 deg, around once, 3/3 stars). But the dashed edge label shows the answer to the shadow-size quiz before you answer, and it overlaps the laser marker. In the debrief, 'aim about 535 times closer' per extra loop comes with no explanation.",
+      "repro": "Training > 6 Bend the Light; drag Aim to ~2.6; scroll to Seen From Above",
+      "screenshot": "shots/l6_debrief.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Evaporation mass readout uses '1e-20 suns' computer notation",
+      "detail": "With the slider at far left the readout says '1e-20 suns', while the text below uses 2x10^10 kg and a Great Pyramid comparison. Use the same scientific notation or words.",
+      "repro": "Training > 8 Evaporation; drag Mass slider fully left",
+      "screenshot": "shots/l8_mass_notation.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "About panel jargon ('Schwarzschild solution', 'one unit of black-hole time is 0.59 seconds')",
+      "detail": "About opens with 'Schwarzschild solution of general relativity' and 'one unit of black-hole time', which are not explained there; the further reading list is graduate textbooks. A teen won't follow it. In the same shot the focused Wake up button briefly showed pale text on orange.",
+      "repro": "Title > About",
+      "screenshot": "shots/about_wakeup_contrast.png",
+      "tick": null
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Lesson pages respond 10-30 s late on a loaded machine",
+      "detail": "In Two Clocks, clicks, scrolls and the glossary toggle showed up 10-30 s later, so I thought the 'Words used here' glossary was broken until it opened late. The machine load average was ~62 with parallel sessions, so this is mostly environmental. Pages without WebGL (Evaporation, after the GPU loss) responded much faster.",
+      "repro": "Training > Two Clocks; click 'Words used here'; shot immediately",
+      "screenshot": "shots/l1_words_wont_open.png",
+      "tick": null
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 8,
+    "deaths": 0,
+    "secondsToObjective": {},
+    "starsEarned": 8,
+    "starsTotal": 24,
+    "lessonsAttempted": 4,
+    "lessonsWithQuizAnswered": 3,
+    "quizCorrect": 2
+  },
+  "fun": 4,
+  "verdict": "Bend the Light is the best thing I played: dragging a slider until a beam loops once around the hole, then learning that this explains the 2.6x shadow and the thin ring, lands well even for a newcomer, and the 'Words used here' glossaries are clear. The biggest problem is robustness: once the GPU process dropped, the Observatory and Into the Dark falsely said the device lacks WebGL 2 and never recovered. Smaller issues: the Controls table is wrong about the arrow keys, and Two Clocks doesn't tell you when your prediction was wrong. Under the heavy machine load, lessons 2-5 and 7 could not be finished in the time budget.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That gravity near a black hole bends time and light. A falling probe's clock ticks normally for the probe, but its signals reach the station further and further apart and redder, so from outside it seems to freeze, even though on its own clock it crosses quickly. Light aimed within about 2.6 horizon-radii falls in, and light just outside can loop around (the photon sphere at 1.5 rs). That is why a black hole's shadow is 2.6x the horizon and its ring is thin. Hawking evaporation is far too slow to stop things falling in, except for tiny holes."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Two Clocks. The mission uses 'M' as a unit of time ('a ping every 10 M') before you open the glossary, and the prediction choices (90/109/300 M) need you to already understand that unit. After the run I could see my prediction star stayed empty, but nothing told me I was wrong or what the right answer was. Heavy input lag also made the glossary seem broken at first."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Yes. (1) Observatory (top-nav, scrolled to the 3D view) and Into the Dark's 3D panel showed a black box saying 'The 3D view needs WebGL 2. This device does not support WebGL 2', although the title screen had ray-traced the black hole earlier. After that the title showed only a flat 2D disc. (2) In the Two Clocks spacetime diagram, the 'now' and 'station' labels overlapped at the top-left before the drop. (3) In Bend the Light's top-down diagram, the 'edge: aim 2.598 rs' label overlapped the laser marker. No camera facing applies: these were all 2D lesson pages or the title."
+    }
+  ]
+}

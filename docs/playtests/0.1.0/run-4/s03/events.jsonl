@@ -1,0 +1,20 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794762170186, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794762170195, "from": null, "to": "WORLD"}
+{"type": "objective_started", "tick": 0, "wallTimeMs": 1794762170197, "number": 1, "title": "Drop the beacon probe (probe console, left)"}
+{"type": "dialogue", "tick": 463, "wallTimeMs": 1794762235884, "who": "WREN", "text": "First item on today's plan: drop beacon probe K-1 and log its signal."}
+{"type": "dialogue", "tick": 889, "wallTimeMs": 1794762278463, "who": "YOU", "text": "Einstein's field equation. Matter tells spacetime how to curve; curved spacetime tells matter how to move."}
+{"type": "dialogue", "tick": 1336, "wallTimeMs": 1794762328595, "who": "YOU", "text": "Someone has worked it out underneath: at ten horizon radii our clocks run at 0.949 of the relay's. Every hour here is about an hour and three minutes out there."}
+{"type": "dialogue", "tick": 2315, "wallTimeMs": 1794762420240, "who": "WREN", "text": "The archive holds the expedition's training simulations. Same equations as outside the window, slowed down so you can take them apart."}
+{"type": "dialogue", "tick": 2405, "wallTimeMs": 1794762428418, "who": "WREN", "text": "The probe console is the one on the left, by the window. Walk up to it and use it."}
+{"type": "screen", "tick": 2975, "wallTimeMs": 1794762509684, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 3190, "wallTimeMs": 1794762531183, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 3214, "wallTimeMs": 1794762533187, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 4220, "wallTimeMs": 1794762641606, "who": "WREN", "text": "Back already, Doctor? You were talking in your sleep last night. Something about falling. I did not log it."}
+{"type": "dialogue", "tick": 5157, "wallTimeMs": 1794762714537, "who": "YOU", "text": "Cold coffee. Six hours old by my watch."}
+{"type": "dialogue", "tick": 5385, "wallTimeMs": 1794762731374, "who": "WREN", "text": "Six hours and twenty minutes by the relay's. Hovering this close to Erebus, every clock aboard runs about five percent slow."}
+{"type": "dialogue", "tick": 6584, "wallTimeMs": 1794762912322, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 6716, "wallTimeMs": 1794762954964, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "screen", "tick": 6950, "wallTimeMs": 1794763026683, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 6956, "wallTimeMs": 1794763051183, "from": "PAUSE", "to": "WORLD"}
+{"type": "dialogue", "tick": 7004, "wallTimeMs": 1794763062788, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "dialogue", "tick": 7136, "wallTimeMs": 1794763108938, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}

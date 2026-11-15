@@ -1,0 +1,11 @@
+{"type": "screen", "tick": 30, "wallTimeMs": 1794762162122, "from": null, "to": "TITLE"}
+{"type": "screen", "tick": 10036, "wallTimeMs": 1794762328893, "from": "TITLE", "to": "TRAINING"}
+{"type": "screen", "tick": 10920, "wallTimeMs": 1794762343621, "from": "TRAINING", "to": "LESSON"}
+{"type": "screen", "tick": 29790, "wallTimeMs": 1794762658121, "from": "LESSON", "to": "TRAINING"}
+{"type": "screen", "tick": 30330, "wallTimeMs": 1794762667121, "from": "TRAINING", "to": "LESSON"}
+{"type": "screen", "tick": 42600, "wallTimeMs": 1794762871621, "from": "LESSON", "to": "OBSERVATORY"}
+{"type": "screen", "tick": 47280, "wallTimeMs": 1794762949621, "from": "OBSERVATORY", "to": "TITLE"}
+{"type": "screen", "tick": 49350, "wallTimeMs": 1794762984126, "from": "TITLE", "to": "TRAINING"}
+{"type": "screen", "tick": 50822, "wallTimeMs": 1794763008646, "from": "TRAINING", "to": "LESSON"}
+{"type": "screen", "tick": 57301, "wallTimeMs": 1794763116637, "from": "LESSON", "to": "TRAINING"}
+{"type": "screen", "tick": 59490, "wallTimeMs": 1794763153123, "from": "TRAINING", "to": "LESSON"}

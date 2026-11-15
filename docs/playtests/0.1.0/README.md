@@ -9,7 +9,7 @@ Four AI playtesters ([playtester](https://github.com/Preponderous-Software/playt
 | s03 | The rescue | achieved | 4/5 |
 | s04 | The descent and Orpheus | achieved | 4/5 |
 
-A second round, on the build with these fixes, is in [`run-2`](run-2/).
+Later rounds, each on the build with the previous fixes: [`run-2`](run-2/), [`run-3`](run-3/), [`run-4`](run-4/).
 
 `summary.md` is the aggregated report (34 findings: 0 blocker, 2 major, 17 minor, 15 polish). Each session directory holds its `report.json`, `findings.jsonl`, the game's probe `events.jsonl`, and the screenshots its findings cite.
 

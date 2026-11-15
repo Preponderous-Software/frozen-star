@@ -1,0 +1,97 @@
+{
+  "session": "s02",
+  "goal": "The whole second half in one go: rescue Ines from the comms console (use its deadline clock), take the ship down at the helm and back up, launch Orpheus, watch its feed to the end, make the final choice and read the logbook. Note whether each step was clear and whether the panels helped you understand, and screenshot any visual problems.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "2d0528f"
+  },
+  "seed": null,
+  "durationSec": 1924,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "perf",
+      "title": "Game ran at ~5 ticks/s of 60; real-time story beats took ~10x longer, second half not finishable in 35 min",
+      "detail": "Ticks advanced ~250 per 45 s of wall time throughout (tick 7711 after ~32 min). Every wait the story imposes (49 s rescue window, 20 s helm hold, the ~20 game-s gap before chapter III) stretched into minutes. Inputs lagged badly: arrow-key turns and 'pt face' overshot or barely moved (pt face -95 turned ~20 deg), and screenshots lagged the probe state by ~5-10 s (panel values showed '-' placeholders, the fired-beam state appeared seconds after the click). I reached objective 4 (Return to 10 rs) and had to stop before Orpheus, the final choice and the logbook. May be machine load from parallel sessions, but the pt start build warning also said the launch script predates HEAD.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir . --checkpoint probe-done; pt wait 45; pt state (compare tick delta)",
+      "screenshot": "shots/helm8.png",
+      "tick": 7585
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No objective on screen between the rescue and chapter III; helm says descent is locked with no hint what unlocks it",
+      "detail": "Objective 1 completed at tick 2675; the next objective (Take the Tern down) only started at tick 5941. In between, the objective box was empty, Ines docked, and the helm read 'Descent is locked for now: later in the survey...'. I visited the helm twice not knowing whether to wait or do something. Story cutscenes (Ines' engine lit, WREN's 'far too late' line) only seemed to play right after I left a console with Esc, so a player parked at a console may wait for nothing. Expected: a 'Wait for Ines to dock' style objective or a WREN line saying the descent unlocks after she is aboard.",
+      "repro": "checkpoint probe-done; fire the beam at comms; Esc; walk to helm; e",
+      "screenshot": "shots/helm_locked_noobj.png",
+      "tick": 4994
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm objective 'Take the Tern down' appears ~500 ticks after the helm unlocks, when the ship is already most of the way down",
+      "detail": "Chapter III card at tick 5192; helm slider worked from at least tick 5345 and WREN explained the 1.33 rs mark at 5455, but objective 2 only appeared at tick 5941 (ship already at 1.4 rs) and completed 80 ticks later. The objective box was empty while I was actually doing the task.",
+      "repro": "checkpoint rescue-done (or continue from above); walk to helm; e; click the left end of the 'Hold station at' slider",
+      "screenshot": "shots/helm6.png",
+      "tick": 5941
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Rescue deadline is 49 s in WREN's line but the comms bar sums to 50 s",
+      "detail": "Comms bar read 'Since her mayday: 1 s. The beam must leave within 49 s' and later '9 s ... within 41 s' (=50), while WREN's on-screen subtitle says 'within 49 seconds of her mayday'. After firing: '27 s after her mayday, 22 s before the deadline' (=49). For a scene about cutting it fine, the numbers should agree.",
+      "repro": "checkpoint probe-done; walk to comms; e; read the deadline line over time",
+      "screenshot": "shots/deadline_rounding.png",
+      "tick": 1589
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm panel layout shifts after opening, moving the altitude slider out from under the cursor",
+      "detail": "On opening the helm the 'Far-away clocks run' headline number and stats show '-' and then pop in, pushing the 'Hold station at' slider from y~317 down to y~385. My click on the slider landed on the clock-rate bar and did nothing; a drag did nothing either. Reserve the space for the headline number.",
+      "repro": "chapter III; open helm; take shot immediately and again 5 s later",
+      "screenshot": "shots/helm_layout_shift.png",
+      "tick": 5761
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Sticky 'Fire recall beam' card lets the scrolled-under text show through",
+      "detail": "After scrolling the comms panel, the sticky beam card overlaps the info cards; their text ('speed.', 'CAPSULE · WHAT YOU SEE') is visible through/around its top edge. Give it an opaque background and a clean top edge.",
+      "repro": "checkpoint probe-done; open comms; scroll down over the panel",
+      "screenshot": "shots/sticky_overlap.png",
+      "tick": 1229
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 3,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 44.6,
+      "Take the Tern down until the relay clock runs twice as fast (helm)": 100.4,
+      "Hold at twice the relay rate for 20 seconds (helm)": 120.6
+    },
+    "beamFiredSecondsAfterMayday": 27,
+    "beamSecondsBeforeDeadline": 22,
+    "lowestAltitudeRs": 1.031,
+    "approxTicksPerSecond": 5,
+    "finalTick": 7711
+  },
+  "fun": 3,
+  "verdict": "The comms rescue is the strongest scene: the deadline bar next to a capsule picture that 'looks almost normal' really sells that the picture is old light, and WREN's after-the-fact 'by the deadline her picture was only a third of the way down' lands. The helm panel (clock-rate headline, altitude, tidal stretch, rear camera) makes the descent legible, but the gaps between beats have no objective, and at the ~5 tps this machine gave, the real-time pacing made the full second half impossible in 35 minutes (stopped at 'Return to 10 rs', before Orpheus).",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That what you see of something falling toward a black hole is delayed, redshifted old light: Ines looked fine on my screen long after the real deadline to save her was close, so you must trust the computed clock, not the picture. Then, at the helm, that clocks run slower deep in a gravity well (far-away relay clock ran x2.6 faster near 1.03 rs), that the station-keeping field is unfelt because it pushes everything equally (equivalence principle), and that tidal stretch grows as you go lower and the shadow covers more than half the sky."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The stretch after the rescue: the objective box went empty, the helm said descent was locked 'later in the survey', and story lines only seemed to advance after I left a console. I could not tell whether I was supposed to do something or just wait. Second: on the comms panel, '1 s ... within 49 s' versus WREN saying 49 s total made me unsure how close to the edge I could fire."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Nothing in the ray-traced view looked broken beyond software blur; the fully black bridge windows near 1-2.7 rs looked alarming but WREN explains it (shadow covers more than half the sky). Panel issues: on the comms console (bridge, facing the comms screen) the sticky Fire recall beam card lets the text it scrolls over show through at its top edge; on the helm panel (facing the helm/forward windows) values show '-' then pop in and shift the altitude slider down ~70 px. The comms 3D monitor in the room stays frozen on its last frame (its clock 48.51 M) after you leave the console, which may be intended."
+    }
+  ]
+}

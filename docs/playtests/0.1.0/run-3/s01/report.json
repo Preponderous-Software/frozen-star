@@ -1,0 +1,99 @@
+{
+  "session": "s01",
+  "goal": "Play from the very beginning as a brand-new player who has never seen the game: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Note every moment of confusion, and screenshot anything that looks broken on screen.",
+  "build": {"version": "0.1.0", "commit": "6a54bd2"},
+  "seed": null,
+  "durationSec": 880,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Quarters: the datapad cannot be used; crosshair on it shows no prompt and E does nothing",
+      "detail": "The on-screen help and the brief say E uses 'the datapad'. Standing at the desk 1.3 m away, facing it (datapad bearing +0) with the crosshair dot squarely on the light-blue datapad, no use prompt appears and E does nothing. Expected an 'E Read your datapad' prompt (state lists that label). A new player's first instinct is to read the datapad, and it silently fails.",
+      "repro": "pt start ...; pt key Return; wait out the dream to WORLD; pt face 21; pt click 640 300; pt look 0 250; pt hold w 0.9; pt look 0 -120; pt look 0 140; pt key e",
+      "screenshot": "shots/datapad-no-prompt.png",
+      "tick": 4479
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Quarters: the use target ignores where the crosshair points after a mouse look; brackets jump onto the off-centre porthole",
+      "detail": "After clicking into the game and looking down at the desk, the crosshair dot sat beside the datapad, but the orange target brackets were drawn on the porthole in the top-left of the screen and the prompt said 'E Look out of the porthole'. Pressing E replayed the porthole line. The target seems to follow body yaw, not the camera's view direction. Expected the target to be what the crosshair is on.",
+      "repro": "after waking: pt face 21; pt click 640 300; pt look 0 250; pt shot x; pt key e",
+      "screenshot": "shots/prompt-mismatch-datapad.png",
+      "tick": 3555
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Probe console status says 'Frozen at the horizon, too red to see' while it still shows the probe at ~3 rs with 1+z about 2",
+      "detail": "Around tick 11400-11560 the status box read 'Frozen at the horizon and too red to see by eye. An infrared telescope still catches it, barely. Its clock has nearly stopped.' The same panel showed APPEARS AT 3.22-2.82 rs, REDSHIFT 1+z 1.9-2.1 and brightness 5-7%, and the map showed the image well outside the horizon. The text runs ahead of the numbers beside it, which undermines the lesson about gradual freezing.",
+      "repro": "pt walkto probe console from bridge entry; pt key e; click 'Launch Beacon K-1'; wait ~65 game seconds; scroll panel to 'SHIP · WHAT YOU SEE'",
+      "screenshot": "shots/frozen-text-mismatch.png",
+      "tick": 11565
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Timed prediction question gives no confirmation of the chosen answer",
+      "detail": "'Ping 7 arrived late. Log a prediction: when will ping 9 arrive?' popped up over the console with a draining timer bar. I pressed 2. The dialog closed with nothing to confirm the pick or that it was logged. The payoff ('Ping 9, right on your prediction.') arrived ~15 game seconds later, which is nice, but in between I could not tell whether the key had registered or the timer had run out. No event for the choice appeared in events.jsonl either.",
+      "repro": "launch K-1, stay at the probe console; when the CHOICE screen appears (~tick 10317) pt key 2",
+      "screenshot": "shots/choice-no-feedback.png",
+      "tick": 10659
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Dream: the last line '(Nothing happened.)' is on screen for under a second",
+      "detail": "The dream has 3 subtitle lines: tick 144, then ~22 s of silence, then 'The black is spreading...' at 1501, '(Nothing happened.)' at 1641, and the cut to CUTSCENE at 1683 (0.7 s later). The last line, which is the dream's punchline (you cross the horizon and nothing happens), cannot be read. My shot at tick 1641 still shows the previous line.",
+      "repro": "pt start ...; pt key Return; screenshot about every 5 s through the dream",
+      "screenshot": "shots/dream6.png",
+      "tick": 1641
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Black-hole render: the photon ring inside the shadow is a ring of separate dots, plus a bright smear on its left edge",
+      "detail": "In the dream, and through the bridge window and the quarters porthole, the bright ring just inside the shadow is drawn as evenly spaced separate bright dots, not a continuous ring. A bright vertical streak sits on the left inner edge of the shadow (~x 520, y 340-390 in the dream). It looks like a sampling artefact, not the expected blur from software rendering. It is visible in every view of the hole (dream, porthole, bridge windows).",
+      "repro": "pt start ...; pt key Return; pt wait 8; pt shot x (DREAM, tick ~450-1400)",
+      "screenshot": "shots/dream-dotted-ring.png",
+      "tick": 960
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Console side panel hides half the in-world console screen, and its 'Esc or Q to step back' hint runs under the menu button",
+      "detail": "At the probe console the right-hand panel covers the right half of the physical console screen, so 'BEACON K-1 · as seen from the ship' and the 'its clock' readout are cut off. Before the panel gets a scrollbar, the top-right hint 'Esc or Q to step back' runs into the hamburger menu button. The panel also took ~3 s wall time to slide in after E. During that time the screen showed only the zoomed console, and I wondered whether E had worked.",
+      "repro": "on the bridge: pt walkto console (probe); pt key e; pt shot x",
+      "screenshot": "shots/panel-hint-overlap.png",
+      "tick": 7502
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "In-world probe readout once showed raw exponent '1+z 8.80e+3'; later frames show '7.1x10^6' superscript",
+      "detail": "After stepping back from the probe console (~tick 13160), the physical screen's bottom line read '1+z 8.80e+3'. A few seconds later the same field used proper notation ('1+z 7.1x10^6', '1.8x10^7'). The formatting switches at some threshold. Note: the shot attached was retaken under the same name and now shows the later x10^7 form; the original e+3 frame was overwritten.",
+      "repro": "launch K-1, wait for the horizon crossing, press Escape at ~tick 13100, pt shot x",
+      "screenshot": "shots/stepback.png",
+      "tick": 13164
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 3,
+    "deaths": 0,
+    "secondsToObjective": {"Go to the bridge": 111.1, "Drop the beacon probe (probe console, left)": 125.5, "Watch the probe fall": 230.4},
+    "dreamGameSeconds": 28.1,
+    "probeFallGameSecondsLaunchToObjective": 104.9,
+    "approxTicksPerSecond": 22,
+    "renderFps": 10
+  },
+  "fun": 4,
+  "verdict": "The opening works: a beautiful title, a dream that sets up the frozen-star idea, a clear objective and on-screen markers ('Bridge 9 m', 'Probe 6 m') that made finding the bridge and launching K-1 painless. The probe console is the standout, with growing ping gaps, a prediction that pays off and the 'old light' explanation landing well. Fix the unusable datapad and the crosshair/target mismatch in the quarters first: they are the very first interactions a new player tries. Also tighten the console's status text so it never says 'frozen at the horizon' while its own numbers say 3 rs."
+,
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That near a black hole, what you see and what actually happens come apart. A probe dropped from the ship crosses the horizon in under a minute by its own clock and is gone. But its light reaches you later and later, so the picture of it slows, reddens, dims and seems to freeze at the edge. The black disk is the hole's shadow, larger than the horizon, and the bright ring is bent starlight. Also: clocks at different heights run at different rates (the ship and relay clocks on the bridge differ), and time can be measured in 'M' for the hole."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "In my quarters, trying to read the datapad. The help says E uses the datapad. With the crosshair right on it there was no prompt, and E either did nothing or replayed a porthole line, because the target brackets had jumped to the porthole off in the corner. I could not tell whether I was too close, too far or aiming wrong. A close second was the probe console's 'ITS OWN CLOCK' and 'ship clock' showing the same number the whole way down, which made me unsure what 'its own clock' was meant to show me."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "1) The black hole's inner ring is drawn as a string of separate bright dots, with a bright vertical smear on the shadow's left inner edge. I saw it in the dream (looking straight at the hole), through the quarters porthole (facing the porthole at yaw about -6) and through the bridge windows (facing forward toward the helm). 2) In the quarters, facing the desk (yaw -26) and looking down, the target brackets drew on the porthole in the top-left instead of on what the crosshair was on. 3) At the probe console (bridge, left console, yaw about 23) the side panel covered half the in-world screen, and its 'Esc or Q to step back' hint ran under the menu button. 4) On the same console's physical screen, after stepping back, the redshift read '8.80e+3' in raw exponent form. The ray-traced view was blurry and ran at about 10 fps, but apart from the dotted ring I saw no flicker, holes or garbled colour."}
+  ]
+}
