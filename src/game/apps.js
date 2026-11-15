@@ -339,7 +339,7 @@ export function helmApp(body, g, { onTarget }) {
   const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.001, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => (x >= Math.log10(9) - 0.002 ? '10 rₛ' : `${sig(1 + 10 ** x, 4)} rₛ`) });
   target.input.addEventListener('input', () => onTarget(2 * (1 + 10 ** target.value)));
   const rateHero = hero('Far-away clocks run', { note: '' });
-  const rateMeter = meter({ min: 1, max: 8, log: true, ticks: [[1, '×1'], [2, '×2 · 1.33 rₛ'], [4, '×4 · 1.03 rₛ'], [8, '×8']], zones: [[2, 'warn'], [4, 'bad']], label: 'How much faster far-away clocks run than the ship\'s' });
+  const rateMeter = meter({ min: 1, max: 8, log: true, ticks: [[1, '×1'], [2, '×2 · 1.33 rₛ'], [4, '×4 · 1.07 rₛ'], [8, '×8']], zones: [[2, 'warn'], [4, 'bad']], label: 'How much faster far-away clocks run than the ship\'s' });
   const sR = stat('Altitude now', '–', 'in horizon radii; 1 rₛ is the horizon'), sGain = stat('Relay clock ahead of yours', '–', 'gained since you woke');
   const sField = stat('Field strength', '–', 'what holds the ship up; nobody aboard feels it'), sTide = stat('Stretch across the hull', '–', 'pull at the bow minus pull at the stern, 40 m apart');
   const up = h('button#fp-home', { onclick: () => { target.value = Math.log10(9); onTarget(R_STATION); } }, 'Return to 10 rₛ');
