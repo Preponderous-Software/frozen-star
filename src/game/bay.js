@@ -11,8 +11,9 @@ export const BAY_COLOR = '#b49cff';
 
 // where the capsule sits on its cradle (ship coordinates, metres): nose forward (−Z), the launch door to port (−X)
 const DOCK = new THREE.Vector3(-3.2, 0.95, 4.85);
-// where it holds station after launch: off the port bow, low in the left of the bridge window
-const HOLD = new THREE.Vector3(-6.2, -0.4, -24);
+// where it holds station after launch: off the port bow, in the left of the bridge window and just above
+// the probe console's screen, so it is not hidden behind it from the bridge
+const HOLD = new THREE.Vector3(-5.4, 3.0, -24);
 const OUT_X = -7.6; // clear of the hull, before it turns forward
 
 function tex(w, h, draw) {
