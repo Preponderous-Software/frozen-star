@@ -93,7 +93,7 @@ function titleScreen() {
       h('h1', 'Frozen Star'),
       h('p.lede', 'You wake aboard a research ship holding station above a black hole. Today you find out whether things really fall in.'),
       h('nav.menu-items', { 'aria-label': 'Main menu' }, items),
-      h('p.fine.menu-foot', 'About 20 minutes · keyboard and mouse, touch, or a gamepad · real general relativity')),
+      h('p.fine.menu-foot', 'About 20 minutes · keyboard and mouse, touch, or a gamepad · real general relativity · ', h('a', { href: 'https://danielstephenson.dev/play' }, 'More games'))),
     panel);
   app.replaceChildren(el);
   // arrow keys move through the menu
