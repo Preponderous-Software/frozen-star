@@ -72,11 +72,32 @@ function smoke(win) {
     for (let i = 0; i < 60 && !ready; i++) { await new Promise((r) => setTimeout(r, 500)); ready = await win.webContents.executeJavaScript("document.body.dataset.ready === '1'").catch(() => false); }
     await new Promise((r) => setTimeout(r, 9000)); // let the resolution settle
     const scale = await win.webContents.executeJavaScript("window.__fs ? JSON.stringify({ sky: window.__fs.sky?.state.scale }) : null").catch(() => null);
-    const fps = await win.webContents.executeJavaScript("new Promise((res) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 3000) requestAnimationFrame(f); else res(Math.round(n / ((performance.now() - t0) / 1000))); }; requestAnimationFrame(f); })").catch(() => null);
+    // Over a 3 s window: frames per second, mean and 95th-percentile frame time, the sky's mean render
+    // scale and (where the GPU timer extension exists) its mean GPU time per frame.
+    const perf = await win.webContents.executeJavaScript(`new Promise((res) => {
+      const sky = window.__fs?.sky, dts = [], scales = [], gpu = []; let n = 0; const t0 = performance.now(); let prev = t0;
+      const f = (now) => {
+        n++; dts.push(now - prev); prev = now;
+        if (sky) { scales.push(sky.state.scale); if (sky.gpuMs != null) gpu.push(sky.gpuMs); }
+        if (now - t0 < 3000) requestAnimationFrame(f);
+        else {
+          const mean = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+          const s = dts.slice(1).sort((a, b) => a - b);
+          res({ fps: Math.round(n / ((now - t0) / 1000)), frameMs: mean(s), frameP95Ms: s.length ? s[Math.floor(s.length * 0.95)] : null,
+            skyScaleAvg: mean(scales), skyGpuMs: mean(gpu), gpuTimer: !!sky?.timer });
+        }
+      };
+      requestAnimationFrame(f);
+    })`).catch(() => null);
+    const fps = perf ? perf.fps : null;
+    const gpu = await win.webContents.executeJavaScript(`(() => { const gl = document.createElement('canvas').getContext('webgl2'); if (!gl) return null;
+      const d = gl.getExtension('WEBGL_debug_renderer_info');
+      const r = { vendor: gl.getParameter(d ? d.UNMASKED_VENDOR_WEBGL : gl.VENDOR), renderer: gl.getParameter(d ? d.UNMASKED_RENDERER_WEBGL : gl.RENDERER) };
+      gl.getExtension('WEBGL_lose_context')?.loseContext(); return r; })()`).catch(() => null);
     const info = await win.webContents.executeJavaScript("({ title: document.title, gl: !!document.createElement('canvas').getContext('webgl2'), hash: location.hash, buttons: [...document.querySelectorAll('.hero-actions a, .hero-actions button')].map(b => b.textContent), objective: document.querySelector('.fp-objective b')?.textContent || null })").catch((e) => ({ error: String(e) }));
     const img = await win.webContents.capturePage();
     fs.writeFileSync(SMOKE + '.png', img.toPNG());
-    fs.writeFileSync(SMOKE, JSON.stringify({ ready, errors, info, fps, scale, electron: process.versions.electron }, null, 2));
+    fs.writeFileSync(SMOKE, JSON.stringify({ ready, errors, info, fps, scale, electron: process.versions.electron, gpu, perf }, null, 2));
     app.quit();
   });
 }

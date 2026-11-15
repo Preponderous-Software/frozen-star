@@ -3,7 +3,7 @@
 // windows. Both share one camera, so looking through a window shows the real, lensed sky.
 import * as THREE from 'three';
 import { h } from '../ui/dom.js';
-import { BlackHoleView, hoverVelocity, LOW_GPU } from '../render/raytracer.js';
+import { BlackHoleView, AdaptiveScale, hoverVelocity, LOW_GPU } from '../render/raytracer.js';
 import { buildShip } from './ship.js';
 import { createControls } from './controls.js';
 import { createHud } from './hud.js';
@@ -239,7 +239,12 @@ export function mountGame(root, { checkpoint } = {}) {
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
   let skyRect = null, lastLockedAt = 0;
-  let last = performance.now(), raf = 0, alive = true, skyAvg = 16, skyFrames = 0, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
+  // sky render scale: [lowest, highest, GPU budget per frame in ms] for each graphics setting
+  const QUALITY = { low: [0.2, 0.3, 5], auto: [0.2, 0.85, 12], high: [0.5, 1, 22] };
+  const skyStart = LOW_GPU ? 0.2 : 0.45;
+  const skyScale = { win: new AdaptiveScale({ scale: skyStart }), full: new AdaptiveScale({ scale: skyStart }) };
+  let skyMode = null;
+  let last = performance.now(), raf = 0, alive = true, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
   const way = h('div.fp-way', { hidden: true }, h('i'), h('span'));
@@ -409,10 +414,14 @@ export function mountGame(root, { checkpoint } = {}) {
           sky.set({ cam: pos, basis: [r, u, f], V: hoverVelocity(pos), fov: THREE.MathUtils.degToRad(camera.fov), time: g.time, disk: true });
         }
         sky.render(g.skyOverride ? null : skyRect);
-        // adapt the sky's resolution to the whole frame's time (no GPU stalls to measure it)
-        skyAvg = skyAvg * 0.85 + (realDt / TIME_SCALE) * 1000 * 0.15; skyFrames += realDt / TIME_SCALE;
-        const [lo, hi] = settings.quality === 'low' ? [0.2, 0.3] : settings.quality === 'high' ? [0.5, 1] : [0.2, 0.85];
-        if (skyFrames > 0.5) { skyFrames = 0; const s = sky.state.scale; const next = skyAvg > 36 ? s * 0.8 : skyAvg < 22 ? s * 1.07 : s; sky.set({ scale: Math.min(hi, Math.max(lo, next)) }); }
+        // adapt the sky's resolution. The window rectangles and the full-screen views (dream, epilogue)
+        // trace very different numbers of pixels, so each keeps its own scale.
+        const mode = g.skyOverride ? 'full' : 'win';
+        const ctl = skyScale[mode], [lo, hi, budgetMs] = QUALITY[settings.quality] || QUALITY.auto;
+        Object.assign(ctl, { lo, hi, budgetMs });
+        if (mode !== skyMode) { skyMode = mode; ctl.reset(); }
+        const fresh = sky.gpuMs != null && performance.now() - sky.gpuAt < 1000;
+        sky.set({ scale: ctl.update((realDt / TIME_SCALE) * 1000, fresh ? sky.gpuMs : null) });
       }
     }
     threeCanvas.style.visibility = g.skyOverride && g.hideShip ? 'hidden' : 'visible';
@@ -421,7 +430,9 @@ export function mountGame(root, { checkpoint } = {}) {
     if (frameN <= 3) mark('rendered');
     audio.scene(g);
     // adaptive resolution for the ship view: aim for 30+ fps
-    frameAvg = frameAvg * 0.95 + (realDt / TIME_SCALE) * 1000 * 0.05; dprTimer += realDt / TIME_SCALE;
+    const frameMs = (realDt / TIME_SCALE) * 1000;
+    if (!(frameMs > 60 && frameMs > 3 * frameAvg)) frameAvg = frameAvg * 0.95 + frameMs * 0.05; // skip one-off hitches
+    dprTimer += realDt / TIME_SCALE;
     if (dprTimer > 2) {
       dprTimer = 0;
       const max = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
