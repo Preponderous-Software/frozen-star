@@ -58,8 +58,9 @@ const fs = require('node:fs');
     }
 
     // ---- rendering: events are [time, fn(audio)] ----
-    async function render(sec, events, volume = 0.8) {
+    async function render(sec, events, volume = 0.8, prep) {
       const oc = new OfflineAudioContext(2, sec * SR, SR), a = createAudio({ context: oc }); a.setVolume(volume);
+      if (prep) await prep(a);
       const q = 128 / SR, seen = new Set();
       for (const [t, fn] of events) {
         if (t <= 0) { fn(a); continue; }
@@ -123,6 +124,32 @@ const fs = require('node:fs');
         R[`radio.${z}`] = { activeSec: +activeSpan(m).toFixed(2), centroidHz: Math.round(centroid(m, 0.4, 3)), rmsDb: +rms(m, 0.4, 3).toFixed(1), peakDb: +peakOf(b).toFixed(1) };
         W[`radio-z${z}`] = b;
       }
+    }
+    // Ines's recorded voice (Kokoro af_sky): the same clip in the room, on the intercom, and over the radio
+    // at rising redshift, where it must last exactly 1 + z times as long (playbackRate 1/(1+z))
+    {
+      const man = await (await fetch(base + 'assets/voice/ines/manifest.json')).json();
+      const line = 'Doc, the stars behind me are going blue. Is that right?';
+      const clip = Object.values(man.lines).find((e) => e.text === line);
+      const load = async (a) => { if (!(await a.voiceLoad(line))) throw new Error('clip did not load'); };
+      for (const setting of ['room', 'intercom']) {
+        const b = await render(6, [[0.1, (a) => a.voice('INES', line, setting)]], 0.8, load), m = mono(b);
+        R[`voice.${setting}`] = { clipSec: clip.dur, activeSec: +activeSpan(m).toFixed(2), rmsDb: +rms(m, 0.2, 0.1 + clip.dur).toFixed(1), peakDb: +peakOf(b).toFixed(1) };
+        W[`voice-${setting}`] = b;
+      }
+      let pad = null; // squelch and fade around the voice, measured at z = 1
+      for (const z of [1.0, 1.3, 1.87, 4.42]) {
+        let got = null;
+        const sec = Math.ceil(clip.dur * z + 2);
+        const b = await render(sec, [[0.1, (a) => { a.radio(z, line.length); got = a.voice('INES', line, 'radio'); }]], 0.8, load), m = mono(b);
+        // the voice itself, without the squelch clicks and static: measured on a render with the clip alone
+        R[`voice.radio.${z}`] = { expectSec: +(clip.dur * z).toFixed(2), reportedSec: got ? +(got.dur - 0.25 - 0.14).toFixed(2) : null, activeSec: +activeSpan(m, -40).toFixed(2), centroidHz: Math.round(centroid(m, 0.3, 0.3 + Math.min(3, clip.dur * z))), rmsDb: +rms(m, 0.3, 0.2 + clip.dur * z).toFixed(1), peakDb: +peakOf(b).toFixed(1) };
+        const act = activeSpan(m, -40); if (pad == null) pad = act - clip.dur;
+        R[`voice.radio.${z}`].measuredStretch = +((act - pad) / clip.dur).toFixed(3);
+        W[`voice-radio-z${z}`] = b;
+      }
+      // a line with no clip still gets the procedural voice
+      { const b = await render(6, [[0.1, (a) => { a.radio(1.2, 30); a.voice('INES', 'A line nobody recorded.', 'intercom'); }]], 0.8, load); R['voice.fallback'] = { activeSec: +activeSpan(mono(b)).toFixed(2) }; }
     }
     // the alarm
     { const b = await render(22, [[0.1, (a) => a.alarm(true)], [21, (a) => a.alarm(false)]]), m = mono(b); R.alarm = { rmsFirst10sDb: +rms(m, 0.1, 10).toFixed(1), rmsAfter15sDb: +rms(m, 16, 21).toFixed(1), peakDb: +peakOf(b).toFixed(1) }; W.alarm = b; }

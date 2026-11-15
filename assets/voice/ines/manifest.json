@@ -1,0 +1,474 @@
+{
+ "voice": "Kokoro-82M af_sky (Apache-2.0)",
+ "sampleRate": 24000,
+ "phases": [
+  "opening",
+  "rescue",
+  "helm",
+  "orpheus",
+  "free",
+  "halo"
+ ],
+ "lines": {
+  "a1222e5fef75": {
+   "text": "Morning, doc. Checklist first, then coffee. The view's on the bridge, not in here.",
+   "phase": "opening",
+   "dur": 4.484,
+   "sig": "08a833d132",
+   "where": [
+    "src/game/bay.js"
+   ]
+  },
+  "de24bf83c300": {
+   "text": "Seals, fuel, transponder. She's a good little boat. I'll wave when I go past the window.",
+   "phase": "opening",
+   "dur": 5.122,
+   "sig": "ceccd00319",
+   "where": [
+    "src/game/bay.js"
+   ]
+  },
+  "9fe586872801": {
+   "text": "Still here, doc. Topping up the tanks, and my nerves.",
+   "phase": "opening",
+   "dur": 2.851,
+   "sig": "d23ea281a5",
+   "where": [
+    "src/game/bay.js"
+   ]
+  },
+  "8ad2034aafdd": {
+   "text": "I'm fine in here. Go on, the window's yours.",
+   "phase": "opening",
+   "dur": 2.617,
+   "sig": "6afeb3e8a7",
+   "where": [
+    "src/game/bay.js"
+   ]
+  },
+  "a3d459d908bc": {
+   "text": "And not while I'm prepping the capsule, please. I'd like the ship where I left it.",
+   "phase": "opening",
+   "dur": 4.288,
+   "sig": "6fb034df05",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "4f3e17f75889": {
+   "text": "Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.",
+   "phase": "opening",
+   "dur": 4.798,
+   "sig": "d01df40dc5",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "a61eb1417a4e": {
+   "text": "Isn't it something? That black circle is Erebus. Well, its shadow. I'm out in the capsule bay doing pre-flight.",
+   "phase": "opening",
+   "dur": 5.836,
+   "sig": "aa5d67ce58",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "9b6e655b9f6f": {
+   "text": "I can hear it from the bay. Steady as a metronome.",
+   "phase": "opening",
+   "dur": 2.889,
+   "sig": "baa2fb323d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "4f582ae42cd7": {
+   "text": "Then what am I looking at? It's still there on the screen, right at the edge.",
+   "phase": "opening",
+   "dur": 3.662,
+   "sig": "e0b8c0e356",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "eddfdfdc3eef": {
+   "text": "...and now it's gone from the screen too. And the tone slid right down into nothing.",
+   "phase": "opening",
+   "dur": 4.234,
+   "sig": "1fcbbc43b4",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "55a27abed970": {
+   "text": "My turn. I'm taking the capsule out to sample the disk light. Back in twenty minutes.",
+   "phase": "rescue",
+   "dur": 4.661,
+   "sig": "426f72c609",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "61640485ec00": {
+   "text": "Docked. Hands still shaking.",
+   "phase": "rescue",
+   "dur": 1.975,
+   "sig": "0a21d15185",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "82c3fb4af807": {
+   "text": "You know what scares me? On your screen I looked fine the whole time. If you'd waited until I looked like I was in trouble...",
+   "phase": "rescue",
+   "dur": 6.496,
+   "sig": "e99bb041c1",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c5b5889748b6": {
+   "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!",
+   "phase": "rescue",
+   "dur": 2.751,
+   "sig": "f311a0a7ba",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "60fa96baefe0": {
+   "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in.",
+   "phase": "rescue",
+   "dur": 5.264,
+   "sig": "ce7cdab06c",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "8d2c81e3205d": {
+   "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get.",
+   "phase": "rescue",
+   "dur": 5.124,
+   "sig": "b3e610a063",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "4b893e025bcf": {
+   "text": "You should see the ring from here. It's getting bigger.",
+   "phase": "rescue",
+   "dur": 2.627,
+   "sig": "9ad8fdf9b9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "4c81fa0b52d9": {
+   "text": "Halfway to the edge of the shadow, I think. The data's beautiful.",
+   "phase": "rescue",
+   "dur": 3.466,
+   "sig": "8791c0b55e",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "be6d0ebd0d40": {
+   "text": "Doc, the stars behind me are going blue. Is that right?",
+   "phase": "rescue",
+   "dur": 3.087,
+   "sig": "1ad501ea3b",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "a8c476e7de6a": {
+   "text": "Still okay. Still waiting. Don't fire yet.",
+   "phase": "rescue",
+   "dur": 2.314,
+   "sig": "1c12a8a35a",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "7c9be77b3403": {
+   "text": "Everything overhead is so bright I can barely read the instruments.",
+   "phase": "rescue",
+   "dur": 3.52,
+   "sig": "9a040ed33d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "b30b4b1fb647": {
+   "text": "The black fills most of the window now.",
+   "phase": "rescue",
+   "dur": 1.913,
+   "sig": "44ea16e99b",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "6ca663b718da": {
+   "text": "Okay. Maybe now, doc?",
+   "phase": "rescue",
+   "dur": 1.438,
+   "sig": "d4f43433b3",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "5a26f785bc51": {
+   "text": "Doc? Now would be good.",
+   "phase": "rescue",
+   "dur": 1.275,
+   "sig": "750dc4b3b2",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "1910760108fc": {
+   "text": "Fire. Fire now.",
+   "phase": "rescue",
+   "dur": 1.126,
+   "sig": "a5957058ae",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c172a4e349b5": {
+   "text": "I can't tell if you've fired.",
+   "phase": "rescue",
+   "dur": 1.624,
+   "sig": "b397deda75",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "8bde0f152729": {
+   "text": "It doesn't look like anything. There's no edge.",
+   "phase": "rescue",
+   "dur": 2.346,
+   "sig": "17fc15d5f1",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "b359556157dd": {
+   "text": "Every time I look, I find another thin arc of light in that ring.",
+   "phase": "helm",
+   "dur": 3.739,
+   "sig": "13e56fb3f3",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "6924293038e8": {
+   "text": "Taking a minute, doc? Don't blame you. I can still feel the floor dropping away.",
+   "phase": "helm",
+   "dur": 4.319,
+   "sig": "bd425d9858",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "11fb9f7bb845": {
+   "text": "I want to see that again. Without dying this time.",
+   "phase": "helm",
+   "dur": 2.76,
+   "sig": "9520786951",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "3e3218a3cd49": {
+   "text": "The window's gone completely black. WREN, is the camera broken?",
+   "phase": "helm",
+   "dur": 3.826,
+   "sig": "ed0b2752ba",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "666d3990026a": {
+   "text": "Okay. That's enough. Take us back up.",
+   "phase": "helm",
+   "dur": 2.218,
+   "sig": "84bcd570af",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d218311f6367": {
+   "text": "One probe left. Orpheus. It has a camera, and it streams.",
+   "phase": "orpheus",
+   "dur": 3.504,
+   "sig": "e44a98fc2b",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "9d0dbfa0ce32": {
+   "text": "There it goes. The shadow's bigger every frame.",
+   "phase": "orpheus",
+   "dur": 2.699,
+   "sig": "e4285637a9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "642634cedd9a": {
+   "text": "When it passes the depth where we hovered, will its picture go all black, like our window did?",
+   "pattern": "^When\\ it\\ passes\\ .+?\\ rₛ,\\ where\\ we\\ hovered,\\ will\\ its\\ picture\\ go\\ all\\ black\\ like\\ our\\ window\\ did\\?$",
+   "phase": "orpheus",
+   "dur": 4.884,
+   "sig": "2122a9ba82",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "6c0f7d979b98": {
+   "text": "So that last frame is all we get. Did it fall in, or is it stuck there?",
+   "phase": "orpheus",
+   "dur": 3.936,
+   "sig": "9e792d13d9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "bf4446ba7bb9": {
+   "text": "So \"frozen\" is just what it looks like from here.",
+   "phase": "orpheus",
+   "dur": 2.911,
+   "sig": "99b1cecd68",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "173890e7ef35": {
+   "text": "And the rest of the trip, the part inside... nobody out here will ever see it.",
+   "phase": "orpheus",
+   "dur": 4.235,
+   "sig": "887b96366d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "77accf2fab95": {
+   "text": "WREN worked it out for me. At the horizon, the tide from head to toe would have been 0.15 g. A gentle stretch, nothing more.",
+   "phase": "free",
+   "dur": 8.069,
+   "sig": "a0bb93916e",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "3e3ac27f94b4": {
+   "text": "And if I had crossed? WREN says the longest anyone can last inside Erebus is 1.9 seconds, by their own watch. Then the centre.",
+   "phase": "free",
+   "dur": 8.101,
+   "sig": "11ac465811",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "1f89411707d6": {
+   "text": "Less than two seconds. Somehow that's worse than forever.",
+   "phase": "free",
+   "dur": 3.352,
+   "sig": "38de0dd1c6",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "472815c8235c": {
+   "text": "Next time I go out, you're on the beam. Nobody else.",
+   "phase": "free",
+   "dur": 2.939,
+   "sig": "097c569524",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c62528396f99": {
+   "text": "Go look at the window, doc. I'm fine. Really.",
+   "phase": "free",
+   "dur": 2.526,
+   "sig": "3ccc0ce781",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "4ac1c37d5d75": {
+   "text": "Doc. Up. Please.",
+   "phase": "free",
+   "dur": 1.434,
+   "sig": "5a9e9d7f41",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "174534c6b388": {
+   "text": "Thank you.",
+   "phase": "free",
+   "dur": 0.988,
+   "sig": "88a1007dce",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "f927d61b681a": {
+   "text": "The what sphere?",
+   "phase": "halo",
+   "dur": 1.123,
+   "sig": "ec6aa84554",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "3a509cecc3d8": {
+   "text": "Light going in a circle. Okay, doc, I have to see that.",
+   "phase": "halo",
+   "dur": 3.164,
+   "sig": "dae4c7840c",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "95b1baa77a41": {
+   "text": "Wait. So any light that leaves the ship sideways comes back round to us?",
+   "phase": "halo",
+   "dur": 3.991,
+   "sig": "b710ab657c",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "aa2f5a7a5c20": {
+   "text": "So if I look straight along the hull, right at the edge of the shadow...",
+   "phase": "halo",
+   "dur": 3.451,
+   "sig": "21f2304553",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "79744d1faa55": {
+   "text": "That is the creepiest thing I've heard all week. And I nearly fell into a black hole this morning.",
+   "phase": "halo",
+   "dur": 4.985,
+   "sig": "d33ec273fb",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "f41a99eada89": {
+   "text": "Like balancing a pencil on its point. Okay. I've seen light go in a circle. Take us home, doc.",
+   "phase": "halo",
+   "dur": 5.288,
+   "sig": "3cefde5817",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  }
+ }
+}
