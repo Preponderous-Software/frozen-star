@@ -2,14 +2,14 @@
 setlocal
 rem Opens Frozen Star, the black hole relativity game, in its own window like the other games.
 rem No GitHub or sign-in: it copies the current files from the clone in WSL, or runs the last
-rem copy if WSL is not available. The first run downloads the Electron runtime once (about 160 MB).
+rem copy if WSL is not available. Set FS_SRC to use a different folder. The first run downloads the Electron runtime once (about 160 MB).
 rem Options:
 rem   play-frozen-star.bat browser       play in your web browser instead
 rem   play-frozen-star.bat lowgpu        smaller, cheaper 3D render for slow graphics
 rem   play-frozen-star.bat fullscreen    start fullscreen (F11 toggles it any time)
 rem   play-frozen-star.bat ship          skip the title screen (or a chapter, e.g. observatory)
 
-set "FS_SRC=\\wsl$\Ubuntu\root\frozen-star"
+if not defined FS_SRC set "FS_SRC=\\wsl$\Ubuntu\root\frozen-star"
 set "MODE=desktop"
 set "LOWGPU="
 set "FULL="

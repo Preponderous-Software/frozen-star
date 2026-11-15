@@ -52,3 +52,7 @@ npm test          # node --test, no dependencies
 ```
 
 `tools/tour.cjs` (training chapters) and `tools/fp-shots.cjs` (the first-person game; `?debug&cp=<checkpoint>&timescale=N`) drive headless Chromium and save screenshots (need Playwright).
+
+## License
+
+MIT, see [LICENSE](LICENSE). three.js (vendored in `vendor/three`) is MIT licensed by the three.js authors.

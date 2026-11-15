@@ -1,1 +1,10 @@
-{"name":"frozen-star","private":true,"type":"module","scripts":{"test":"node --test test/*.test.js"}}
+{
+  "name": "frozen-star",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT",
+  "description": "A first-person game about general relativity: why nothing is ever seen to fall into a black hole."
+}
