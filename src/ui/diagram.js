@@ -16,9 +16,10 @@ export class SpacetimeDiagram {
   reset() { this.tau = 0; this.S = 0; this.signals = []; this.rescues = []; }
 
   _setup() {
-    const c = this.canvas, d = window.devicePixelRatio || 1;
-    const w = Math.round(c.clientWidth * d), hh = Math.round(c.clientHeight * d);
-    if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; }
+    const c = this.canvas;
+    let d = window.devicePixelRatio || 1, w, hh;
+    if (c.isConnected && c.clientWidth) { w = Math.round(c.clientWidth * d); hh = Math.round(c.clientHeight * d); if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; } }
+    else { w = c.width; hh = c.height; d = w / 640; }
     const f = this.f, nowProbe = f.tTilde(f.etaOfTau(Math.min(this.tau, f.tauEnd))), nowStation = f.stationTTilde(this.S);
     const pad = { l: 46 * d, r: 12 * d, t: 16 * d, b: 30 * d };
     const kr = (hh - pad.t - pad.b) / this.rMax;

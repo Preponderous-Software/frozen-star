@@ -10,6 +10,7 @@ import hover from './chapters/hover.js';
 import intoTheDark from './chapters/into-the-dark.js';
 import evaporation from './chapters/evaporation.js';
 import observatory from './chapters/observatory.js';
+import { mountGame } from './game/game.js';
 
 export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, intoTheDark, evaporation];
 const app = $('#app');
@@ -27,12 +28,14 @@ function titleScreen() {
       h('div.hero-text',
         h('p.eyebrow', 'A game about general relativity'),
         h('h1', 'Frozen Star'),
-        h('p.lede', 'From far away, nothing is ever seen to fall into a black hole. It slows, reddens and fades at the edge. On its own clock it falls straight through. Seven chapters on why both are true.'),
+        h('p.lede', 'You wake aboard a research ship holding station above a black hole. Today you find out whether things really fall in. From far away nothing ever seems to; on its own clock it falls straight through.'),
         h('div.hero-actions',
-          h('a.button.primary', { href: `#${next.id}` }, next === CHAPTERS[0] ? 'Begin: Two Clocks' : `Continue: ${next.title}`),
-          h('a.button', { href: '#observatory' }, 'Open the observatory')))),
+          hasSave() ? h('a.button.primary', { href: '#ship' }, 'Continue aboard the Tern') : h('a.button.primary', { href: '#ship' }, 'Wake up'),
+          hasSave() ? h('button', { type: 'button', onclick: () => { try { localStorage.removeItem('frozen-star.fp.v1'); } catch { /* */ } location.hash = '#ship'; } }, 'Start over') : null,
+          h('a.button', { href: '#observatory' }, 'Open the observatory')),
+        h('p.fine', 'A first-person story, about 20 minutes. Keyboard and mouse, touch, or a gamepad.'))),
     h('section.chapters',
-      h('div.section-head', h('h2', 'Chapters'), h('span.fine', 'Stars ', h('b#total'))),
+      h('div.section-head', h('h2', 'Training simulations'), h('span.fine', 'Stars ', h('b#total'))),
       h('ol.chapter-grid', CHAPTERS.map((c) => h('li', h('a.chapter-card', { href: `#${c.id}` },
         h('span.num', String(c.num)), h('b', c.title), h('span.kick', c.kicker), starRow(getStars(c.id))))))),
     h('section.about',
@@ -95,9 +98,12 @@ function chapterScreen(ch) {
   return stop;
 }
 
+function hasSave() { try { return !!localStorage.getItem('frozen-star.fp.v1'); } catch { return false; } }
+
 function route() {
   dispose?.(); dispose = null;
   const id = location.hash.slice(1);
+  if (id === 'ship') { document.title = 'Frozen Star'; dispose = mountGame(app); return; }
   const ch = [...CHAPTERS, observatory].find((c) => c.id === id);
   document.title = ch ? `${ch.title} · Frozen Star` : 'Frozen Star';
   dispose = ch ? chapterScreen(ch) : titleScreen();

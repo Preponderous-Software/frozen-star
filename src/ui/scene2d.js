@@ -23,9 +23,10 @@ export class FieldView {
   constructor(canvas, { R0 = 20 } = {}) { this.canvas = canvas; this.R0 = R0; }
 
   begin({ inside = false } = {}) {
-    const c = this.canvas, d = window.devicePixelRatio || 1;
-    const w = Math.round(c.clientWidth * d), hh = Math.round(c.clientHeight * d);
-    if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; }
+    const c = this.canvas;
+    let d = window.devicePixelRatio || 1, w, hh;
+    if (c.isConnected && c.clientWidth) { w = Math.round(c.clientWidth * d); hh = Math.round(c.clientHeight * d); if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; } }
+    else { w = c.width; hh = c.height; d = w / 480; } // a detached canvas (an in-ship screen): fixed size
     const ctx = c.getContext('2d');
     this.ctx = ctx; this.d = d; this.w = w; this.h = hh;
     this.cx = w * 0.12; this.cy = hh * 0.52; this.s = (w * 0.8) / this.R0;
