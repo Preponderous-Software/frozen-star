@@ -8,7 +8,7 @@ import { SEC_PER_M, R_STATION, shipPosition, HOLE } from './world.js';
 import { EYE } from './walk.js';
 import {
   createRun, runMarker, carrierState, screenFrame, screenLines, drawRunOnScreen, drawMap, drawClocks,
-  datapadApp, probeApp, commsApp, mapApp, helmApp, createFeed, drawFeed, feedApp, archiveApp,
+  datapadApp, probeApp, commsApp, mapApp, helmApp, createFeed, drawFeed, feedApp, archiveApp, createRearCam, drawRear,
 } from './apps.js';
 import { CHAPTER_LIST } from './chapters-list.js';
 
@@ -40,7 +40,9 @@ function baseScreens(g) {
   g.screenDraw.clocks = (ctx, w, h) => drawClocks(ctx, w, h, g);
   g.screenDraw.probe = (ctx, w, h) => { if (g.beacon) drawRunOnScreen(ctx, w, h, g.orpheus || g.beacon, g.orpheus ? 'ORPHEUS · as seen from the ship' : 'BEACON K-1 · as seen from the ship'); else { screenFrame(ctx, w, h, 'PROBE', 'bay 1: beacon K-1 · bay 2: Orpheus'); screenLines(ctx, w, h, ['K-1     ready', 'ORPHEUS ' + (g.flags.orpheusReady ? 'ready' : 'locked')]); } };
   g.screenDraw.comms = (ctx, w, h) => { if (g.capsule) drawRunOnScreen(ctx, w, h, g.capsule, 'CAPSULE · as seen from the ship'); else { screenFrame(ctx, w, h, 'COMMS', 'channel: Ines Okafor (capsule)'); screenLines(ctx, w, h, [g.flags.inesHome ? 'Capsule docked.' : 'Capsule in bay.', 'Recall beam: armed']); } };
-  g.screenDraw.helm = (ctx, w, h) => { screenFrame(ctx, w, h, 'HELM', 'station-keeping field'); screenLines(ctx, w, h, [`altitude  ${(g.shipR / 2).toFixed(3)} rs`, `relay     x${(1 / hoverRate(g.shipR)).toFixed(3)}`, g.flags.helmUnlocked ? 'descent:  authorised' : 'descent:  locked']); };
+  g.screenDraw.helm = (ctx, w, h) => {
+    if (g.rear && g.shipR < 6) { drawRear(ctx, w, h, g); return; }
+    screenFrame(ctx, w, h, 'HELM', 'station-keeping field'); screenLines(ctx, w, h, [`altitude  ${(g.shipR / 2).toFixed(3)} rs`, `relay     x${(1 / hoverRate(g.shipR)).toFixed(3)}`, g.flags.helmUnlocked ? 'descent:  authorised' : 'descent:  locked']); };
   g.screenDraw.map = (ctx, w, h) => { const r = g.lastRun; if (r && g.flags.mapUnlocked) drawMap(ctx, w, h, r); else { screenFrame(ctx, w, h, 'SPACETIME MAP', 'nothing plotted yet'); } };
   g.screenDraw.archive = (ctx, w, h) => { screenFrame(ctx, w, h, 'ARCHIVE', 'expedition library'); screenLines(ctx, w, h, CHAPTER_LIST.map((c) => `${c.num}  ${c.title}`), 0.3); };
   g.screenDraw.feed = (ctx, w, h) => { if (g.feed) drawFeed(ctx, w, h, g.feed, g.feedState()); else { screenFrame(ctx, w, h, 'CAMERA FEED', 'no signal'); } };
@@ -98,8 +100,13 @@ async function dream(g) {
     return { cam: pos, basis: lookBasis(pos, [0, -0.4, 0]), V: fallerVelocity(pos, E), fov: 1.35, time: g.time, disk: true };
   };
   let beat = 0;
+  // replays: let the player skip the dream
+  const skip = Object.assign(document.createElement('button'), { type: 'button', className: 'fp-skip', textContent: 'Skip the dream ›' });
+  let skipped = false;
+  skip.onclick = () => { skipped = true; tau = f.tauEnd; };
+  g.el.append(skip);
   const tick = (dt) => {
-    tau = Math.min(f.tauEnd, tau + dt * speed);
+    tau = skipped ? f.tauEnd : Math.min(f.tauEnd, tau + dt * speed);
     beat -= dt; if (beat <= 0 && tau < f.tauH) { g.audio.heartbeat(); beat = 1.1; }
   };
   g.ticks.add(tick);
@@ -108,13 +115,13 @@ async function dream(g) {
   g.hud.fade(0, 3);
   await g.wait(2);
   g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
-  await g.until(() => f.rOfTau(tau) < 7);
+  await g.until(() => f.rOfTau(tau) < 7 || skipped);
   g.say('YOU', '(The black is spreading. The light is all overhead now.)', { style: { fontStyle: 'italic' } });
   await g.until(() => tau >= f.tauH);
-  g.audio.whoosh(2.5);
-  g.say('YOU', '(Nothing happened.)', { style: { fontStyle: 'italic' }, dur: 2.2 });
+  if (!skipped) { g.audio.whoosh(2.5); g.say('YOU', '(Nothing happened.)', { style: { fontStyle: 'italic' }, dur: 2.2 }); }
   await g.until(() => f.rOfTau(tau) < 0.9);
-  await g.hud.fade(1, 0.6, '#fff');
+  skip.remove();
+  await g.hud.fade(1, skipped ? 0.3 : 0.6, skipped ? '#000' : '#fff');
   g.ticks.delete(tick);
   g.skyOverride = null; g.hideShip = false;
   g.hud.clearSubs();
@@ -132,17 +139,18 @@ async function wake(g) {
   await g.tweenTo(new THREE.Vector3(3.8, 1.15, 5.3), -0.12, -0.04, 2.2);
   await g.tweenTo(new THREE.Vector3(3.7, EYE, 4.7), -0.1, 0.0, 1.4);
   setWalk(g, 3.7, 4.7, -0.1, 0.0);
+  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
+  g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
   g.say('WREN', 'We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.');
-  g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : 'Click to look around. <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>E</kbd> to use things.');
+  g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>E</kbd> to use things, <kbd>Esc</kbd> to pause.');
   await g.wait(4.5);
   await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
-  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
-  await g.wait(6); g.hud.hint(null);
+  g.wait(8).then(() => g.hud.hint(null)).catch(() => {});
 }
 
 async function toBridge(g) {
-  g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
-  await g.until(() => g.inRoom('corridor'));
+  if (!g.inRoom('corridor') && !g.inRoom('bridge')) g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
+  await g.until(() => g.inRoom('corridor') || g.inRoom('bridge'));
   g.waypoint = { pos: new THREE.Vector3(0, 1.3, -5), label: 'Bridge', near: 1.2 };
   await g.until(() => g.inRoom('bridge'));
   g.waypoint = null;
@@ -330,6 +338,10 @@ async function rescueAttempt(g) {
 // ---------- act 4: the helm ----------
 async function helmAct(g) {
   g.flags.helmUnlocked = true;
+  g.rear = g.rear || createRearCam();
+  let rearT = 0;
+  const rearTick = (dt) => { rearT += dt; if (g.shipR < 6 && rearT > 0.25) { rearT = 0; g.rear.render(g.shipR, g.time); } };
+  g.ticks.add(rearTick);
   await g.say('INES', 'I want to see that again. Without dying this time.');
   await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
@@ -345,7 +357,7 @@ async function helmAct(g) {
   await g.until(() => held >= 20);
   g.ticks.delete(tick);
   await g.say('INES', 'The window\'s gone completely black. WREN, is the camera broken?');
-  await g.say('WREN', 'No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us, where we have no windows.');
+  await g.say('WREN', 'No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera.');
   await g.say('INES', 'Okay. That\'s enough. Take us back up.');
   g.objective('Return to 10 rₛ (helm)');
   await g.until(() => g.shipR > R_STATION - 0.05);

@@ -89,7 +89,7 @@ export function mountGame(root, { checkpoint } = {}) {
   g.unlockDoor = (id, on = true) => { const d = ship.doors.find((x) => x.id === id); if (d) d.locked = !on; };
   g.inRoom = (id) => { const r = ship.rooms.find((x) => x.id === id); if (!r) return false; const [x0, z0, x1, z1] = r.box; return g.me.x > x0 && g.me.x < x1 && g.me.z > z0 && g.me.z < z1; };
   g.addMarker = (fn) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); scene.add(s); const m = { fn, s }; markers.add(m); return () => { scene.remove(s); markers.delete(m); }; };
-  g.save = (cp) => { try { localStorage.setItem('frozen-star.fp.v1', JSON.stringify({ cp, flags: g.flags })); } catch { /* storage off */ } };
+  g.save = (cp) => { try { localStorage.setItem('frozen-star.fp.v1', JSON.stringify({ cp, flags: g.flags })); hud.toast('Progress saved'); } catch { /* storage off */ } };
   g.physicsNow = () => g.physicsTime / SEC_PER_M; // in units of M
 
   // camera tweening for cutscenes and consoles

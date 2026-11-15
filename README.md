@@ -18,6 +18,8 @@ The old Soviet name for black holes was "frozen stars", after the frozen image a
 
 Everything happens at its true speed: at 120,000 suns, one unit of black-hole time (GM/c³) is 0.59 seconds.
 
+**Playing:** a main menu with Continue, New game, Chapters (replay any act once finished), Settings, Training simulations, the Observatory and About. Esc pauses the world. Settings cover look speed, field of view, volume, invert look, subtitle size, graphics and fullscreen. Keyboard and mouse, touch and gamepads all work, in menus too. Sound is synthesized in the browser: the beacon's tone drops in pitch and fades as its light redshifts. At the end, a logbook shows your own numbers.
+
 ![Falling, in a dream](docs/media/dream.png)
 
 ![The Orpheus feed: the last frame before the horizon](docs/media/orpheus.png)

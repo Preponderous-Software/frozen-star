@@ -7,7 +7,7 @@ import { SpacetimeDiagram } from '../ui/diagram.js';
 import { stationPanel, probePanel } from '../ui/panels.js';
 import { hoverRate, hoverAccel, tidalStretch } from '../physics/body.js';
 import { formatAccel, formatDuration, sig } from '../physics/units.js';
-import { BlackHoleView, lookBasis, fallerVelocity } from '../render/raytracer.js';
+import { BlackHoleView, lookBasis, fallerVelocity, hoverVelocity } from '../render/raytracer.js';
 import { HOLE, SEC_PER_M, R_STATION, shipPosition } from './world.js';
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -115,10 +115,21 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
     if (r && (!panels || panels.run !== r)) {
       wrap.replaceChildren();
       const st = stationPanel(r.f, { title: 'Ship · what you see', clockNote: 'ship clock' }), pr = probePanel(r.f, { title: `${name} · its own clock` });
-      panels = { run: r, st, pr };
-      wrap.append(st.el, pr.el);
+      const own = h('b'), seen = h('b'), gap = h('p.fp-gap');
+      const head = h('div.fp-twoclocks',
+        h('div', h('span', 'Its own clock'), own),
+        h('div', h('span', 'Its clock, as you see it'), seen), gap);
+      panels = { run: r, st, pr, own, seen, gap };
+      wrap.append(head, st.el, pr.el);
     }
     if (panels) {
+      const R = panels.run, tau = R.tau(), s = R.seen(), f = R.f;
+      panels.own.textContent = tau >= f.tauEnd ? 'ended' : `${tau.toFixed(1)} M`;
+      panels.seen.textContent = `${s.tau.toFixed(1)} M`;
+      const behind = tau - s.tau;
+      panels.gap.textContent = tau >= f.tauH ? `It has crossed the horizon. You will never see the moment it did: its last light is still climbing out, slower and redder.`
+        : behind < 0.3 ? 'The picture you see is almost live.' : `The picture is ${behind.toFixed(1)} M (${(behind * SEC_PER_M).toFixed(1)} s) behind its clock, and falling further behind.`;
+      panels.gap.className = 'fp-gap' + (tau >= f.tauH ? ' bad' : behind > 5 ? ' warn' : '');
       panels.st.update(panels.run.S(), { mass: HOLE.mass });
       panels.pr.update(panels.run.tau(), { mass: HOLE.mass });
       // mirror the run's log into the panels
@@ -167,9 +178,14 @@ export function helmApp(body, g, { onTarget }) {
   target.input.addEventListener('input', () => onTarget(2 * (1 + 10 ** target.value)));
   const sR = stat('Altitude now'), sRate = stat('Relay clock runs'), sField = stat('Field strength'), sTide = stat('Stretch across the hull');
   const up = h('button#fp-home', { onclick: () => { target.value = Math.log10(9); onTarget(R_STATION); } }, 'Return to 10 rₛ');
-  body.append(h('p.eyebrow', 'Helm · station-keeping field'), target.el, up, h('div.stats.col', sR.el, sRate.el, sField.el, sTide.el),
+  const rearC = h('canvas.fp-feed', { hidden: true }); rearC.width = 640; rearC.height = 360;
+  const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this patch.');
+  body.append(h('p.eyebrow', 'Helm · station-keeping field'), target.el, up, h('div.stats.col', sR.el, sRate.el, sField.el, sTide.el), rearC, rearNote,
     h('p.fine', 'The field pushes every atom aboard equally, so nobody feels it. Pushing everything at once is indistinguishable from standing still: that is the equivalence principle.'));
   return loop(() => {
+    const deep = !!g.rear && g.shipR < 6;
+    rearC.hidden = !deep; rearNote.hidden = !deep;
+    if (deep) drawRear(rearC.getContext('2d'), rearC.width, rearC.height, g);
     sR.set(`${(g.shipR / 2).toFixed(3)} rₛ`);
     sRate.set(`×${(1 / hoverRate(g.shipR)).toFixed(3)} faster than yours`);
     sField.set(formatAccel(hoverAccel(g.shipR, HOLE.mass)));
@@ -194,6 +210,29 @@ export function createFeed() {
     },
     dispose() { view?.dispose(); },
   };
+}
+
+/** A camera looking aft from the hovering ship: at low altitude the whole sky is squeezed back there. */
+export function createRearCam() {
+  const canvas = document.createElement('canvas'); canvas.width = 320; canvas.height = 180;
+  let view = null;
+  try { view = new BlackHoleView(canvas, { scale: 1, preserve: true }); view.set({ steps: 360, diskOuter: 15 }); view.resize = () => {}; } catch { /* no WebGL 2 */ }
+  return {
+    canvas,
+    render(r, t) {
+      if (!view) return;
+      const pos = shipPosition(r), away = pos.map((v) => v * 3);
+      view.set({ cam: pos, basis: lookBasis(pos, away), V: hoverVelocity(pos), fov: 1.6, time: t, disk: true });
+      view.render();
+    },
+  };
+}
+
+export function drawRear(ctx, w, hh, g) {
+  ctx.drawImage(g.rear.canvas, 0, 0, w, hh);
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, w, hh * 0.13);
+  ctx.fillStyle = '#ffc882'; ctx.font = `500 ${hh * 0.055}px ${MONO}`;
+  ctx.fillText(`REAR CAMERA · looking away from Erebus · ${(g.shipR / 2).toFixed(2)} rs`, w * 0.03, hh * 0.085);
 }
 
 export function drawFeed(ctx, w, hh, feed, st) {

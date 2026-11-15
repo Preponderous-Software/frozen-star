@@ -43,6 +43,10 @@ export function createHud(root) {
     /** Advance subtitle timers by dt seconds of game time (0 while paused). */
     tick(dt) { for (const p of [...timers]) { p.remain -= dt; if (p.remain <= 0) p.done(); } },
     lookHint(on) { look.hidden = !on; },
+    toast(text) {
+      const t = h('div.fp-toast', text); root.append(t);
+      setTimeout(() => t.classList.add('out'), 1800); setTimeout(() => t.remove(), 2600);
+    },
     choosing: false,
     objective(text) { objective.hidden = !text; if (text) objective.querySelector('b').textContent = text; objective.classList.remove('flash'); void objective.offsetWidth; objective.classList.add('flash'); },
     prompt(text) { prompt.hidden = !text; if (text) prompt.innerHTML = text; },
