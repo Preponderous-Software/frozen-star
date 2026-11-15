@@ -1,146 +1,443 @@
-// Procedural sound with WebAudio: no audio files. Starts on the first click or key press.
+// Procedural sound with WebAudio: no audio files. Nothing starts until the player has clicked, tapped or
+// pressed a key (the "Wake up" click usually counts).
 //
-// The beacon is the teaching sound: its carrier is played as a tone whose pitch is the emitted pitch
-// divided by 1 + z, and whose loudness follows the received flux. As the probe nears the horizon you
-// hear the tone slide down and fade out, while the pings come further and further apart.
+// The teaching sounds are honest. A falling transmitter's carrier is played at its emitted pitch divided
+// by 1 + z, with loudness following the received flux; all of its overtones move with it, so the slide
+// stays audible on small speakers even when the fundamental drops below what they can play. Ines's radio
+// voice is the same: her words arrive stretched in time and lowered in pitch by 1 + z, then pass through
+// the ship's receiver band, so near the edge they sink into a slow growl and the hiss takes over.
+//
+// Cost: the ambience is one fixed graph built once. Per-frame calls (scene, carrier, static) only move
+// parameters, and only when a value has changed enough to hear. Nodes are created per sound event
+// (a footstep, a ping, a line of radio), never per frame.
+
+import { hoverAccel } from '../physics/body.js';
+import { R_STATION } from './world.js';
 
 const KEY = 'frozen-star.muted';
+const R_FLOOR = 2.06; // the lowest altitude the helm allows (1.03 rₛ), in units of M
 
-export function createAudio() {
-  let ctx = null, master = null, muted = false, hum = null, alarm = null, statics = null, volume = 0.8, ducked = false;
-  const carriers = new Map();
+// how each room sounds: field hum, air handling, bridge electronics heard through the walls, footfall
+const ROOMS = {
+  bridge: { hum: 1, air: 0.55, airLP: 650, elec: 1, elecLP: 5200, ring: 1, thud: 1, chirps: true },
+  corridor: { hum: 0.75, air: 0.85, airLP: 950, elec: 0.3, elecLP: 650, ring: 1.3, thud: 1 },
+  quarters: { hum: 0.4, air: 0.3, airLP: 300, elec: 0.1, elecLP: 380, ring: 0.15, thud: 0.6 },
+  lab: { hum: 0.65, air: 0.6, airLP: 800, elec: 0.45, elecLP: 1400, ring: 1.1, thud: 0.9 },
+};
+const ROOM_IDS = Object.keys(ROOMS);
+const VOWELS = [[800, 1200, 2500], [400, 2200, 2900], [320, 2500, 3200], [470, 850, 2600], [350, 700, 2450], [600, 1700, 2600]];
+const CHIRP_NOTES = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093]; // C6 pentatonic
+
+/**
+ * @param {{ context?: BaseAudioContext }} [opts] pass an OfflineAudioContext to render sounds for tests
+ */
+export function createAudio(opts = {}) {
+  const offline = !!opts.context;
+  let ctx = null, master = null, muted = false, volume = 0.8, ducked = false, disposed = false;
+  let buses = null, amb = null, alarm = null, statics = null, lastUi = 0;
+  const carriers = new Map(), last = new Map();
+  let serial = 0;
+  const S = { room: null, hidden: false, depth: 0, shipT: null, relayT: null, nextChirp: 0, sceneAt: -1, ticks: { ship: 0, relay: 0 } };
   try { muted = localStorage.getItem(KEY) === '1'; } catch { /* storage off */ }
 
+  // ---------- context, mix and safety ----------
+  const safe = (fn) => (...a) => { try { return fn(...a); } catch { return undefined; } };
+
   function ensure() {
-    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return true; }
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return false;
-    ctx = new AC();
-    master = ctx.createGain(); master.gain.value = level(); master.connect(ctx.destination);
-    startHum();
+    if (disposed) return false;
+    if (ctx) { if (ctx.state === 'suspended' && !offline && !document.hidden) ctx.resume().catch(() => {}); return true; }
+    if (offline) ctx = opts.context;
+    else {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      ctx = new AC({ latencyHint: 'playback' });
+    }
+    build();
     return true;
   }
-  const unlock = () => ensure();
-  addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
-  // The click on "Wake up" already counts as a user gesture in most browsers: start now if allowed.
-  try { ensure(); } catch { /* wait for a gesture */ }
+  function gestureAllowed() { const ua = navigator.userActivation; return ua ? ua.hasBeenActive : false; }
+  const unlock = safe(() => ensure());
+  const onVisibility = safe(() => { if (!ctx || offline) return; (document.hidden ? ctx.suspend() : ctx.resume()).catch(() => {}); });
 
-  function level() { return muted ? 0 : volume * (ducked ? 0.3 : 1); }
-  const applyLevel = () => { if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.1); };
+  // slider volume is perceptual: square it so 50% sounds like half, not like 90%
+  function level() { return muted ? 0 : volume * volume * (ducked ? 0.3 : 1); }
+  const applyLevel = () => { if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.08); };
 
-  function noiseBuffer(sec = 2) {
-    const b = ctx.createBuffer(1, ctx.sampleRate * sec, ctx.sampleRate), d = b.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  /** Move a parameter only when the new value differs audibly from the last one asked for. */
+  function glide(param, key, v, tc = 0.2, rel = 0.004) {
+    const p = last.get(key);
+    if (p != null && Math.abs(v - p) <= Math.max(rel * Math.abs(p), 1e-5)) return;
+    last.set(key, v); param.setTargetAtTime(v, ctx.currentTime, tc);
+  }
+
+  function noiseBuffer(sec, brown) {
+    const b = ctx.createBuffer(1, Math.floor(ctx.sampleRate * sec), ctx.sampleRate), d = b.getChannelData(0);
+    let acc = 0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      if (brown) { acc = (acc + 0.02 * w) / 1.02; d[i] = acc * 3.5; } else d[i] = w;
+    }
     return b;
   }
-  let noise = null;
-  const getNoise = () => (noise ||= noiseBuffer(2));
+  function reverbBuffer(sec = 2.6) {
+    const n = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, n, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = b.getChannelData(c); let lp = 0;
+      for (let i = 0; i < n; i++) { const t = i / n; lp += (Math.random() * 2 - 1 - lp) * (0.5 - 0.42 * t); d[i] = lp * Math.pow(1 - t, 2.2) * 0.5; }
+    }
+    return b;
+  }
+  const gain = (v = 0, to) => { const g = ctx.createGain(); g.gain.value = v; if (to) g.connect(to); return g; };
+  const filter = (type, f, q = 0.707, to) => { const n = ctx.createBiquadFilter(); n.type = type; n.frequency.value = f; n.Q.value = q; if (to) n.connect(to); return n; };
+  const osc = (type, f, to) => { const o = ctx.createOscillator(); if (typeof type === 'string') o.type = type; else o.setPeriodicWave(type); o.frequency.value = f; if (to) o.connect(to); return o; };
+  const loop = (buf, to) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; if (to) s.connect(to); return s; };
+  const wave = (partials) => ctx.createPeriodicWave(new Float32Array(partials.length), new Float32Array(partials), { disableNormalization: false });
+  const panTo = (pan, to) => { if (!pan || !ctx.createStereoPanner) return to; const p = ctx.createStereoPanner(); p.pan.value = pan; p.connect(to); return p; };
 
-  function startHum() {
-    // ship hum: two low tones and filtered air
-    const g = ctx.createGain(); g.gain.value = 0.0; g.connect(master);
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180; lp.connect(g);
-    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
-    o1.type = 'sawtooth'; o1.frequency.value = 48; o2.type = 'sine'; o2.frequency.value = 72.3;
-    const og = ctx.createGain(); og.gain.value = 0.35; o1.connect(og); o2.connect(og); og.connect(lp);
-    const n = ctx.createBufferSource(); n.buffer = getNoise(); n.loop = true;
-    const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 500;
-    const ng = ctx.createGain(); ng.gain.value = 0.25; n.connect(nf); nf.connect(ng); ng.connect(g);
-    o1.start(); o2.start(); n.start();
-    g.gain.setTargetAtTime(0.06, ctx.currentTime, 1.5);
-    hum = { g, o1, o2, lp };
+  function build() {
+    master = gain(level());
+    // gentle glue so stacked sounds never clip, and a floor that keeps inaudible rumble from eating headroom
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -20; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = 0.012; comp.release.value = 0.3;
+    const floorHp = filter('highpass', 24, 0.5, comp);
+    master.connect(floorHp); comp.connect(ctx.destination);
+    const verb = ctx.createConvolver(); verb.buffer = reverbBuffer(); verb.connect(gain(0.55, master));
+    buses = {
+      noise: noiseBuffer(2), brown: noiseBuffer(3, true), verb,
+      amb: gain(0.8, master), sfx: gain(1, master), ui: gain(1, master), sig: gain(1, master),
+      warm: wave([0, 1, 0.32, 0.14, 0.06, 0.025]), // the carriers' timbre: soft overtones that move with the pitch
+      organ: wave([0, 1, 0.5, 0.33, 0.2, 0.1, 0.05]),
+    };
+    buildAmbience();
   }
 
-  function env(node, t0, a, peak, d) {
-    node.gain.setValueAtTime(0.0001, t0);
-    node.gain.exponentialRampToValueAtTime(peak, t0 + a);
-    node.gain.exponentialRampToValueAtTime(0.0001, t0 + a + d);
+  // ---------- the ship ----------
+  function buildAmbience() {
+    const B = buses, t = ctx.currentTime;
+    // station-keeping field: two low tones, louder and higher when the field works harder
+    const humG = gain(0, B.amb), breathe = gain(1, humG), humLP = filter('lowpass', 190, 0.9, breathe), humMix = gain(0.4, humLP);
+    const h1 = osc('sawtooth', 48, humMix), h2 = osc('sine', 72.3, humMix);
+    const wob = osc('sine', 0.13), wobG = gain(0.15, breathe.gain); wob.connect(wobG); // a slow breath in the hum, ±15%
+    // air handling: brown noise through a room-dependent low-pass
+    const airG = gain(0, B.amb), airLP = filter('lowpass', 700, 0.5, airG), air = loop(B.brown, airLP);
+    // bridge electronics: mains harmonics and a fan whir, muffled by the walls when you are elsewhere
+    const elG = gain(0, B.amb), elLP = filter('lowpass', 5000, 0.5, elG);
+    const eMix = gain(0.5, elLP), e1 = osc('sine', 120, eMix), e2 = osc('sine', 180.4, gain(0.4, eMix));
+    const whirBP = filter('bandpass', 3100, 0.8, gain(0.18, elLP)), whir = loop(B.noise, whirBP);
+    // the descent: a deep organ drone that sinks a full octave as the ship goes down, and hull stress
+    const drG = gain(0, B.amb), drLP = filter('lowpass', 900, 0.6, drG);
+    const d1 = osc(B.organ, 73.42, drLP), d2 = osc(B.organ, 73.42 * 1.003, drLP), d3 = osc('sine', 36.71, gain(0.8, drG));
+    const grG = gain(0, B.amb), grBP = filter('bandpass', 110, 3, grG), groan = loop(B.brown, grBP);
+    const grL = osc('sine', 0.07), grLG = gain(0, grG.gain); grL.connect(grLG);
+    for (const n of [h1, h2, wob, air, e1, e2, whir, d1, d2, d3, groan, grL]) n.start(t);
+    air.playbackRate.value = 0.9; whir.playbackRate.value = 1.1; groan.playbackRate.value = 0.6;
+    amb = { humG, humLP, h1, h2, airG, airLP, elG, elLP, drG, drLP, d1, d2, d3, grG, grBP, grLG };
   }
 
-  function blip(freq, { type = 'sine', dur = 0.12, vol = 0.12, attack = 0.005 } = {}) {
+  /** Called every frame with the game: room, altitude, the two clocks. Only parameters move. */
+  function scene(g) {
+    if (!ctx || !amb) return;
+    const now = ctx.currentTime;
+    const hidden = !!g.hideShip;
+    const shipR = g.shipR || R_STATION;
+    // clock ticks need frame precision; the rest is retargeted at most ten times a second
+    clockTicks(g, hidden);
+    if (now - S.sceneAt < 0.1) return;
+    S.sceneAt = now;
+    const room = ROOM_IDS.find((id) => g.inRoom?.(id)) || S.room || 'corridor';
+    S.room = room; S.hidden = hidden;
+    const R = ROOMS[room];
+    const d = Math.min(1, Math.max(0, Math.log(R_STATION / shipR) / Math.log(R_STATION / R_FLOOR)));
+    S.depth = d;
+    const strain = Math.max(0, Math.log10(hoverAccel(shipR, 1.2e5) / hoverAccel(R_STATION, 1.2e5)));
+    const pitch = 1 + 0.08 * strain;
+    const k = hidden ? 0 : 1;
+    glide(amb.humG.gain, 'hum', (hidden ? 0.004 : 0.05 * R.hum) * (1 + 0.35 * d), 0.5);
+    glide(amb.h1.frequency, 'h1', 48 * pitch, 0.8); glide(amb.h2.frequency, 'h2', 72.3 * pitch, 0.8);
+    glide(amb.humLP.frequency, 'humLP', 190 + 160 * d, 0.8);
+    glide(amb.airG.gain, 'air', 0.05 * R.air * k, 0.6); glide(amb.airLP.frequency, 'airLP', R.airLP, 0.6);
+    glide(amb.elG.gain, 'el', 0.022 * R.elec * k * (1 - 0.5 * d), 0.5); glide(amb.elLP.frequency, 'elLP', R.elecLP, 0.4);
+    const f0 = 73.42 * Math.pow(2, -d);
+    glide(amb.drG.gain, 'dr', 0.045 * Math.pow(d, 1.3) * k, 0.7);
+    glide(amb.d1.frequency, 'd1', f0, 0.9); glide(amb.d2.frequency, 'd2', f0 * 1.003, 0.9); glide(amb.d3.frequency, 'd3', f0 / 2, 0.9);
+    glide(amb.drLP.frequency, 'drLP', 900 - 650 * d, 0.9);
+    glide(amb.grG.gain, 'gr', 0.025 * d * k, 0.8); glide(amb.grLG.gain, 'grL', 0.02 * d * k, 0.8); glide(amb.grBP.frequency, 'grBP', f0 * 1.5, 0.9);
+    // telemetry: an occasional soft chirp from the bridge consoles
+    if (R.chirps && !hidden && g.mode !== 'cutscene') {
+      if (!S.nextChirp) S.nextChirp = now + 4 + Math.random() * 6;
+      else if (now > S.nextChirp) { S.nextChirp = now + 9 + Math.random() * 14; chirp(); }
+    }
+  }
+
+  // Two clocks during the descent: the ship's own second (a low wooden tock, left) and the far relay's
+  // second (a glassy tick, right). At station they agree; at the deepest hold the relay ticks twice per tock.
+  function clockTicks(g, hidden) {
+    const c = g.clocks; if (!c) return;
+    const sT = Math.floor(c.ship), rT = Math.floor(c.relay);
+    const on = !hidden && S.depth > 0.02 && g.mode !== 'cutscene';
+    if (on && S.shipT != null) {
+      const k = Math.min(1, S.depth * 6);
+      if (sT !== S.shipT) S.ticks.ship++, tone({ f: 640, type: 'triangle', a: 0.002, d: 0.07, vol: 0.05 * k, bus: buses.amb, pan: -0.3, lp: 1800 });
+      if (rT !== S.relayT) S.ticks.relay++, tone({ f: 2350, a: 0.001, d: 0.05, vol: 0.022 * k, bus: buses.amb, pan: 0.3, send: 0.2 });
+    }
+    S.shipT = sT; S.relayT = rT;
+  }
+
+  function chirp() {
+    const n = 2 + Math.floor(Math.random() * 2), t = ctx.currentTime;
+    for (let i = 0; i < n; i++) tone({ f: CHIRP_NOTES[Math.floor(Math.random() * CHIRP_NOTES.length)], at: t + i * 0.11, a: 0.004, d: 0.12, vol: 0.008, bus: buses.amb, send: 0.5, pan: 0.4 });
+  }
+
+  // ---------- one-shot building blocks ----------
+  function env(param, t0, a, peak, d) {
+    param.setValueAtTime(0.0001, t0);
+    param.exponentialRampToValueAtTime(Math.max(0.0002, peak), t0 + a);
+    param.exponentialRampToValueAtTime(0.0001, t0 + a + d);
+  }
+  function tone({ f, to: f2, type = 'sine', at, a = 0.005, d = 0.12, vol = 0.1, bus, pan = 0, send = 0, lp }) {
     if (!ctx) return;
-    const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = type; o.frequency.value = freq; o.connect(g); g.connect(master);
-    env(g, t, attack, vol, dur); o.start(t); o.stop(t + attack + dur + 0.05);
+    const t = at ?? ctx.currentTime, out = gain(0, panTo(pan, bus || buses.sfx));
+    if (send) out.connect(gain(send, buses.verb));
+    const o = osc(type, f, lp ? filter('lowpass', lp, 0.7, out) : out);
+    if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(1, f2), t + a + d);
+    env(out.gain, t, a, vol, d); o.start(t); o.stop(t + a + d + 0.05);
   }
-
-  function noiseBurst({ freq = 1200, q = 0.8, dur = 0.08, vol = 0.1, sweepTo, type = 'bandpass' } = {}) {
+  function hiss({ f = 1200, to: f2, q = 0.8, type = 'bandpass', at, a = 0.01, d = 0.08, vol = 0.1, bus, pan = 0, send = 0 }) {
     if (!ctx) return;
-    const t = ctx.currentTime, s = ctx.createBufferSource(); s.buffer = getNoise();
-    const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
-    if (sweepTo) f.frequency.exponentialRampToValueAtTime(sweepTo, t + dur);
-    const g = ctx.createGain(); s.connect(f); f.connect(g); g.connect(master);
-    env(g, t, 0.01, vol, dur); s.start(t, Math.random()); s.stop(t + dur + 0.1);
+    const t = at ?? ctx.currentTime, s = ctx.createBufferSource(); s.buffer = buses.noise;
+    const out = gain(0, panTo(pan, bus || buses.sfx)), fl = filter(type, f, q, out);
+    if (send) out.connect(gain(send, buses.verb));
+    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + a + d);
+    s.connect(fl); env(out.gain, t, a, vol, d); s.start(t, Math.random() * 1.5); s.stop(t + a + d + 0.1);
+  }
+  // a short UI sound, skipped if another one just played (a click that also opens a panel makes one sound)
+  function ui(fn) { if (!ctx) return; const t = ctx.currentTime; if (t - lastUi < 0.045) return; lastUi = t; fn(t); }
+
+  // ---------- radio voice ----------
+  // A line from Ines, as it reaches the ship: her voice (a buzz shaped by moving formants into syllables)
+  // stretched in time and lowered in pitch by 1 + z, then the receiver's own band and static, which do
+  // not redshift. Squelch clicks open and close the transmission.
+  function radio(onePlusZ = 1, chars = 40) {
+    if (!ctx) return;
+    const s = Math.min(40, Math.max(1, onePlusZ || 1)), redness = Math.min(1, Math.log(s) / 2.5);
+    const t0 = ctx.currentTime + 0.14;
+    const dur = Math.min(8.5, Math.max(0.8, chars * 0.052 * s));
+    hiss({ f: 2400, q: 1.6, d: 0.1, vol: 0.05, bus: buses.sig }); // squelch open
+    // receiver chain: local band-pass and a little grit
+    const out = gain(0, buses.sig); out.connect(gain(0.25, buses.verb));
+    const shaper = ctx.createWaveShaper(); const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) { const x = i / 127.5 - 1; curve[i] = Math.tanh(2.2 * x) / Math.tanh(2.2); }
+    shaper.curve = curve; shaper.connect(filter('highpass', 180, 0.6, filter('lowpass', 3200, 0.7, out)));
+    const voice = gain(0, shaper);
+    // the voice: a glottal buzz and breath through three formants, everything divided by 1 + z
+    const src = osc('sawtooth', 205 / s), breath = loop(buses.noise), bG = gain(0.06);
+    breath.connect(filter('highpass', 2500 / s, 0.7, bG));
+    const F = [[1, 6], [0.55, 9], [0.28, 11]].map(([lv, q]) => { const f = filter('bandpass', 500, q, gain(lv, voice)); src.connect(f); bG.connect(f); return f; });
+    // syllables, words, a falling phrase
+    const syl = 0.2 * s; let t = t0, i = 0;
+    while (t < t0 + dur - syl * 0.5) {
+      const v = VOWELS[Math.floor(Math.random() * VOWELS.length)], len = syl * (0.75 + Math.random() * 0.5);
+      const prog = (t - t0) / dur, pf = (205 / s) * (1.06 - 0.16 * prog) * (0.93 + Math.random() * 0.14);
+      src.frequency.setTargetAtTime(pf, t, 0.03 * s);
+      F.forEach((f, j) => f.frequency.setTargetAtTime(v[j] / s, t, 0.025 * s));
+      const peak = 0.9 * (0.7 + Math.random() * 0.3);
+      voice.gain.setTargetAtTime(peak, t, 0.02 * s);
+      voice.gain.setTargetAtTime(0.08, t + len * 0.7, 0.03 * s);
+      i++; t += len;
+      if (i % (2 + Math.floor(Math.random() * 3)) === 0) { voice.gain.setTargetAtTime(0, t, 0.02 * s); t += 0.09 * s; } // a word break
+    }
+    voice.gain.setTargetAtTime(0, t, 0.04 * s);
+    const end = t + 0.3 * s;
+    // level: dimmer as the light that carries her weakens, but never so faint the stretch cannot be heard
+    const lvl = 0.1 * Math.max(0.35, Math.pow(s, -0.5));
+    out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(lvl, t0 + 0.05); out.gain.setValueAtTime(lvl, end); out.gain.linearRampToValueAtTime(0, end + 0.1);
+    // static bed under the voice, louder as the signal reddens
+    const st = loop(buses.noise), stG = gain(0, buses.sig); st.connect(filter('bandpass', 1900, 0.6, stG));
+    const sv = 0.008 + 0.02 * redness;
+    stG.gain.setValueAtTime(0, t0); stG.gain.linearRampToValueAtTime(sv, t0 + 0.08); stG.gain.setValueAtTime(sv, end); stG.gain.linearRampToValueAtTime(0, end + 0.12);
+    for (const n of [src, breath, st]) { n.start(t0); n.stop(end + 0.3); }
+    hiss({ f: 1800, q: 2, at: end + 0.1, d: 0.08, vol: 0.035, bus: buses.sig }); // squelch close
+    tone({ f: 1100, at: end + 0.12, d: 0.05, vol: 0.012, bus: buses.sig });
   }
 
-  return {
+  // ---------- the alarm ----------
+  // A soft two-tone (triangle through a low-pass), one fixed graph. It eases to a lower level after a
+  // while: it has done its job, and it should not wear the player down during a long wait.
+  function setAlarm(on) {
+    if (!ctx) return;
+    if (on && !alarm) {
+      const g = gain(0, buses.sfx); g.connect(gain(0.3, buses.verb));
+      const lp = filter('lowpass', 1900, 0.8, g), o = osc('triangle', 740, lp), o2 = osc('sine', 370, gain(0.4, lp));
+      o.start(); o2.start();
+      const since = ctx.currentTime;
+      const cycle = (t = ctx.currentTime + 0.05) => {
+        const k = t - since < 14 ? 1 : 0.55, v = 0.05 * k;
+        for (const [f, at, len] of [[740, 0, 0.22], [554.4, 0.28, 0.26]]) {
+          o.frequency.setValueAtTime(f, t + at); o2.frequency.setValueAtTime(f / 2, t + at);
+          g.gain.setValueAtTime(0.0001, t + at); g.gain.exponentialRampToValueAtTime(v, t + at + 0.03);
+          g.gain.setValueAtTime(v, t + at + len - 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + at + len);
+        }
+      };
+      if (offline) for (let i = 0; i < 20; i++) cycle(since + 0.05 + i * 1.4); // a test render cannot run timers
+      else cycle();
+      alarm = { g, o, o2, id: offline ? null : setInterval(safe(() => cycle()), 1400) };
+    } else if (!on && alarm) {
+      if (alarm.id) clearInterval(alarm.id);
+      const t = ctx.currentTime;
+      alarm.g.gain.cancelScheduledValues(t); alarm.g.gain.setTargetAtTime(0, t, 0.05);
+      alarm.o.stop(t + 0.5); alarm.o2.stop(t + 0.5); alarm = null;
+    }
+  }
+
+  // ---------- UI sounds from the panels, without hooks in their code ----------
+  const onClick = safe((e) => {
+    if (!ctx || !e.target?.closest) return;
+    const b = e.target.closest('button, [role="button"], summary, input[type="checkbox"], input[type="radio"], select');
+    // after the button's own handler: if it opened or closed a console, that chime is the only sound
+    if (b && !b.disabled) setTimeout(api.tick, 0);
+  });
+  let lastSlide = 0;
+  const onInput = safe((e) => {
+    const el = e.target;
+    if (!ctx || el?.type !== 'range') return;
+    const t = ctx.currentTime; if (t - lastSlide < 0.05) return; lastSlide = t;
+    const lo = +el.min || 0, hi = +el.max || 1, x = hi > lo ? (+el.value - lo) / (hi - lo) : 0.5;
+    tone({ f: 500 * Math.pow(2, 2 * x), a: 0.002, d: 0.035, vol: 0.02, bus: buses.ui }); // pitch follows the slider
+  });
+  const onFocus = safe((e) => {
+    const el = e.target;
+    if (!ctx || !el?.matches?.(':focus-visible') || !el.matches('button, input, select, [tabindex]')) return;
+    ui((t) => tone({ f: 1500, at: t, a: 0.002, d: 0.025, vol: 0.008, bus: buses.ui }));
+  });
+  if (!offline) { document.addEventListener('click', onClick, true); document.addEventListener('input', onInput, true); document.addEventListener('focusin', onFocus, true); }
+
+  // ---------- public API ----------
+  const api = {
     get ready() { return !!ctx; },
     get muted() { return muted; },
-    setMuted(m) { muted = m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
-    setVolume(v) { volume = v; applyLevel(); },
-    duck(on) { ducked = on; applyLevel(); },
+    /** For tests and the debug probe: the context and the current room/depth. */
+    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks } }; },
+    setMuted(m) { muted = !!m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
+    setVolume(v) { volume = Math.min(1, Math.max(0, +v || 0)); applyLevel(); },
+    duck(on) { ducked = !!on; applyLevel(); },
 
-    /** Hum level and pitch: louder on the bridge, higher when the field works harder. */
-    setHum(level, pitch = 1) { if (!hum) return; hum.g.gain.setTargetAtTime(0.06 * level, ctx.currentTime, 0.4); hum.o1.frequency.setTargetAtTime(48 * pitch, ctx.currentTime, 0.6); hum.o2.frequency.setTargetAtTime(72.3 * pitch, ctx.currentTime, 0.6); },
+    scene,
+    /** Older entry point: hum level and pitch only. scene(g) supersedes it. */
+    setHum(lv, pitch = 1) { if (!amb) return; glide(amb.humG.gain, 'hum', 0.05 * lv, 0.4); glide(amb.h1.frequency, 'h1', 48 * pitch, 0.6); glide(amb.h2.frequency, 'h2', 72.3 * pitch, 0.6); },
 
-    step(soft = 1) { noiseBurst({ freq: 220 + Math.random() * 80, q: 1.2, dur: 0.07, vol: 0.05 * soft, type: 'lowpass' }); },
-    door() { noiseBurst({ freq: 400, sweepTo: 1600, q: 0.7, dur: 0.45, vol: 0.06 }); blip(140, { type: 'triangle', dur: 0.25, vol: 0.03 }); },
-    click() { blip(1320, { dur: 0.05, vol: 0.05 }); },
-    open() { blip(660, { dur: 0.08, vol: 0.05 }); setTimeout(() => blip(990, { dur: 0.1, vol: 0.05 }), 70); },
-    close() { blip(990, { dur: 0.08, vol: 0.04 }); setTimeout(() => blip(660, { dur: 0.1, vol: 0.04 }), 70); },
-
-    /** A received ping: pitch divided by 1 + z, loudness by flux. */
-    ping(onePlusZ, flux = 1) {
+    /** A footstep on the deck: heel thud, sole scuff and a faint ring of the plating (none on the quarters' rug). */
+    step(soft = 1) {
       if (!ctx) return;
-      const f = 1240 / onePlusZ, v = 0.16 * Math.min(1, Math.pow(flux, 0.35));
-      if (f < 30 || v < 0.003) return;
-      blip(f, { dur: 0.5, vol: v, attack: 0.004 }); blip(f * 2, { dur: 0.18, vol: v * 0.3 });
+      const R = ROOMS[S.room] || ROOMS.corridor, side = (S.side = -(S.side || 0.12)), j = 0.9 + Math.random() * 0.2;
+      tone({ f: 105 * j, to: 52, a: 0.003, d: 0.09, vol: 0.09 * soft * R.thud, pan: side, lp: 400 });
+      hiss({ f: 900 * j, q: 0.9, a: 0.004, d: 0.05, vol: 0.022 * soft * R.thud, pan: side });
+      if (R.ring > 0.2) hiss({ f: 2600 * j, q: 14, a: 0.002, d: 0.16, vol: 0.016 * soft * R.ring, pan: side, send: 0.15 });
+    },
+    /** A pressure door: a hiss of air as it slides, a soft thump as it seats. */
+    door() {
+      if (!ctx) return; const t = ctx.currentTime;
+      hiss({ f: 500, to: 1500, q: 0.7, a: 0.05, d: 0.4, vol: 0.045, send: 0.2 });
+      tone({ f: 120, to: 70, type: 'triangle', at: t + 0.38, a: 0.004, d: 0.18, vol: 0.05, lp: 300 });
+    },
+    /** A soft tick for a button. */
+    tick() { ui((t) => { tone({ f: 1750, at: t, a: 0.002, d: 0.03, vol: 0.025, bus: buses.ui }); tone({ f: 880, at: t, a: 0.002, d: 0.04, vol: 0.015, bus: buses.ui }); }); },
+    click() { api.tick(); },
+    /** A console wakes: a rising two-note glass chime over a little power-up swish. */
+    open() {
+      ui((t) => {
+        tone({ f: 659.3, at: t, a: 0.006, d: 0.22, vol: 0.04, bus: buses.ui, send: 0.35 });
+        tone({ f: 987.8, at: t + 0.075, a: 0.006, d: 0.3, vol: 0.035, bus: buses.ui, send: 0.35 });
+        hiss({ f: 600, to: 3000, q: 0.8, at: t, a: 0.03, d: 0.18, vol: 0.012, bus: buses.ui });
+      });
+    },
+    /** A console sleeps: the same chime, falling, a little quieter. */
+    close() {
+      ui((t) => {
+        tone({ f: 987.8, at: t, a: 0.006, d: 0.16, vol: 0.03, bus: buses.ui, send: 0.3 });
+        tone({ f: 659.3, at: t + 0.07, a: 0.006, d: 0.24, vol: 0.028, bus: buses.ui, send: 0.3 });
+      });
     },
 
-    /** A continuous carrier tone for a falling transmitter. Call every frame with its state; null removes it. */
+    /** A received ping from K-1: a small bell whose pitch is divided by 1 + z and loudness set by flux. */
+    ping(onePlusZ, flux = 1) {
+      if (!ctx) return;
+      const f = 1240 / onePlusZ, v = 0.13 * Math.min(1, Math.pow(flux, 0.35));
+      if (f < 25 || v < 0.002) return;
+      tone({ f, a: 0.004, d: 0.9, vol: v, bus: buses.sig, send: 0.45 });
+      tone({ f: f * 2, a: 0.003, d: 0.35, vol: v * 0.28, bus: buses.sig, send: 0.45 });
+      tone({ f: f * 2.76, a: 0.002, d: 0.18, vol: v * 0.12, bus: buses.sig, send: 0.45 }); // the bell's inharmonic shimmer
+    },
+
+    /** A continuous carrier for a falling transmitter. Call every frame with its state; null removes it. */
     carrier(id, st) {
       if (!ctx) return;
       let c = carriers.get(id);
-      if (!st) { if (c) { c.g.gain.setTargetAtTime(0, ctx.currentTime, 0.3); setTimeout(() => c.o.stop(), 1500); carriers.delete(id); } return; }
-      if (!c) {
-        const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
-        o.type = 'sine'; o.frequency.value = st.freq; g.gain.value = 0; lfo.frequency.value = 3.1; lg.gain.value = 3;
-        lfo.connect(lg); lg.connect(o.frequency); o.connect(g); g.connect(master); o.start(); lfo.start();
-        c = { o, g }; carriers.set(id, c);
+      if (!st) {
+        if (c) { const t = ctx.currentTime; c.g.gain.cancelScheduledValues(t); c.g.gain.setTargetAtTime(0, t, 0.3); for (const n of c.nodes) n.stop(t + 2); carriers.delete(id); }
+        return;
       }
-      c.o.frequency.setTargetAtTime(Math.max(20, st.freq), ctx.currentTime, 0.08);
-      c.g.gain.setTargetAtTime(st.freq < 25 ? 0 : st.vol, ctx.currentTime, 0.15);
+      const f = Math.max(12, st.freq), lnz = Math.log(Math.max(1, (c?.f0 || st.freq) / f));
+      if (!c) {
+        // two voices of the same soft wave, a hair apart, with a slow vibrato that scales with the pitch
+        const g = gain(0, buses.sig), lp = filter('lowpass', 4000, 0.5, g), wet = gain(0.15, buses.verb); g.connect(wet);
+        const o = osc(buses.warm, f, lp), o2 = osc(buses.warm, f * 1.0025, gain(0.5, lp));
+        const lfo = osc('sine', 4.4), lg = gain(f * 0.003); lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+        o.start(); o2.start(); lfo.start();
+        c = { g, lp, o, o2, lg, wet, f0: st.freq, key: `car:${id}:${++serial}:`, nodes: [o, o2, lfo] }; carriers.set(id, c);
+      }
+      glide(c.o.frequency, `${c.key}f`, f, 0.08, 0.0015); glide(c.o2.frequency, `${c.key}f2`, f * 1.0025, 0.08, 0.0015);
+      glide(c.lg.gain, `${c.key}v`, f * 0.003, 0.2, 0.02);
+      glide(c.lp.frequency, `${c.key}lp`, Math.min(4000, Math.max(260, f * 7)), 0.2, 0.02);
+      // as the light weakens the tone recedes: quieter, and more of it is the room's echo
+      glide(c.g.gain, `${c.key}g`, st.freq < 18 ? 0 : st.vol * 1.6, 0.15, 0.02);
+      glide(c.wet.gain, `${c.key}w`, 0.15 + 0.5 * Math.min(1, lnz / 3), 0.4, 0.05);
     },
 
-    radio() { noiseBurst({ freq: 2200, q: 1.5, dur: 0.18, vol: 0.05 }); setTimeout(() => noiseBurst({ freq: 1800, q: 2, dur: 0.1, vol: 0.03 }), 160); },
-
-    alarm(on) {
-      if (!ctx) return;
-      if (on && !alarm) {
-        alarm = setInterval(() => { blip(740, { type: 'square', dur: 0.18, vol: 0.025 }); setTimeout(() => blip(554, { type: 'square', dur: 0.2, vol: 0.025 }), 260); }, 1400);
-      } else if (!on && alarm) { clearInterval(alarm); alarm = null; }
-    },
+    radio,
+    alarm: setAlarm,
 
     /** Static hiss level 0..1 (the Orpheus feed losing its signal). */
-    static(level) {
+    static(lv) {
       if (!ctx) return;
       if (!statics) {
-        const s = ctx.createBufferSource(); s.buffer = getNoise(); s.loop = true;
-        const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 900;
-        const g = ctx.createGain(); g.gain.value = 0; s.connect(f); f.connect(g); g.connect(master); s.start();
-        statics = { g };
+        const g = gain(0, buses.sig), s = loop(buses.noise, filter('bandpass', 2300, 0.5, filter('lowpass', 5200, 0.7, g)));
+        s.start(); statics = { g };
       }
-      statics.g.gain.setTargetAtTime(0.05 * level, ctx.currentTime, 0.2);
+      glide(statics.g.gain, 'static', 0.035 * Math.min(1, Math.max(0, lv || 0)), 0.2, 0.03);
     },
 
-    frame() { blip(2000, { dur: 0.03, vol: 0.02 }); },
-    heartbeat() { blip(55, { type: 'sine', dur: 0.18, vol: 0.25 }); setTimeout(() => blip(50, { type: 'sine', dur: 0.22, vol: 0.18 }), 220); },
-    whoosh(sec = 3) { noiseBurst({ freq: 200, sweepTo: 2400, q: 0.6, dur: sec, vol: 0.05 }); },
+    /** An Orpheus frame arriving: a soft rising data chirp. */
+    frame() { tone({ f: 1500, to: 2300, a: 0.003, d: 0.05, vol: 0.016, bus: buses.sig }); },
+    /** The dream's heartbeat: two low, round thumps. */
+    heartbeat() {
+      if (!ctx) return; const t = ctx.currentTime;
+      tone({ f: 62, to: 44, at: t, a: 0.008, d: 0.2, vol: 0.16, lp: 180 });
+      tone({ f: 56, to: 40, at: t + 0.23, a: 0.008, d: 0.24, vol: 0.11, lp: 160 });
+    },
+    whoosh(sec = 3) { hiss({ f: 200, to: 2400, q: 0.6, a: sec * 0.4, d: sec * 0.6, vol: 0.04, send: 0.4 }); },
 
     dispose() {
-      removeEventListener('pointerdown', unlock); removeEventListener('keydown', unlock);
-      if (alarm) clearInterval(alarm);
-      ctx?.close();
+      disposed = true;
+      if (!offline) {
+        removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true); removeEventListener('touchend', unlock, true);
+        document.removeEventListener('visibilitychange', onVisibility);
+        document.removeEventListener('click', onClick, true); document.removeEventListener('input', onInput, true); document.removeEventListener('focusin', onFocus, true);
+      }
+      if (alarm?.id) clearInterval(alarm.id);
+      if (!offline) ctx?.close?.().catch(() => {});
     },
   };
+  // start: with a test context at once; in the game only once the player has clicked, tapped or pressed a key
+  if (!offline) {
+    addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true); addEventListener('touchend', unlock, true);
+    document.addEventListener('visibilitychange', onVisibility);
+    // the click on "Wake up" is a user gesture in most browsers, so this usually starts right away
+    try { if (gestureAllowed()) ensure(); } catch { /* wait for a gesture */ }
+  } else ensure();
+  // nothing in here may ever throw into the game loop
+  for (const k of Object.keys(api)) {
+    const d = Object.getOwnPropertyDescriptor(api, k);
+    if (typeof d.value === 'function') api[k] = safe(d.value);
+  }
+  return api;
 }
