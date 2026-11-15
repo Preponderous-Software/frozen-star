@@ -1,0 +1,21 @@
+/* Shared lesson furniture (src/chapters/lesson.js). */
+.lx-brief { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 10px; background: var(--panel-2); }
+.lx-goal { display: grid; gap: 4px; }
+.lx-goal p { font-size: 16px; max-width: 78ch; }
+.lx-tag { font: 500 11px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.lx-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; color: #d6d2e3; font-size: 14.5px; max-width: 80ch; }
+.lx-steps li::marker { color: var(--amber); font-family: var(--mono); }
+.lx-words { font-size: 14px; }
+.lx-words summary { cursor: pointer; font: 12px var(--mono); color: var(--muted); padding: 4px 0; min-height: 24px; }
+.lx-words summary:hover, .lx-words summary:focus-visible { color: var(--fg); }
+.lx-words dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 6px 0 0; }
+.lx-words dt { font: 500 13px var(--mono); color: var(--amber-2, #ffd29a); }
+.lx-words dd { margin: 0; color: #cfcbdd; max-width: 72ch; }
+@media (max-width: 600px) { .lx-words dl { grid-template-columns: 1fr; } .lx-words dd { margin-bottom: 6px; } }
+.lx-why { font-size: 14.5px; padding: 9px 12px; border-radius: 6px; background: var(--ink); border-left: 3px solid var(--muted); max-width: 80ch; }
+.lx-why.right { border-color: var(--ok); } .lx-why.wrong { border-color: var(--red); }
+.lx-coach { font-size: 14px; color: #d6d2e3; padding: 8px 12px; border-radius: 6px; background: var(--ink); border-left: 3px solid var(--blue); min-height: 2.7em; margin: 0; }
+.lx-coach.good { border-color: var(--ok); } .lx-coach.warn { border-color: var(--amber); } .lx-coach.bad { border-color: var(--red); }
+.lx-readout { font: 13px var(--mono); color: var(--muted); }
+.lx-readout b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+canvas.lx-orbit { width: 100%; height: clamp(300px, 46vw, 480px); display: block; border-radius: 8px; touch-action: none; }

@@ -7,6 +7,7 @@ import lastWords from './chapters/last-words.js';
 import rescue from './chapters/rescue.js';
 import tides from './chapters/tides.js';
 import hover from './chapters/hover.js';
+import bendLight from './chapters/bend-light.js';
 import intoTheDark from './chapters/into-the-dark.js';
 import evaporation from './chapters/evaporation.js';
 import observatory from './chapters/observatory.js';
@@ -15,7 +16,7 @@ import { settingsForm, ACTS } from './game/settings-ui.js';
 import { loadSettings } from './game/settings.js';
 import { padNav } from './ui/padnav.js';
 
-export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, intoTheDark, evaporation];
+export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, bendLight, intoTheDark, evaporation];
 const app = $('#app');
 let dispose = null;
 
@@ -69,7 +70,7 @@ function titleScreen() {
     }) : null,
     save ? item('Chapters', finished ? 'Replay any part of the story' : 'Replay the parts you have reached', () => showPanel('acts')) : null,
     item('Settings', null, () => showPanel('settings')),
-    item('Training simulations', 'Seven short lessons', () => { location.hash = '#training'; }),
+    item('Training simulations', 'Eight short lessons', () => { location.hash = '#training'; }),
     item('Observatory', 'A free camera around a black hole', () => { location.hash = '#observatory'; }),
     item('About', 'The physics and references behind it', () => showPanel('about')),
     isDesktop ? item('Quit', null, () => window.close()) : null,
