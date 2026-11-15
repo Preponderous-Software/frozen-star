@@ -1,6 +1,6 @@
 import { h, loop, slider } from '../ui/dom.js';
 import { Infall } from '../physics/infall.js';
-import { HOLES, formatMass, formatDuration, secondsFromM, expo } from '../physics/units.js';
+import { HOLES, formatMass, formatDuration, secondsFromM, expo, sig } from '../physics/units.js';
 import { hawkingLifetimeYears, hawkingTemperature } from '../physics/body.js';
 import { brief, quiz as makeQuiz, WORD_HORIZON, WORD_SCI } from './lesson.js';
 
@@ -14,7 +14,7 @@ export default {
     const f = new Infall(20);
     const seenMasses = new Set();
     let Sgone = 0; while (f.seenAt(Sgone).lnz < 9) Sgone += 0.5; // station time (M) until the image is undetectable
-    const massS = slider('Mass', { id: 'ev-mass', min: -20, max: 11, step: 0.01, value: Math.log10(HOLES[1].mass), fmt: (v) => formatMass(10 ** v) });
+    const massS = slider('Mass', { id: 'ev-mass', min: -20, max: 11, step: 0.01, value: Math.log10(HOLES[1].mass), fmt: (v) => friendlyMass(10 ** v) });
     const picks = h('div.picks', HOLES.map((x) => h('button.chip', { id: `ev-${x.id}`, onclick: () => { massS.value = Math.log10(x.mass); } }, x.name)));
     const canvas = h('canvas.timeline', { 'aria-label': 'Timeline on a logarithmic scale' });
     const summary = h('div.status');
@@ -55,7 +55,7 @@ export default {
       const fade = secondsFromM(Sgone, M);
       if (life < UNIVERSE_S) ctx.goal(2, true);
       summary.innerHTML = life < UNIVERSE_S
-        ? `A hole of ${formatMass(M)} (${expo(M * 1.989e30)} kg, roughly the mass of ${massLike(M * 1.989e30)}) evaporates in ${formatDuration(life)}, sooner than the age of the universe, so any like it would be gone by now. Only black holes born in the Big Bang itself could be this small. It glows at ${expo(hawkingTemperature(M))} K.`
+        ? `A hole of ${friendlyMass(M)}${/kg$/.test(friendlyMass(M)) ? '' : ` (${expo(M * SUN_KG)} kg)`}, roughly the mass of ${massLike(M * SUN_KG)}, evaporates in ${formatDuration(life)}, sooner than the age of the universe, so any like it would be gone by now. Only black holes born in the Big Bang itself could be this small. It glows at ${expo(hawkingTemperature(M))} K.`
         : `On its own clock, the probe crosses after ${formatDuration(cross)}. Its picture fades out of reach after ${formatDuration(fade)}. Left alone, the hole would evaporate after ${formatDuration(life)}. Its glow is ${expo(hawkingTemperature(M))} K${hawkingTemperature(M) < 2.725 ? ', colder than empty space (2.7 K), so today it soaks up more than it gives off and slowly grows' : ''}.`;
       // timeline
       const d = window.devicePixelRatio || 1, w = Math.round(canvas.clientWidth * d), hh = Math.round(canvas.clientHeight * d);
@@ -80,6 +80,17 @@ export default {
     return stop;
   },
 };
+
+const SUN_KG = 1.989e30, EARTH_KG = 5.972e24;
+/** A mass in suns, said the way a person would: suns for stars and up, Earths for planets, plain kilograms below. */
+function friendlyMass(massSun) {
+  if (massSun >= 0.01) return formatMass(massSun);
+  const kg = massSun * SUN_KG;
+  if (kg >= 0.1 * EARTH_KG) return `${sig(kg / EARTH_KG, 2)} Earth${kg / EARTH_KG === 1 ? '' : 's'}`;
+  if (kg >= 1e15) return `${expo(kg)} kg`;
+  for (const [n, word] of [[1e12, 'trillion'], [1e9, 'billion'], [1e6, 'million']]) if (kg >= n) return `${sig(kg / n, 2)} ${word} kg`;
+  return `${sig(kg, 2)} kg`;
+}
 
 /** A familiar object of roughly this mass in kg, for scale. */
 function massLike(kg) {

@@ -183,12 +183,12 @@ body.fs-menu .bar { display: none; }
 .menu-item.primary:hover, .menu-item.primary:focus-visible { background: var(--amber-2); box-shadow: 0 0 0 3px rgba(255,180,92,.25); }
 .menu-item.quiet b { font-size: 15.5px; color: var(--muted); }
 /* while a side panel is open, only the item that opened it stays lit */
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.primary:not(.open) { background: rgba(15,17,32,.6); border-color: rgba(255,180,92,.4); }
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.primary:not(.open) b { color: var(--fg); }
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.primary:not(.open) span { color: var(--muted); }
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.open { background: rgba(255,180,92,.16); border-color: rgba(255,180,92,.7); }
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.open b { color: var(--fg); }
-.menu-screen:has(.menu-panel:not([hidden])) .menu-item.open span { color: var(--amber-2); }
+.menu-screen.panel-open .menu-item.primary:not(.open) { background: rgba(15,17,32,.6); border-color: rgba(255,180,92,.4); }
+.menu-screen.panel-open .menu-item.primary:not(.open) b { color: var(--fg); }
+.menu-screen.panel-open .menu-item.primary:not(.open) span { color: var(--muted); }
+.menu-screen.panel-open .menu-item.open { background: rgba(255,180,92,.16); border-color: rgba(255,180,92,.7); }
+.menu-screen.panel-open .menu-item.open b { color: var(--fg); }
+.menu-screen.panel-open .menu-item.open span { color: var(--amber-2); }
 select { color-scheme: dark; }
 option { background: #10131f; color: #ece8f4; }
 .menu-foot { margin-top: 4px; }
@@ -304,7 +304,7 @@ body[data-input=touch] .menu-hints { display: none; }
   .menu-panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; max-height: min(86%, 720px); transform: none; border-radius: 18px 18px 0 0; border-bottom: 0; padding: 10px max(18px, env(safe-area-inset-right, 0px)) var(--pad-b) max(18px, env(safe-area-inset-left, 0px)); }
   .menu-panel::before { content: ""; justify-self: center; width: 40px; height: 4px; border-radius: 2px; background: #3a3e60; }
   .menu-panel.in { animation: sheet-in .3s cubic-bezier(.2,.7,.2,1); }
-  .menu-screen:has(.menu-panel:not([hidden])) .menu-left { visibility: hidden; }
+  .menu-screen.panel-open .menu-left { visibility: hidden; }
   .rt-status { left: 50%; right: auto; transform: translateX(-50%); }
 }
 @keyframes sheet-in { from { transform: translateY(40px); opacity: 0; } }
@@ -353,3 +353,15 @@ body[data-screen=training] .bar nav a[href="#training"], body[data-screen=title]
 .chapters > p.fine { margin-bottom: 18px; }
 .rt-status { white-space: nowrap; }
 body[data-screen=training] { background: radial-gradient(1200px 520px at 78% -12%, rgba(255,180,92,.10), rgba(255,180,92,0) 70%), var(--ink); background-attachment: fixed; }
+
+/* the primary item lit by hover or focus while a side panel is open keeps dark text on its amber fill */
+.menu-screen.panel-open .menu-item.primary:not(.open):is(:hover, :focus-visible) { background: var(--amber-2); }
+.menu-screen.panel-open .menu-item.primary:not(.open):is(:hover, :focus-visible) :is(b, span) { color: #1d1206; }
+
+/* the 3D view lost its GPU context: an honest note over the stale picture, with a reload */
+.no-gl.gl-lost { background: rgba(7, 8, 18, 0.88); color: #d6d2e3; }
+.no-gl.gl-lost b { font: 600 18px var(--display); color: var(--fg); }
+.no-gl.gl-lost p { max-width: 46ch; }
+.no-gl.gl-lost button { justify-self: center; width: auto; min-width: 160px; margin-top: 6px; }
+.gl-note { position: absolute; z-index: 2; right: var(--gutter-r); bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + 56px)); max-width: min(420px, calc(100% - 32px)); padding: 10px 12px; border-radius: 10px; background: rgba(12,14,28,.92); border: 1px solid var(--line); font-size: 13.5px; color: #d6d2e3; }
+.gl-note button { padding: 4px 10px; min-height: 32px; }

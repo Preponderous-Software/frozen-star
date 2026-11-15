@@ -16,7 +16,7 @@ export default {
     const canvas = h('canvas.lx-orbit', { 'aria-label': 'Top-down view: a laser beam passing the black hole' });
     const tip = coach();
     const readB = h('b', '–'), readBend = h('b', '–'), readClose = h('b', '–');
-    let seenCapture = false, seenEscape = false, quizShown = false;
+    let seenCapture = false, seenEscape = false, quizShown = false, answered = false;
 
     const q = makeQuiz({
       id: 'bl-q',
@@ -29,12 +29,13 @@ export default {
       ],
       onAnswer(ok) {
         if (!ok) return;
+        answered = true; // the diagram may now show the edge's exact number: it is the quiz's answer
         ctx.goal(2, true);
         ctx.debrief({
           title: 'The ring is light that went around',
           body: [
             `Aim a beam within ${B_EDGE.toFixed(2)} rₛ of the centre and it falls in. Aim just outside and it can wind around the hole at 1.5 rₛ, the photon sphere, before escaping in any direction, even straight back at you.`,
-            'Each extra loop needs you to aim about 535 times closer to the edge. That is why the bright ring around a black hole is so thin: it is made of light that went once, twice, many times around.',
+            'Each extra loop needs you to aim about 535 times closer to the edge than the last: if missing the edge by 0.01 rₛ gives one loop, two loops need a miss of about 0.00002 rₛ. That is why the bright ring around a black hole is so thin: it is made of light that went once, twice, many times around.',
             'That ring is what you see around Erebus through the Tern\'s windows, and its black interior is the shadow, 2.6 times the size of the horizon.',
           ],
         });
@@ -106,7 +107,10 @@ export default {
         const y = cy - CRITICAL_B * s;
         g.setLineDash([3 * d, 5 * d]); g.strokeStyle = 'rgba(255,180,92,.35)'; g.lineWidth = d;
         g.beginPath(); g.moveTo(0, y); g.lineTo(cx, y); g.stroke(); g.setLineDash([]);
-        g.fillStyle = 'rgba(255,180,92,.75)'; g.fillText(`edge: aim ${B_EDGE.toFixed(3)} rₛ`, 8 * d, y - 6 * d);
+        // right of the laser and its caption, so they never sit on each other; the number waits for the quiz
+        // and on the side of the line away from the beam, which starts level with the laser
+        const laserY = cy - Math.max(0, aim.value + fine.value) * 2 * s, below = laserY <= y;
+        g.fillStyle = 'rgba(255,180,92,.75)'; g.fillText(answered ? `edge of the shadow: aim ${B_EDGE.toFixed(3)} rₛ` : 'edge of the shadow', 64 * d, below ? y + 16 * d : y - 8 * d);
       }
       // photon sphere and horizon
       g.setLineDash([4 * d, 5 * d]); g.strokeStyle = 'rgba(255,180,92,.45)'; g.lineWidth = d;
