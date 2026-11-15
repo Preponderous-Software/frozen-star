@@ -101,4 +101,5 @@ export const ACTS = [
   ['rescue-done', 'The descent', 'Hover near the horizon'],
   ['helm-done', 'Orpheus', 'The camera probe'],
   ['epilogue', 'Free roam', 'Explore the ship'],
+  ['halo', 'The photon sphere', 'Light that goes round in circles'],
 ];

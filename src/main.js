@@ -94,7 +94,7 @@ function heroBackdrop(canvas, onLit, onLost) {
   return () => { alive = false; clearTimeout(giveUp); cancelAnimationFrame(raf); view?.dispose(); };
 }
 
-const ROMAN = ['Prologue', 'Chapter I', 'Chapter II', 'Chapter III', 'Chapter IV', 'Epilogue'];
+const ROMAN = ['Prologue', 'Chapter I', 'Chapter II', 'Chapter III', 'Chapter IV', 'Epilogue', 'Postscript'];
 
 function titleScreen() {
   document.body.classList.add('fs-menu');

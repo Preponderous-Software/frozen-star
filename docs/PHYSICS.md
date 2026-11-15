@@ -66,6 +66,8 @@ Received brightness scales as g⁴. Colour comes from a blackbody at the shifted
 
 *The Bend the Light lesson integrates the orbit equation u″ + u = 3Mu² for one beam at a time (`src/physics/light.js`). Aimed inside b = 3√3 M ≈ 2.6 rₛ the beam is captured, which is why the shadow is 2.6 times the horizon's size.*
 
+**The photon sphere (`src/physics/photon-orbit.js`).** In the story's postscript the Tern hovers at r = 3M (1.5 rₛ) and fires a laser pulse sideways. A pulse fired tangentially at r₀ has b = r₀ / √(1 − 2M/r₀) and follows the same orbit equation, with Schwarzschild time dt/dφ = r² / (b(1 − 2M/r)). At r₀ = 3M it circles: one lap takes 2π·3√3 M of far-away time (19.3 s at Erebus) and 2π·3M = 6πM on the hovering clock (11.1 s), the circumference divided by c. The orbit is unstable: linearising about u = 1/3M gives δu″ = δu, so an offset grows as cosh φ, about 268 times per lap. A pulse fired one metre too high is 268 m off after one lap and 143 km off after two, and then spirals out to the stars. Hovering there, the shadow covers exactly half the sky, and light that leaves the ship sideways (from the back of your head, say) comes back round to it one lap later.
+
 The GLSL shader and the JS reference use the same equations and step rule. The JS version is what the tests check.
 
 ## References
