@@ -6,7 +6,7 @@
 // see-through windows) on top. Neither keeps its buffer after the frame is shown, so capture() draws
 // both afresh and copies them into one canvas in the same task, sky first.
 import { h } from '../ui/dom.js';
-import { hoverVelocity, LOW_GPU } from '../render/raytracer.js';
+import { hoverVelocity } from '../render/raytracer.js';
 import { shipPosition, toHole } from './world.js';
 import { step } from './walk.js';
 import { unlock } from './discoveries.js';
@@ -148,7 +148,11 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
   async function capture() {
     if (!on || busy) return null;
     busy = true;
+    let note = null;
     try {
+      // the full-quality sky can take a second or so on a small GPU: say so, and let that paint first
+      note = h('div.ph-developing', { role: 'status' }, 'Developing…'); el.append(note);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const pr = Math.min(2, devicePixelRatio || 1), w = el.clientWidth, hh = el.clientHeight;
       const W = Math.round(w * pr), H = Math.round(hh * pr);
       camera.updateMatrixWorld();
@@ -157,12 +161,17 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
       const ctx = out.getContext('2d');
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
       if (sky && !sky.lost) {
-        const scale0 = sky.state.scale;
-        sky.set({ ...(g.skyOverride ? g.skyOverride(g) : skyParams()), scale: LOW_GPU ? 0.5 : 1 });
-        sky.render(null); // the whole frame, not just the window rectangles
+        // one frame at full resolution (one sky pixel per picture pixel) and a generous step budget,
+        // whatever the live adaptive scale is; the state is set directly so the low-GPU cap in set()
+        // does not apply to this single frame. The live values come straight back afterwards.
+        const { scale: scale0, steps: steps0 } = sky.state;
+        sky.set(g.skyOverride ? g.skyOverride(g) : skyParams());
+        sky.state.scale = pr / (devicePixelRatio || 1); sky.state.steps = Math.max(steps0, 640);
+        const timer = sky.timer; sky.timer = null; // keep this one-off frame out of the adaptive GPU timing
+        try { sky.render(null); } finally { sky.timer = timer; } // the whole frame, not just the window rectangles
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(skyCanvas, 0, 0, W, H);
-        sky.set({ scale: scale0 });
+        sky.state.scale = scale0; sky.state.steps = steps0;
       }
       if (!look.noShip) { renderer.render(scene, camera); ctx.drawImage(threeCanvas, 0, 0, W, H); }
       if (look.vignette) {
@@ -171,6 +180,7 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
         ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
       }
       resize(); // the game's own resolution again
+      note.remove(); note = null;
       const blob = await new Promise((res) => out.toBlob(res, 'image/png'));
       if (!blob) throw new Error('no image');
       api.last = blob;
@@ -186,7 +196,7 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
       console.warn('photo capture failed', e);
       g.hud.toast('Could not save the picture');
       return null;
-    } finally { busy = false; }
+    } finally { busy = false; note?.remove(); }
   }
 
   const onP = (e) => {
