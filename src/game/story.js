@@ -54,6 +54,7 @@ function baseHandlers(g) {
   const pad = g.ship.interactables.find((i) => i.id === 'datapad');
   pad.focus = { pos: new THREE.Vector3(3.9, 1.5, 3.0), look: new THREE.Vector3(4.6, 0.8, 3.0) };
   g.on('datapad', (it) => g.openApp(it, datapadApp));
+  for (const it of g.ship.interactables) if (it.lines) g.on(it.id, async () => { for (const [who, t] of it.lines) await g.say(who, t).catch(() => {}); }); // optional props: their lines live in ship.js
   g.on('porthole', async () => {
     await g.say('WREN', 'The black disk is Erebus\'s shadow. It is about two and a half times wider than the horizon itself.');
     await g.say('WREN', 'The bright ring around it is starlight from behind the hole, bent all the way around.');
