@@ -31,7 +31,7 @@ trap 'rm -rf "$work"' EXIT
 # The game files, as CI assembles the arcade site, with the same version.txt (0.1.0+g<sha>).
 copy_game() {
   mkdir -p "$1"
-  cp -r "$root/index.html" "$root/styles.css" "$root/game.css" "$root/src" "$root/vendor" "$1/"
+  cp -r "$root/index.html" "$root/styles.css" "$root/game.css" "$root/src" "$root/vendor" "$root/assets" "$1/"
   echo "${version}+g${sha::7}" > "$1/version.txt"
 }
 

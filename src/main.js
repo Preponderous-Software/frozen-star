@@ -178,6 +178,7 @@ function titleScreen() {
             h('dt', 'Code and writing'), h('dd', 'Drafted with Claude (Anthropic) for Preponderous Software'),
             h('dt', 'Playtesting'), h('dd', 'AI playtesters, run with ', h('a', { href: 'https://github.com/Preponderous-Software/playtester', target: '_blank', rel: 'noopener' }, 'playtester')),
             h('dt', 'Engine'), h('dd', 'three.js (MIT) and a hand-written WebGL2 ray tracer'),
+            h('dt', 'Ines\'s voice'), h('dd', 'Kokoro-82M, voice af_sky (', h('a', { href: 'https://github.com/hexgrad/kokoro', target: '_blank', rel: 'noopener' }, 'Apache-2.0'), ')'),
             h('dt', 'Type'), h('dd', 'Bricolage Grotesque and IBM Plex (SIL Open Font License)')),
           h('h4', 'Further reading'),
           h('ul.refs',

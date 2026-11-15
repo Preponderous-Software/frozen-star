@@ -25,7 +25,7 @@ export function createHud(root) {
   subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
-    say(who, text, { dur, style, where, tag, key } = {}) {
+    say(who, text, { dur, style, where, tag, minDur = 0, key } = {}) {
       const sp = SPEAKERS[who] || { name: who, color: '#ece8f4' };
       // where an off-screen speaker is talking from (Ines: "capsule bay", "capsule"), as a quiet tag after the name
       const at = where ?? this?.where?.[who];
@@ -36,7 +36,7 @@ export function createHud(root) {
       if (key) el.dataset.key = key;
       subs.append(el);
       while (subs.children.length > 3) subs.firstChild.remove();
-      const id = ++lineId, t = dur ?? Math.min(9, 1.6 + text.length * 0.055);
+      const id = ++lineId, t = Math.max(minDur, dur ?? Math.min(9, 1.6 + text.length * 0.055));
       setTimeout(() => el.remove(), t * 1000 + 9000);
       return new Promise((res) => {
         const p = { id, key, remain: t, done: () => { if (p.finished) return; p.finished = true; el.classList.add('old'); timers.delete(p); if (pending === p) pending = null; res(id); } };

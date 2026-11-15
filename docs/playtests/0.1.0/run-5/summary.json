@@ -1,0 +1,807 @@
+{
+  "runDir": "/tmp/playtest-frozen-star/20261115-1314",
+  "generated": "2026-11-15 13:44",
+  "sessions": [
+    {
+      "session": "s01",
+      "profile": "frozen-star",
+      "goal": "Play from the very beginning as a brand-new player: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Pay special attention to Ines: can you tell where she is, where the capsule bay is, and what she is doing? Note every moment of confusion and screenshot anything broken.",
+      "outcome": "partial",
+      "fun": 3,
+      "durationSec": 1538,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "b396722"
+      },
+      "verdict": "The opening spaces are well signposted and Ines is placed beautifully: you see her through the capsule bay window the moment you leave quarters, the bay status screen names her and says PRE-FLIGHT, and her subtitles say where she is and what she is doing. The run was crippled by host load (3-10 tps, a 3-minute black dream, a final freeze at the probe console), so the probe drop went untested; the one design bug seen is WREN's stale 'bridge is forward' hint firing after arrival.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 1,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Go to the bridge": 52.1
+        },
+        "dreamWallSecondsBlack": 180,
+        "peakHostLoadAvg": 141
+      },
+      "derived": {
+        "objectivesCompleted": 1,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Go to the bridge",
+            "seconds": 52.1,
+            "wallSeconds": 1082.1,
+            "tick": 3124
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "screen": 4,
+          "world": 1,
+          "dialogue": 10,
+          "card": 2,
+          "objective_started": 2,
+          "checkpoint": 1,
+          "objective_completed": 1
+        },
+        "lastTick": 3124
+      },
+      "ticksPerSecond": 60,
+      "notes": 7,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That a black hole looks like a black disk (its shadow) about two and a half times wider than the horizon, with a bright ring of starlight from behind it bent all the way around; the setup suggests you will next watch a probe fall and see time dilation (ship clock vs relay clock on the bridge). I did not get far enough to see the probe lesson itself."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "The dream: after Wake up the screen was pure black for minutes with only a Skip button, no image, no text, and my first clicks on Skip did nothing, so it looked frozen. Second: on reaching the bridge WREN told me how to get to the bridge."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "1) Dream screen fully black (start of game, no facing). 2) On the bridge just inside the door, facing forward toward the main windows, WREN's stale directions subtitle showed without its dark backing panel, floating over the console above Ines's line. 3) In the corridor facing the capsule bay window, the 'E Talk to Ines' prompt covered the bay status screen. 4) At the probe console facing the forward-left window, the picture froze for 3+ minutes (no E prompt appeared). The ray-traced black hole through windows was blurry but looked correct (shadow plus lensed ring, no holes or flicker)."
+        }
+      ]
+    },
+    {
+      "session": "s02",
+      "profile": "frozen-star",
+      "goal": "The rescue and the descent: watch Ines leave in the capsule (where does she leave from, can you see it?), save her with the recall beam using the deadline clock, check that she comes back to the capsule bay, then take the ship down at the helm, hold, and return. Judge whether her departure and return are clear and whether anything looks broken.",
+      "outcome": "partial",
+      "fun": 3,
+      "durationSec": 1700,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "b396722"
+      },
+      "verdict": "The rescue's core idea lands: the comms panel's mayday-to-deadline bar, 'INES, AS RECEIVED' messages arriving out of order, and WREN's 'that is old light: she is already climbing' make the delay of light feel real and tense. Her departure is the weak point: on the probe-done checkpoint the capsule leaves ~6 s in with no lead-up and nothing to see, and the capsule itself is barely drawn. I ran out of time under heavy host load before her return and the helm descent, so those are untested.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 1,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 43.2
+        },
+        "beamFiredSecondsAfterMayday": 26,
+        "secondsLeftBeforeDeadline": 24,
+        "capsuleDepartureTick": 382,
+        "lastTickReached": 3394,
+        "returnToBaySeen": 0,
+        "descentReached": 0
+      },
+      "derived": {
+        "objectivesCompleted": 1,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+            "seconds": 43.2,
+            "wallSeconds": 1084.3,
+            "tick": 2591
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "screen": 4,
+          "world": 1,
+          "dialogue": 12,
+          "objective_started": 1,
+          "objective_completed": 1
+        },
+        "lastTick": 3139
+      },
+      "ticksPerSecond": 60,
+      "notes": 4,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That near a black hole, light from a falling object arrives late and stretched (redshift 1+z), so what you see of her is old: her picture keeps falling and her messages arrive out of order even after she is saved. You must act on the computed clock, not on her image. The panel also defined r_s, M as a unit of time, and 1+z."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "The very start: WREN said 'Capsule away' about 6 seconds after I spawned, with no warning and nothing visible, so I never saw where or how Ines left. Second: pressing E at the comms console left the camera fixed on the window instead of opening the panel."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "On the bridge beside the comms console, facing the starboard window and comms monitor: the 'Capsule · Ines' marker and the monitor's orange target brackets framed nothing visible. In one shot (t2, bridge centre facing forward), a black rectangle covered the top-centre of the view just under the browser bar (x 370-910). It did not reappear, so it may have been a capture artefact. Otherwise the black hole view through the windows looked right apart from expected blur."
+        }
+      ]
+    },
+    {
+      "session": "s03",
+      "profile": "frozen-star",
+      "goal": "After the story: free roam the ship, talk to Ines (comms console or the capsule bay intercom), then accept and play the optional Postscript mission about the photon sphere (fire the ranging laser and watch light circle the hole). Also try photo mode (P) and save a picture, and open the Discoveries list. Judge whether the Postscript teaches its idea clearly and whether photo mode is easy to use.",
+      "outcome": "partial",
+      "fun": 3,
+      "durationSec": 1582,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "b396722"
+      },
+      "verdict": "Photo mode and the Discoveries list are polished and easy: Sky only gives a stunning lensed-disk shot in two clicks, and the Discoveries hints ('Predict when the ninth ping will arrive') are nicely evocative. I could not judge the Postscript: the host was so loaded (5-10 tps, a Chrome 'Page Unresponsive' stall) that its timer-driven offer fired during the stall and I ran out of time before reaching the helm. The offer should be discoverable before it fires and replayable after, and the comms console should not go silently dead after Ines's line.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 1,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Explore the Tern. The lab archive has more.": 45.4
+        },
+        "postscriptOfferTick": 2722,
+        "postscriptCompleted": 0,
+        "photosSaved": 1,
+        "discoveriesFound": 2,
+        "discoveriesTotal": 20
+      },
+      "derived": {
+        "objectivesCompleted": 1,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Explore the Tern. The lab archive has more.",
+            "seconds": 45.4,
+            "wallSeconds": 1429.6,
+            "tick": 2722
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "screen": 10,
+          "objective_started": 2,
+          "dialogue": 3,
+          "card": 1,
+          "checkpoint": 1,
+          "objective_completed": 1
+        },
+        "lastTick": 2722
+      },
+      "ticksPerSecond": 60,
+      "notes": 6,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That what a distant observer sees of something falling into a black hole is not what happens to it: the beacon's pings and the camera feed slow, redden and freeze at the edge of the shadow, yet by its own clock the probe crosses the horizon in under a minute; hovering clocks run slow relative to the far relay; and for a big hole like Erebus the tide at the horizon is gentle (0.15 g) while a ten-sun hole would shred you. 'From far away, nothing is ever seen to fall in. That is a fact about light, not about the things that fall.' The Postscript was set up to be about the photon sphere at 1.5 rs, where light orbits, but I did not get to play it."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "After talking to Ines at comms: the console kept showing 'E Use the comms console' but further presses did nothing, and nothing told me where the Postscript was. Then the Postscript offer arrived on its own while the page had frozen, so the first I knew of it was the objective panel quietly changing to 'Optional: take the Tern down to the photon sphere, 1.5 rs (helm)'."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "(1) Epilogue logbook screen, start of play, facing forward on the bridge: the 'Discovery - Frozen star' toast is partly hidden behind the log panel. (2) Aft of the bridge near the Survey Stores / O2 Masks cabinet, facing the corner: the camera sat inside the potted plant and against the wall. (3) A Chrome 'Page Unresponsive' dialog covered the game while walking aft from comms. The ray-traced black hole through the bridge windows and in photo mode looked right (blurry from software rendering, but no flicker, holes or wrong colours)."
+        }
+      ]
+    },
+    {
+      "session": "s04",
+      "profile": "frozen-star",
+      "goal": "Settings and accessibility: rebind a few keys (for example walking and use) and check they work in game, try reduce flashing, subtitle background, console text size, hold/toggle run and colour-safe redshift. Check the Chapters menu (including the Postscript), the Discoveries screen and About. Note anything confusing, broken or unreadable.",
+      "outcome": "partial",
+      "fun": 3,
+      "durationSec": 1134,
+      "seed": null,
+      "build": {
+        "version": "0.1.0",
+        "commit": "b396722"
+      },
+      "verdict": "The settings and menus are genuinely strong: rebinding is clear (Esc cancels, Backspace clears, conflicts are resolved with a plain message like 'S was on Walk back, which now uses ↓'), rebinds work in game, and the on-screen hint immediately reflects the new keys (I/F). Subtitle background at 100% gives a solid readable box and every toggle has a one-line explanation. Main gaps: toggle-run has no visible state, Discoveries/Chapters hints spoil the plot, and on this overloaded machine (~8 tps) I could not reach a console to check console text size or see the alarm/redshift effects of reduce flashing and colour-safe redshift.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 0,
+        "deaths": 0,
+        "secondsToObjective": {},
+        "keysRebound": 3,
+        "rebindsVerifiedInGame": 2,
+        "settingsChanged": 6,
+        "approxGameTicksPerSecond": 8
+      },
+      "derived": {
+        "objectivesCompleted": 0,
+        "objectives": [],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "screen": 5,
+          "world": 1,
+          "dialogue": 9,
+          "card": 1,
+          "objective_started": 1
+        },
+        "lastTick": 1808
+      },
+      "ticksPerSecond": 60,
+      "notes": 4,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "General relativity around a non-spinning black hole: the About screen and WREN's lines explain that the black disk is the hole's shadow (about 2.5x wider than the horizon), the bright ring is starlight bent all the way around, and that fall times, redshift, tides and slowed clocks all come from Schwarzschild's solution. I only got as far as the first room, so beyond those ideas I could not tell."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "Starting a new game: the dream was a fully black screen for about 15 seconds with no loading sign, so it looked hung. Second: after switching run to press-to-toggle, tapping Shift gave no feedback, so I could not tell whether I was running."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "Nothing clearly broken. In the dream (start of a new game) the screen was black for ~15 s. In the quarters, facing the porthole (yaw about -6) and later the corridor door (yaw about 66), the controls hint stayed on screen permanently, including behind the pause menu; the pause menu itself appeared a couple of seconds after the game state already said PAUSE (likely the slow machine). The sky through the porthole was blurry but otherwise correct."
+        }
+      ]
+    }
+  ],
+  "severityCounts": {
+    "blocker": 0,
+    "major": 4,
+    "minor": 10,
+    "polish": 10
+  },
+  "findingReports": 24,
+  "findings": [
+    {
+      "title": "Dream screen is solid black for ~3 minutes with tick stuck at 0; Skip button unresponsive at first",
+      "severity": "major",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "After Wake up, DREAM showed only a black screen, the menu icon and 'Skip the dream' for about 3 minutes of wall time. state tick stayed at 0, no subtitles. Two clicks on Skip did nothing; after Space + Return the button took focus and some seconds later the dream's lines ('Falling. No wind, no sound.') fired at ticks 143-150 and it moved on to the wake cutscene. I never saw any dream visuals. Host load average was 90-140 (many parallel sessions), so this is likely starvation, but a black screen with no loading indicator reads as a hang to a player. Expected: dream visuals or at least a loading/progress cue.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir .; pt key Return; pt await DREAM 20; pt wait 45; pt shot x; pt click 1186 684",
+      "screenshots": [
+        "s01/shots/dream-stuck.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Game ran at ~3-10 ticks/s and finally froze (tick 3359) at the probe console; beacon probe never dropped",
+      "severity": "major",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Throughout WORLD the game ran far below 60 tps: holding Left 6 s turned ~10 degrees, Shift+W for 30 s moved ~4 m. Mouse look worked better than arrow keys. At the probe console (2.2 m, bearing -5, crosshair on the PROBE screen) no 'E' use prompt appeared, then the tick stopped at 3359 and state.json went unwritten for 3+ minutes; inputs had no effect. Probably host starvation (load avg 100-140), but it blocked the second objective within my time budget.",
+      "repro": "pt start ...; play to the bridge; walk to the probe console; pt state (tick does not advance, stateAgeSec grows)",
+      "screenshots": [
+        "s01/shots/frozen.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Game ran at ~5-10 ticks/s and Chrome showed 'Page Unresponsive' while walking on the bridge",
+      "severity": "major",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "With the host at load ~100+, the game ran far below 60 tps (about 3000 ticks in 26 wall minutes); holding Shift+W for 20 s moved ~3 m. At tick ~2600, walking aft from the comms console, Chrome raised a 'Page Unresponsive - Frozen Star' dialog and all input stopped until I clicked Wait. Likely mostly host contention, but it cost the whole Postscript. Screenshots also lagged the probe by several seconds throughout.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; walk to comms, E; then face aft and pt hold Shift_L+w 15",
+      "screenshots": [
+        "s03/shots/page-unresponsive.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "probe-done checkpoint: Ines's capsule departs ~6 s in with no lead-up and no visible launch",
+      "severity": "major",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Right after spawning on the bridge facing the helm, WREN says 'Capsule away. She is holding position beside us.' at tick 382 (6.4 game s). No earlier line, prompt or objective prepares for it, and the bay door is locked, so the player cannot go and watch her leave from the bay. I was still turning around and saw no launch. I expected a warning line, or a moment where the capsule is visibly pushed out of the bay before 'Capsule away'.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir . --checkpoint probe-done; pt face 180; watch subtitles",
+      "screenshots": [
+        "s02/shots/capsule_away_noseen.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Capsule is almost invisible: a few-pixel box through the port window, empty target brackets on the comms monitor",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The only sign of the capsule I found was a tiny dark box with a red light just above the port bridge window sill (tick ~1000), and it could easily be a fixture. Later the in-world 'Capsule · Ines' marker and the comms monitor's orange target brackets frame nothing visible (tick ~3100, monitor reads 'engine burn seen, climbing home'). I expected a recognisable capsule shape or light inside the brackets so the player can watch the rescue happen.",
+      "repro": "probe-done checkpoint; after the mayday, face the comms console from beside it and look at the monitor and the starboard window",
+      "screenshots": [
+        "s02/shots/capsule_empty_brackets.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Comms camera locked on the window after the first E press; mouse look ignored until a second click",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Pressing E next to the comms console (tick ~1427) did not open the panel. The view instead stayed fixed on the starboard window and the capsule marker, and two `pt look` moves did nothing until I clicked the game again. A second E opened the panel only after I re-aimed. This may be pointer-lock loss combined with very low tps, but to a player it feels like the controls froze.",
+      "repro": "probe-done; walk to the comms console; press e; pt look 0 250; pt shot",
+      "screenshots": [
+        "s02/shots/comms3.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Comms console goes silent after Ines's tide line, with the E prompt still shown",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "First E at comms plays Ines (0.15 g tide at the horizon) and WREN's follow-up (2.1x10^7 g for a ten-sun hole). Pressing E again (three times, ticks ~1600-1900) did nothing at all: no panel, no line, no 'nothing more to say'; the 'E Use the comms console' prompt stays up so it looks broken. Expected either a panel, a repeat, or a closing line.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; walk to comms; pt key e; wait for both lines; pt key e (x3)",
+      "screenshots": [
+        "s03/shots/comms-dead.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Discoveries hints spoil the story before the player starts",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "From the title screen, Discoveries (0 of 20) lists hint text for every locked entry, including 'Save Ines with almost no time to spare', 'Tell Ines the truth about Orpheus' and 'Take the Tern lower than you were asked to'. These reveal plot beats (a rescue, a secret about Orpheus) to a fresh player. Chapter titles (The rescue, Orpheus, The photon sphere) do the same, more mildly. Consider hiding hints for story discoveries until the relevant chapter is reached.",
+      "repro": "pt start ...; click Discoveries; scroll the panel",
+      "screenshots": [
+        "s04/shots/disc2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Dream opens on a fully black screen for ~15 s with no loading indicator",
+      "severity": "minor",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "After Wake up the DREAM screen was solid black (only the menu button and 'Skip the dream') for about 15 s real time; tick went 0 -> 24. On a loaded machine, but a player would think the game hung. Expected a loading hint or an immediate first frame/subtitle.",
+      "repro": "pt start ...; click Wake up; pt await DREAM 20; pt wait 8; pt shot",
+      "screenshots": [
+        "s04/shots/dream-black.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Expedition log does not scroll with the mouse wheel; 'Keep exploring' is below the fold",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "The epilogue logbook is taller than 720 px. Mouse wheel over the panel did nothing; I had to drag the thin scrollbar to reach 'Keep exploring' / 'Main menu'. Same in the Discoveries list (I used the scrollbar). Expected wheel scrolling, or the buttons pinned visible.",
+      "repro": "pt start --checkpoint epilogue; pt move 640 400; pt scroll 10; pt shot",
+      "screenshots": [
+        "s03/shots/logbook-bottom.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Host overload (load avg 95-150) cut the game to ~1.5-7 tps, so I could not reach the return or the descent",
+      "severity": "minor",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Game time ran 10-40x slower than real time. Key holds and arrow turns were mostly dropped (pt face overshot or went the wrong way; hold Right 0.5 gave no turn). I fired the beam at 26 s rather than waiting near 49 s. After 28 real minutes I had only reached tick 3394 (~57 game s): Ines says 'Engine's lit... I'm coming home!' but has not docked yet. This is environmental, not necessarily a game bug.",
+      "repro": "run alongside many parallel sessions; pt status / uptime",
+      "screenshots": [
+        "s02/shots/perf_slow.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Postscript offer (card + WREN line) fires on a timer and can be missed entirely",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "The Postscript card 'Postscript - The photon sphere' and WREN's offer ('one item is left on the survey plan... A ranging-laser test at the photon sphere') fired at tick 2722 with no player action, exactly while the page was stalled, so I never saw the card or the line; I only noticed later that the objective panel had changed to 'Optional: take the Tern down to the photon sphere, 1.5 rs (helm)' with a 'Helm 6 m' marker. Before it fired, nothing on screen hinted that a Postscript existed: the free-roam hint only says 'talk to Ines at the comms console, take the helm, or drop another beacon'. A way to re-hear the offer (e.g. at comms or the helm) would help.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; free roam ~40 game seconds; check events for card at tick 2722",
+      "screenshots": [
+        "s03/shots/no-postscript.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Run set to 'Press to toggle' gives no on-screen sign whether run is on",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Settings > Options > Run key = Press to toggle. In game, tapping Shift shows nothing: no run icon, no toast, and the controls hint ('I A ↓ D to walk, mouse or ← → to look, F to use things, Esc to pause') never mentions Shift or running. state.player.speed stayed 2.2. With toggle mode a player can easily forget which state they are in. Expected a small 'Running' indicator or hint text. (At ~10 tps I could not measure whether speed actually changed.)",
+      "repro": "pt start ...; Settings > Options > Press to toggle; Wake up; skip dream; pt key Shift_L; pt hold i 3; pt shot",
+      "screenshots": [
+        "s04/shots/run-toggle-no-indicator.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Stale WREN directions to the bridge shown after arriving on the bridge",
+      "severity": "minor",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "On entering the bridge, WREN's 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' appeared together with Ines's arrival line. Directions to a place I am already standing in are confusing; the hint should be cancelled when the objective completes. WREN's line also rendered without its dark backing panel, floating over the console.",
+      "repro": "pt start ...; skip dream; walk from quarters to the bridge slowly (took ~40 game s); pt shot on arrival",
+      "screenshots": [
+        "s01/shots/stale-directions.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "'Discovery - Frozen star' toast is partly covered by the expedition log panel",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "On the epilogue logbook screen the discovery toast at top right sits behind the log panel; its first letters ('Di', 'Be', 'ca') are hidden.",
+      "repro": "pt start --checkpoint epilogue; pt shot",
+      "screenshots": [
+        "s03/shots/logbook-toast-overlap.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "'E Talk to Ines (bay intercom)' prompt covers the capsule bay status screen",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "At the bay intercom in the corridor the use prompt sits over the CAPSULE BAY / PRE-FLIGHT / INES OKAFOR status screen, hiding part of its text. Otherwise this spot is excellent: Ines is visible through the bay window and the subtitle tags her as 'INES - CAPSULE BAY'.",
+      "repro": "pt start ...; skip dream; walk out of quarters, face the bay window (bay item bearing ~0, 1.7 m)",
+      "screenshots": [
+        "s01/shots/ines-intercom.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "About screen shows no version number",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "About lists credits, further reading and the licence but not the game version (state says 0.1.0). Useful for bug reports.",
+      "repro": "pt start ...; click About; scroll to bottom",
+      "screenshots": [
+        "s04/shots/about2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Camera clips into the potted plant by the survey stores cabinet",
+      "severity": "polish",
+      "categories": [
+        "bug"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "After running aft from comms into the corner by the Survey Stores / O2 Masks cabinet, the view sat inside the plant's leaves and against the wall; the player also seemed to stop dead there, which made Shift+W look like it did nothing.",
+      "repro": "from comms, face aft-starboard toward the stores cabinet and pt hold Shift_L+w 15",
+      "screenshots": [
+        "s03/shots/no-postscript.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Chapters list labels the first entry 'PROLOGUE' over 'Prologue'",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Every other chapter has a kicker (CHAPTER I) and a title (Beacon K-1); the first shows PROLOGUE then Prologue, which reads as a duplicate. Expected a title such as 'Waking up'.",
+      "repro": "pt start ...; click Chapters",
+      "screenshots": [
+        "s04/shots/chapters1.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Controls hint stays on screen permanently, even under the pause menu",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "The 'I A ↓ D to walk ... Esc to pause' hint stayed in the middle-lower screen the whole time I was in the world (~1000 ticks, after walking, turning and using the porthole) and remained visible behind the PAUSED panel. Expected it to fade once the player has moved/used something.",
+      "repro": "Wake up; skip dream; walk and press F; pt key Escape; pt shot",
+      "screenshots": [
+        "s04/shots/pause2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Controls list jumps up after a rebind because the help box shrinks",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s04"
+      ],
+      "reports": 1,
+      "detail": "Settings > Controls: the help box above the list is two lines ('Choose a key to change it...'); after a rebind it becomes one line ('Walk forward: I or ↑.'), so the whole key list shifts up ~18 px, moving the button you just used away from the pointer. Expected a fixed-height help box.",
+      "repro": "Settings > Controls; click the W cell for Walk forward; pt key i; compare shots",
+      "screenshots": [
+        "s04/shots/rebind2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Deadline arithmetic drifts: WREN says 49 s, the post-fire summary adds up to 50 s",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "WREN: 'the beam must leave within 49 seconds of her mayday'. The panel said '19 s ... within 30 s' (= 49). After firing it says 'Beam fired 26 s after her mayday, 24 s before the deadline' (= 50). Probably rounding. Also 'must leave within 30 s' reads as a remaining time, which is right, but it sits next to WREN's 'within 49 seconds' measured from the mayday, so the same phrase means two different things.",
+      "repro": "probe-done; open comms; click Fire recall beam at ~26 s",
+      "screenshots": [
+        "s02/shots/beam_fired.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Early WREN/Ines subtitles fired but were never on screen in my screenshots",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Events show WREN's porthole lines (ticks 817, 1237) and Ines's 'Morning, doc! ... Come up to the bridge' (tick 973), but none of my screenshots around those times showed them; the porthole shot taken right after pressing E had the line in state.subtitles but not on screen. At low frame rate a player could miss Ines's first call entirely.",
+      "repro": "pt start ...; skip dream; on WORLD, pt key e at the porthole; pt shot",
+      "screenshots": [
+        "s01/shots/porthole.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Photo mode saves silently: 'Developing...' then no confirmation or file name",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s03"
+      ],
+      "reports": 1,
+      "detail": "Photo mode itself is easy: the panel lists drag/WASD/R F/C/H/P, FOV and exposure sliders, Sky only (hides the ship; gives a gorgeous clean shot of the lensed disk) and Vignette. Clicking Save picture showed 'Developing...' and then the toast vanished with nothing saying it was saved or where. The PNG did land in ~/Downloads as frozen-star-2026-11-15-20-26-26.png, named in UTC (local time was 13:26), which may confuse players. Also the probe logs photo mode as screen DREAM.",
+      "repro": "in WORLD: pt key p; click Sky only (380,677); click Save picture (807,677); pt shot after a few seconds; ls ~/Downloads",
+      "screenshots": [
+        "s03/shots/photo-saved.png"
+      ],
+      "alsoTitled": []
+    }
+  ],
+  "objectiveTimings": [
+    {
+      "number": 1,
+      "title": "Explore the Tern. The lab archive has more.",
+      "seconds": {
+        "s03": 45.4
+      },
+      "sessions": 1,
+      "min": 45.4,
+      "median": 45.4,
+      "max": 45.4
+    },
+    {
+      "number": 1,
+      "title": "Go to the bridge",
+      "seconds": {
+        "s01": 52.1
+      },
+      "sessions": 1,
+      "min": 52.1,
+      "median": 52.1,
+      "max": 52.1
+    },
+    {
+      "number": 1,
+      "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+      "seconds": {
+        "s02": 43.2
+      },
+      "sessions": 1,
+      "min": 43.2,
+      "median": 43.2,
+      "max": 43.2
+    }
+  ],
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "That a black hole looks like a black disk (its shadow) about two and a half times wider than the horizon, with a bright ring of starlight from behind it bent all the way around; the setup suggests you will next watch a probe fall and see time dilation (ship clock vs relay clock on the bridge). I did not get far enough to see the probe lesson itself."
+        },
+        {
+          "session": "s02",
+          "answer": "That near a black hole, light from a falling object arrives late and stretched (redshift 1+z), so what you see of her is old: her picture keeps falling and her messages arrive out of order even after she is saved. You must act on the computed clock, not on her image. The panel also defined r_s, M as a unit of time, and 1+z."
+        },
+        {
+          "session": "s03",
+          "answer": "That what a distant observer sees of something falling into a black hole is not what happens to it: the beacon's pings and the camera feed slow, redden and freeze at the edge of the shadow, yet by its own clock the probe crosses the horizon in under a minute; hovering clocks run slow relative to the far relay; and for a big hole like Erebus the tide at the horizon is gentle (0.15 g) while a ten-sun hole would shred you. 'From far away, nothing is ever seen to fall in. That is a fact about light, not about the things that fall.' The Postscript was set up to be about the photon sphere at 1.5 rs, where light orbits, but I did not get to play it."
+        },
+        {
+          "session": "s04",
+          "answer": "General relativity around a non-spinning black hole: the About screen and WREN's lines explain that the black disk is the hole's shadow (about 2.5x wider than the horizon), the bright ring is starlight bent all the way around, and that fall times, redshift, tides and slowed clocks all come from Schwarzschild's solution. I only got as far as the first room, so beyond those ideas I could not tell."
+        }
+      ]
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "The dream: after Wake up the screen was pure black for minutes with only a Skip button, no image, no text, and my first clicks on Skip did nothing, so it looked frozen. Second: on reaching the bridge WREN told me how to get to the bridge."
+        },
+        {
+          "session": "s02",
+          "answer": "The very start: WREN said 'Capsule away' about 6 seconds after I spawned, with no warning and nothing visible, so I never saw where or how Ines left. Second: pressing E at the comms console left the camera fixed on the window instead of opening the panel."
+        },
+        {
+          "session": "s03",
+          "answer": "After talking to Ines at comms: the console kept showing 'E Use the comms console' but further presses did nothing, and nothing told me where the Postscript was. Then the Postscript offer arrived on its own while the page had frozen, so the first I knew of it was the objective panel quietly changing to 'Optional: take the Tern down to the photon sphere, 1.5 rs (helm)'."
+        },
+        {
+          "session": "s04",
+          "answer": "Starting a new game: the dream was a fully black screen for about 15 seconds with no loading sign, so it looked hung. Second: after switching run to press-to-toggle, tapping Shift gave no feedback, so I could not tell whether I was running."
+        }
+      ]
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "1) Dream screen fully black (start of game, no facing). 2) On the bridge just inside the door, facing forward toward the main windows, WREN's stale directions subtitle showed without its dark backing panel, floating over the console above Ines's line. 3) In the corridor facing the capsule bay window, the 'E Talk to Ines' prompt covered the bay status screen. 4) At the probe console facing the forward-left window, the picture froze for 3+ minutes (no E prompt appeared). The ray-traced black hole through windows was blurry but looked correct (shadow plus lensed ring, no holes or flicker)."
+        },
+        {
+          "session": "s02",
+          "answer": "On the bridge beside the comms console, facing the starboard window and comms monitor: the 'Capsule · Ines' marker and the monitor's orange target brackets framed nothing visible. In one shot (t2, bridge centre facing forward), a black rectangle covered the top-centre of the view just under the browser bar (x 370-910). It did not reappear, so it may have been a capture artefact. Otherwise the black hole view through the windows looked right apart from expected blur."
+        },
+        {
+          "session": "s03",
+          "answer": "(1) Epilogue logbook screen, start of play, facing forward on the bridge: the 'Discovery - Frozen star' toast is partly hidden behind the log panel. (2) Aft of the bridge near the Survey Stores / O2 Masks cabinet, facing the corner: the camera sat inside the potted plant and against the wall. (3) A Chrome 'Page Unresponsive' dialog covered the game while walking aft from comms. The ray-traced black hole through the bridge windows and in photo mode looked right (blurry from software rendering, but no flicker, holes or wrong colours)."
+        },
+        {
+          "session": "s04",
+          "answer": "Nothing clearly broken. In the dream (start of a new game) the screen was black for ~15 s. In the quarters, facing the porthole (yaw about -6) and later the corridor door (yaw about 66), the controls hint stayed on screen permanently, including behind the pause menu; the pause menu itself appeared a couple of seconds after the game state already said PAUSE (likely the slow machine). The sky through the porthole was blurry but otherwise correct."
+        }
+      ]
+    }
+  ],
+  "problems": []
+}
