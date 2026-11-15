@@ -85,7 +85,7 @@ Eight short lessons, with stars to earn. Each has a mission card, numbered steps
 | ![Pick Your Hole](docs/media/training/tides.png) **4 · Pick Your Hole** Some black holes tear you apart. Some let you drift through. | ![Hover](docs/media/training/hover.png) **5 · Hover** Hold still near the horizon and let the years pass outside. | ![Bend the Light](docs/media/training/bend-light.png) **6 · Bend the Light** Aim a laser past the hole. Can you make light come back to you? |
 | ![Into the Dark](docs/media/training/into-the-dark.png) **7 · Into the Dark** Fall in yourself, ray-traced through curved spacetime. | ![Evaporation](docs/media/training/evaporation.png) **8 · Evaporation** "But the hole evaporates before you ever get in." Does it? | ![Observatory](docs/media/training/observatory.png) **Observatory** A free camera around a black hole. Every pixel is a traced light ray. |
 
-Six of them can also be run from the lab's archive terminal aboard the Tern.
+Seven of them (all but Into the Dark) can also be run from the lab's archive terminal aboard the Tern.
 
 ## Menus, settings and phones
 
