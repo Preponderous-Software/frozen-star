@@ -12,8 +12,8 @@ import { shipPosition, toHole, fromHole, SEC_PER_M, R_STATION, DISK_OUTER } from
 import { hoverRate } from '../physics/body.js';
 import { runStory } from './story.js';
 import { createAudio } from './audio.js';
-import { loadSettings } from './settings.js';
-import { settingsForm } from './settings-ui.js';
+import { loadSettings, applyDisplay, keyHtml, keyText } from './settings.js';
+import { settingsForm, controlsForm } from './settings-ui.js';
 import { padNav } from '../ui/padnav.js';
 import { createPhoto } from './photo.js';
 import { watchGame, noteUse, onUnlock, discoveriesView } from './discoveries.js';
@@ -72,8 +72,8 @@ export function mountGame(root, { checkpoint } = {}) {
   // ---- settings ----
   let settings = loadSettings();
   function applySettings() {
-    controls.setSensitivity(settings.sens); audio.setVolume(settings.volume);
-    el.classList.toggle('fp-subs-large', settings.subs === 'large');
+    controls.setSettings(settings); audio.setVolume(settings.volume);
+    applyDisplay(el, settings); g.settings = settings;
     resize?.();
   }
   g.controls = controls;
@@ -120,7 +120,7 @@ export function mountGame(root, { checkpoint } = {}) {
     panel.replaceChildren(); panel.hidden = false; audio.open();
     const close = h('button.fp-close', { type: 'button', onclick: () => closeApp() }, '← Step back');
     const body = h('div.fp-app');
-    panel.append(h('div.fp-panel-head', close, h('span.fine', controls.isTouch() ? '' : 'Esc or Q to step back')), body);
+    panel.append(h('div.fp-panel-head', close, h('span.fine', controls.isTouch() ? '' : `${keyText('pause')} to step back`)), body);
     appDispose = factory(body, g) || null;
     return new Promise((r) => { appResolve = r; });
   }
@@ -232,10 +232,7 @@ export function mountGame(root, { checkpoint } = {}) {
         h('p.fine', 'Progress saves automatically at each chapter.')].filter(Boolean));
       menu.querySelector('#fp-resume').focus();
     } else if (view === 'controls') {
-      menu.replaceChildren(h('p.eyebrow', 'Controls'),
-        h('dl.fp-keys',
-          ...[['Walk', 'W A S D · ↑ ↓ · left stick · left thumb'], ['Look', 'Mouse (click to capture) · ← → turn · right stick · drag'], ['Answer', '1 2 3 · click · d-pad'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Photo mode', 'P · Select button'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
-        btn('Back', () => renderMenu('main')));
+      menu.replaceChildren(controlsForm(settings, () => applySettings(), { onBack: () => renderMenu('main') }));
     } else if (view === 'discoveries') {
       menu.replaceChildren(h('p.eyebrow', 'Discoveries'), discoveriesView(), btn('Back', () => renderMenu('main'), 'fp-disc-back'));
       menu.querySelector('#fp-disc-back').focus({ preventScroll: true }); menu.scrollTop = 0;
@@ -317,7 +314,7 @@ export function mountGame(root, { checkpoint } = {}) {
         focusBox.hidden = v.z > 1;
         focusBox.style.transform = `translate(${((v.x + 1) / 2) * el.clientWidth}px, ${((1 - v.y) / 2) * el.clientHeight}px)`;
       } else focusBox.hidden = true;
-      hud.prompt(label && !controls.isTouch() ? `<kbd>E</kbd> ${label}` : null);
+      hud.prompt(label && !controls.isTouch() ? `${keyHtml('use')} ${label}` : null);
       controls.showUse(label || null);
       if (inp.interact) interact();
     } else {
@@ -330,7 +327,7 @@ export function mountGame(root, { checkpoint } = {}) {
       if (g.mode === 'console' && !tween) { g.pose.yaw -= inp.lookDX * 0.25; g.pose.pitch = Math.max(-1, Math.min(1, g.pose.pitch - inp.lookDY * 0.25)); }
       camera.position.copy(g.pose.pos); camera.rotation.set(g.pose.pitch, g.pose.yaw, 0);
     }
-    for (const b of ship.blinkers) b.mat.emissiveIntensity = 0.25 + 1.6 * (0.5 + 0.5 * Math.sin(g.time * b.rate * 6.283 + b.phase)) ** 3;
+    for (const b of ship.blinkers) b.mat.emissiveIntensity = settings.reduceFlash ? 0.7 + 0.25 * Math.sin(g.time * b.rate * 1.5 + b.phase) : 0.25 + 1.6 * (0.5 + 0.5 * Math.sin(g.time * b.rate * 6.283 + b.phase)) ** 3;
     // doors
     for (const d of ship.doors) {
       const near = Math.hypot(g.me.x - d.center[0], g.me.z - d.center[1]) < 1.8 && !d.locked && g.mode !== 'cutscene';

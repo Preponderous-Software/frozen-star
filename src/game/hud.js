@@ -1,5 +1,6 @@
 // Heads-up display: subtitles, objective, the use prompt, crosshair, fades and title cards.
 import { h } from '../ui/dom.js';
+import { answerLabel } from './settings.js';
 
 const SPEAKERS = {
   WREN: { name: 'WREN', color: '#8fb8ff' },
@@ -24,12 +25,13 @@ export function createHud(root) {
   subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
-    say(who, text, { dur, style, where } = {}) {
+    say(who, text, { dur, style, where, tag } = {}) {
       const sp = SPEAKERS[who] || { name: who, color: '#ece8f4' };
       // where an off-screen speaker is talking from (Ines: "capsule bay", "capsule"), as a quiet tag after the name
       const at = where ?? this?.where?.[who];
-      const tag = at ? h('small', { style: { fontWeight: 400, opacity: 0.72, fontSize: '0.82em', marginLeft: '0.35em' } }, `· ${at}`) : null;
-      const el = h('p.fp-line', h('b', { style: { color: sp.color } }, sp.name, tag), ' ', h('span', text));
+      const place = at ? h('small', { style: { fontWeight: 400, opacity: 0.72, fontSize: '0.82em', marginLeft: '0.35em' } }, `· ${at}`) : null;
+      // tag: a word on what colour alone would say (how redshifted a radio line is)
+      const el = h('p.fp-line', h('b', { style: { color: sp.color } }, sp.name, place), tag ? h('small.fp-tag', tag) : null, ' ', h('span', text));
       if (style) Object.assign(el.querySelector('span').style, style);
       subs.append(el);
       while (subs.children.length > 3) subs.firstChild.remove();
@@ -79,7 +81,7 @@ export function createHud(root) {
         api.choosing = true;
         let finish = (i) => { if (done) return; done = true; api.choosing = false; box.remove(); res(i); };
         const bar = timeout ? h('div.fp-choice-time', h('i')) : null;
-        const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${i + 1}. ${o}`))), bar);
+        const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${answerLabel(i)}. ${o}`))), bar);
         root.append(box);
         const key = (e) => { const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
         addEventListener('keydown', key);

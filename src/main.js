@@ -12,7 +12,7 @@ import intoTheDark from './chapters/into-the-dark.js';
 import evaporation from './chapters/evaporation.js';
 import observatory from './chapters/observatory.js';
 import { mountGame } from './game/game.js';
-import { settingsForm, controlsTable, ACTS } from './game/settings-ui.js';
+import { settingsForm, controlsForm, ACTS } from './game/settings-ui.js';
 import { loadSettings } from './game/settings.js';
 import { padNav } from './ui/padnav.js';
 import { DISCOVERIES, discoveriesView, foundCount, syncTraining, unlock, floatToast } from './game/discoveries.js';
@@ -153,7 +153,7 @@ function titleScreen() {
         for (const t of tabs.children) { const on = t.dataset.tab === name; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; }
         const title = panel.querySelector('#menu-panel-title'); if (title) title.textContent = name === 'controls' ? 'Controls' : 'Options';
         body.replaceChildren(name === 'controls'
-          ? h('div.controls-ref', controlsTable(), h('p.fp-note', 'Keys cannot be changed yet. A gamepad works anywhere a mouse does: the d-pad moves through menus, A chooses, B goes back.'))
+          ? controlsForm(loadSettings(), null)
           : settingsForm(loadSettings(), null));
         body.querySelector('.fp-settings > .eyebrow')?.remove();
       };

@@ -10,6 +10,7 @@ import { hoverVelocity } from '../render/raytracer.js';
 import { shipPosition, toHole } from './world.js';
 import { step } from './walk.js';
 import { unlock } from './discoveries.js';
+import { moveKeysText } from './settings.js';
 
 const REACH = 3; // metres the camera may float from where photo mode began
 const Y_MIN = 0.35, Y_MAX = 2.35;
@@ -57,7 +58,7 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
     const toggles = { noShip: toggle('Sky only', 'noShip'), vignette: toggle('Vignette', 'vignette') };
     const b = h('div.ph-bar', { role: 'toolbar', 'aria-label': 'Photo mode' },
       h('div.ph-row', h('p.eyebrow', 'Photo mode'), h('span.ph-keys',
-        h('span.hint-keys', 'Drag or click to look · WASD move · R F up and down · C save · H hide · P done'),
+        h('span.hint-keys', `Drag or click to look · ${moveKeysText()} move · R F up and down · C save · H hide · P done`),
         h('span.hint-pad', 'Sticks move and look · LB RB down and up · A save · X Y looks · B done'))),
       h('div.ph-row', fov.el, ev.el),
       h('div.ph-row', toggles.noShip, toggles.vignette,
