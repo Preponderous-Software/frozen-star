@@ -1,0 +1,757 @@
+{
+ "voice": "Kokoro-82M bm_george (Apache-2.0)",
+ "sampleRate": 24000,
+ "phases": [
+  "opening",
+  "rescue",
+  "helm",
+  "orpheus",
+  "free",
+  "halo"
+ ],
+ "lines": {
+  "98208708ca87": {
+   "text": "The cradle is empty, Doctor. Ines is out in the capsule. Her channel is on the bridge comms console.",
+   "phase": "opening",
+   "dur": 6.719,
+   "sig": "effcfbe788",
+   "where": [
+    "src/game/bay.js"
+   ]
+  },
+  "04a716b1ac4c": {
+   "text": "It is only warm in there. But the station-keeping field is what holds us up at ten horizon radii, and I would rather nobody touched it today.",
+   "phase": "opening",
+   "dur": 9.346,
+   "sig": "ac1b6557cc",
+   "where": [
+    "src/game/ship.js"
+   ]
+  },
+  "13ea65fc8c42": {
+   "text": "Six hours and twenty minutes by the relay's. Hovering this close to Erebus, every clock aboard runs about five percent slow.",
+   "phase": "opening",
+   "dur": 8.467,
+   "sig": "a3773ea61a",
+   "where": [
+    "src/game/ship.js"
+   ]
+  },
+  "f4db5611346b": {
+   "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself.",
+   "phase": "opening",
+   "dur": 6.709,
+   "sig": "d2945ac96c",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "f26c5c93a43f": {
+   "text": "The bright ring around it is starlight from behind the hole, bent all the way around.",
+   "phase": "opening",
+   "dur": 5.263,
+   "sig": "f0ba65edc1",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "5ade50cf6eea": {
+   "text": "Descent is locked until the survey plan calls for it, Doctor. Erebus will keep.",
+   "phase": "opening",
+   "dur": 5.701,
+   "sig": "4bef4196c8",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "2ae8c52bfa5c": {
+   "text": "From here Erebus's shadow is 29 degrees across: about 55 full Moons side by side.",
+   "phase": "opening",
+   "dur": 7.025,
+   "sig": "abb4058e80",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "f4c6315fcad7": {
+   "text": "You are not imagining them. Light that loops the hole once makes one ring; light that loops twice makes a thinner one just inside it. Every star in the sky is in there, over and over.",
+   "phase": "opening",
+   "dur": 11.825,
+   "sig": "1c272835f4",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "df48f3878f6d": {
+   "text": "Back already, Doctor? You were talking in your sleep last night. Something about falling. I did not log it.",
+   "phase": "opening",
+   "dur": 6.63,
+   "sig": "aff4206d33",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "13c7d3e0a6a9": {
+   "text": "The archive holds the expedition's training simulations. Same equations as outside the window, slowed down so you can take them apart.",
+   "phase": "opening",
+   "dur": 9.211,
+   "sig": "a6bbeab9b2",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "15fa639ffb60": {
+   "text": "Good morning, Doctor. WREN here, the Tern's ship intelligence. It is 06:40, ship time.",
+   "phase": "opening",
+   "dur": 6.337,
+   "sig": "7975ac8dbf",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "cab936a958b6": {
+   "text": "We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.",
+   "phase": "opening",
+   "dur": 6.534,
+   "sig": "df7524e607",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "0aa5d43de98b": {
+   "text": "First item on today's plan: drop beacon probe K-1 and log its signal.",
+   "phase": "opening",
+   "dur": 5.436,
+   "sig": "b4ec7f9f78",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "33838dc1cfd2": {
+   "text": "K-1 pings every ten M of its own time, about six seconds. Its beacon is on the speakers. Listen to the pitch.",
+   "phase": "opening",
+   "dur": 8.483,
+   "sig": "21bc41a4b6",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "7aebae486a8c": {
+   "text": "By its own clock, it is. Keep listening.",
+   "phase": "opening",
+   "dur": 3.006,
+   "sig": "9b27fd29a3",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "3dc1de7d5bb4": {
+   "text": "Notice the gaps between pings growing.",
+   "phase": "opening",
+   "dur": 2.848,
+   "sig": "f364238cc7",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "35cdd936608c": {
+   "text": "Ping 9, right on your prediction.",
+   "phase": "opening",
+   "dur": 2.538,
+   "sig": "380727296d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "1d34ed74c815": {
+   "text": "Ping 9, at 64 seconds.",
+   "phase": "opening",
+   "dur": 2.474,
+   "sig": "042c2e8134",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "03b244347053": {
+   "text": "Ping 9, at 64 seconds. Each ping has to climb out of a deeper well than the last.",
+   "phase": "opening",
+   "dur": 6.109,
+   "sig": "a98d44e855",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "2c8ca3318f55": {
+   "text": "By its own clock, K-1 crossed the horizon 58 seconds after release, and reached the centre less than a second later.",
+   "phase": "opening",
+   "dur": 8.358,
+   "sig": "02366f13b0",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "e246544659bb": {
+   "text": "Old light. Each moment of the fall reaches us later than the one before. The picture slows, reddens and fades, but the probe itself is gone.",
+   "phase": "opening",
+   "dur": 9.423,
+   "sig": "0f36f54b01",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "0a04c8eca1d8": {
+   "text": "I have drawn the whole fall on the spacetime map, on the port wall.",
+   "phase": "opening",
+   "dur": 4.082,
+   "sig": "3d4138cc01",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "9d37d522b461": {
+   "text": "The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.",
+   "phase": "opening",
+   "dur": 5.031,
+   "sig": "2304a24535",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d3eab5e060e5": {
+   "text": "The probe console is the one on the left, by the window. Walk up to it and use it.",
+   "phase": "opening",
+   "dur": 5.234,
+   "sig": "f85451a00d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "e0bef06e92a9": {
+   "text": "Capsule away. She is holding position beside us.",
+   "phase": "rescue",
+   "dur": 3.295,
+   "sig": "abb61887e6",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "e3038df4a568": {
+   "text": "The comms console now shows the spacetime map. The red dashed line is the last moment the beam can still reach her.",
+   "phase": "rescue",
+   "dur": 7.634,
+   "sig": "6c3a3b5b9b",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "b96cd10960db": {
+   "text": "Doctor, Ines's capsule has lost main power. It is falling.",
+   "phase": "rescue",
+   "dur": 4.059,
+   "sig": "ac0b39a129",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "64ceacf1448a": {
+   "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago.",
+   "phase": "rescue",
+   "dur": 9.197,
+   "sig": "5c18736ecf",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "f9810728238d": {
+   "text": "I can compute the deadline: the beam must leave within 49 seconds of her mayday. The clock is on the comms console. Her picture will not tell you.",
+   "phase": "rescue",
+   "dur": 9.387,
+   "sig": "b9fa386b55",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "535efb83cde4": {
+   "text": "Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.",
+   "phase": "rescue",
+   "dur": 12.167,
+   "sig": "d07957e94e",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "2d462902fb0d": {
+   "text": "You fired before the last possible moment. At that moment your screen showed her still well above the horizon, looking almost normal.",
+   "pattern": "^You\\ fired\\ .+?\\ seconds\\ before\\ the\\ last\\ possible\\ moment\\.\\ At\\ that\\ moment\\ your\\ screen\\ showed\\ her\\ .+?\\ rₛ\\ out,\\ looking\\ almost\\ normal\\.$",
+   "phase": "rescue",
+   "dur": 8.587,
+   "sig": "b5cce9bdf9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "717c6e8a8e35": {
+   "text": "It would have been far too late. By the deadline, her picture was still only a third of the way down.",
+   "phase": "rescue",
+   "dur": 6.125,
+   "sig": "76a6b05d14",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c2d7acafb4cf": {
+   "text": "You did not fire. She crossed the horizon long ago.",
+   "phase": "rescue",
+   "dur": 3.596,
+   "sig": "de03aa0086",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "b650d1a170b0": {
+   "text": "The beam reached the capsule inside the horizon. Her engine cannot help her there.",
+   "pattern": "^The\\ beam\\ reached\\ the\\ capsule\\ at\\ .+?\\ rₛ\\.\\ Inside\\ the\\ horizon\\.\\ Her\\ engine\\ cannot\\ help\\ her\\ there\\.$",
+   "phase": "rescue",
+   "dur": 5.382,
+   "sig": "bb6b4ed3e8",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d10de541cebe": {
+   "text": "The beam never caught her. By her own clock she had already crossed the horizon and reached the centre.",
+   "phase": "rescue",
+   "dur": 6.282,
+   "sig": "03b297bd58",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "8c9142611d6e": {
+   "text": "The recall beam is on the comms console, to the right of the helm.",
+   "phase": "rescue",
+   "dur": 4.269,
+   "sig": "78245f2cfa",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c0f6ea0d5ace": {
+   "text": "The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.",
+   "phase": "helm",
+   "dur": 9.83,
+   "sig": "69f31100b2",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "6f44b681b945": {
+   "text": "Relay clock at double speed. Hold here for twenty seconds.",
+   "phase": "helm",
+   "dur": 4.094,
+   "sig": "a183ada776",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "be24e2b3baa6": {
+   "text": "No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera.",
+   "phase": "helm",
+   "dur": 10.091,
+   "sig": "572e3b480e",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "a72b33202a7e": {
+   "text": "Back at station. The rest of the universe aged more than we did down there.",
+   "pattern": "^Back\\ at\\ station\\.\\ The\\ rest\\ of\\ the\\ universe\\ aged\\ .+?\\ seconds\\ more\\ than\\ we\\ did\\ down\\ there\\.$",
+   "phase": "helm",
+   "dur": 4.753,
+   "sig": "7a83de82ba",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "1b0bf1783eef": {
+   "text": "The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.",
+   "phase": "helm",
+   "dur": 7.067,
+   "sig": "ffcdac27f0",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c65391374d6a": {
+   "text": "Orpheus is loaded at the probe console. Its feed will show on the starboard screen.",
+   "phase": "orpheus",
+   "dur": 5.325,
+   "sig": "fd84dc2b37",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "64851cf793d9": {
+   "text": "No. Hovering there, the shadow covered most of our sky. Orpheus will pass that spot at nearly the speed of light, and its motion swings the sky ahead of it. It will see the shadow much smaller.",
+   "pattern": "^No\\.\\ Hovering\\ there,\\ the\\ shadow\\ covered\\ .+?\\ degrees\\ of\\ our\\ sky\\.\\ Orpheus\\ will\\ pass\\ that\\ spot\\ at\\ .+?%\\ of\\ light\\ speed,\\ and\\ its\\ motion\\ swings\\ the\\ sky\\ ahead\\ of\\ it\\.\\ It\\ will\\ see\\ the\\ shadow\\ only\\ .+?\\ degrees\\ across\\.$",
+   "phase": "orpheus",
+   "dur": 12.306,
+   "sig": "3283174d89",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "ac30a8bb073b": {
+   "text": "Same place, different motion, different sky.",
+   "phase": "orpheus",
+   "dur": 3.046,
+   "sig": "6b1b2c2299",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "624863312d86": {
+   "text": "Frames are arriving further apart. The signal is being stretched as it climbs out.",
+   "phase": "orpheus",
+   "dur": 5.4,
+   "sig": "795f03e845",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "35b40c1265a7": {
+   "text": "No more frames are coming. Everything Orpheus sent after that last one is still trying to climb out, and never will. Its marker in the window is fading the same way.",
+   "phase": "orpheus",
+   "dur": 10.906,
+   "sig": "8b911adad1",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "26200f37e5c4": {
+   "text": "Its clock never stopped. Orpheus reached the centre less than a second after crossing, by its own clock. The frozen picture is only the last light that could still climb out, and even that has faded.",
+   "phase": "orpheus",
+   "dur": 12.77,
+   "sig": "ac8575d16b",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "9e424d3e4438": {
+   "text": "No one outside ever will. Only Orpheus saw it.",
+   "phase": "orpheus",
+   "dur": 3.911,
+   "sig": "e056329d1f",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "97ed300b71ba": {
+   "text": "Orpheus is loaded at the probe console, on the left.",
+   "phase": "orpheus",
+   "dur": 3.506,
+   "sig": "44fcdebf0f",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "0bac103abb2a": {
+   "text": "The feed is on the big screen on the starboard wall, to the right as you face the window.",
+   "phase": "orpheus",
+   "dur": 5.658,
+   "sig": "7e924ceeb7",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d74d959f13a5": {
+   "text": "Erebus is big, and tides weaken with size. At the horizon of a black hole of ten suns, the same stretch would be 2.1×10⁷ g.",
+   "phase": "free",
+   "dur": 11.474,
+   "sig": "43782ae051",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "bb6dcced29ea": {
+   "text": "The field is pushing against an enormous pull to hold us here. Nobody aboard feels a thing.",
+   "pattern": "^The\\ field\\ is\\ pushing\\ against\\ .+?\\ to\\ hold\\ us\\ here\\.\\ Nobody\\ aboard\\ feels\\ a\\ thing\\.$",
+   "phase": "free",
+   "dur": 5.936,
+   "sig": "5fbacb231d",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "b576076f889e": {
+   "text": "5.9 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.107,
+   "sig": "505049e254",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "9a184dac9a37": {
+   "text": "5.8 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.099,
+   "sig": "aca519d194",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "ab66f3967327": {
+   "text": "5.7 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.237,
+   "sig": "061f8580b9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "2f9cae2bb20d": {
+   "text": "5.6 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.09,
+   "sig": "210fd01d68",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "1b01ebc6c372": {
+   "text": "5.5 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.194,
+   "sig": "3d4c848d09",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "2de297fd03a3": {
+   "text": "5.4 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.164,
+   "sig": "148d93eec0",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "8efd827e346b": {
+   "text": "5.3 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.065,
+   "sig": "2efcaa2069",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d88802157fa2": {
+   "text": "5.2 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.064,
+   "sig": "7c9c145951",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "abf800d017ca": {
+   "text": "5.1 relay seconds for each of ours. This is as deep as the field can hold us, Doctor.",
+   "phase": "free",
+   "dur": 7.185,
+   "sig": "cb1f5c0064",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "0c30735a43d7": {
+   "text": "K-2 away. You know how this ends now: about 58 seconds to the horizon by its clock. It will still look as if it never gets there.",
+   "phase": "free",
+   "dur": 8.999,
+   "sig": "62101013e9",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "baf5b5d4e1fe": {
+   "text": "Doctor, one item is left on the survey plan, if you want it. It is optional. A ranging-laser test at the photon sphere.",
+   "phase": "halo",
+   "dur": 8.333,
+   "sig": "f345580995",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "89581a992f1e": {
+   "text": "One and a half horizon radii. At that height light can orbit Erebus. A beam fired sideways goes all the way round.",
+   "phase": "halo",
+   "dur": 8.243,
+   "sig": "417616a36d",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "000cefe68d6a": {
+   "text": "Photon sphere. I have locked the field to it, to within a centimetre. You will see why that matters.",
+   "phase": "halo",
+   "dur": 6.301,
+   "sig": "95a2ce143b",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "c79f88ee7407": {
+   "text": "Look forward: the shadow now covers exactly half the sky, 180 degrees. Its edge is a circle at right angles to our nose: straight up, straight down, and straight out on either side of the hull.",
+   "phase": "halo",
+   "dur": 13.408,
+   "sig": "08f64a2a51",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "55f2fe0a159a": {
+   "text": "Pulse away. Watch the plot on the helm panel.",
+   "phase": "halo",
+   "dur": 3.017,
+   "sig": "6d500f996f",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "4ee993dd9795": {
+   "text": "Caught at the stern, 11.1 seconds after it left, 2.7 metres from where it set out. It went all the way round Erebus: 3.34 million km.",
+   "phase": "halo",
+   "dur": 11.667,
+   "sig": "6325972a09",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "ff8a34104d93": {
+   "text": "As you predicted. That is just the circumference divided by the speed of light.",
+   "phase": "halo",
+   "dur": 5.019,
+   "sig": "8ee5372043",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "35630fca27d7": {
+   "text": "Not quite. 19.3 seconds is what the relay far away counts for one lap. Our clock runs slow down here, so we count 11.1: the circumference divided by the speed of light.",
+   "phase": "halo",
+   "dur": 13.058,
+   "sig": "05f08d9c95",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "306912cb1606": {
+   "text": "It did. Light goes straight, but space here is curved, and at this height straight means round. 11.1 seconds: the circumference divided by the speed of light. The relay far away counts 19.3.",
+   "phase": "halo",
+   "dur": 14.072,
+   "sig": "4d69f9cb11",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "6f08a69e3f72": {
+   "text": "Exactly sideways, yes. Including the light bouncing off the back of your head.",
+   "phase": "halo",
+   "dur": 5.208,
+   "sig": "6b8164baae",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "75b9cffd3785": {
+   "text": "You see the back of your own head, as it was 11 seconds ago. Squeezed into a thin line along the edge. One more lap in, a second copy, 22 seconds old and hundreds of times thinner. The hull camera on the helm panel looks along it.",
+   "phase": "halo",
+   "dur": 15.53,
+   "sig": "dbc681167a",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "e6a8bc4d8bb8": {
+   "text": "Now the reason for the centimetre. The dorsal mast has a laser too, one metre further out. Fire it and watch.",
+   "phase": "halo",
+   "dur": 7.454,
+   "sig": "b3cffaec7c",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "b15f63dbf5d1": {
+   "text": "Mast pulse away.",
+   "phase": "halo",
+   "dur": 1.508,
+   "sig": "e778f067d2",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "aa00d26b4e91": {
+   "text": "Lap one: it passed us 268 metres too high. It missed the stern.",
+   "phase": "halo",
+   "dur": 5.479,
+   "sig": "b82e711188",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "8ecef369585c": {
+   "text": "Lap two: 143 kilometres off. Each lap multiplies the miss by about 268.",
+   "phase": "halo",
+   "dur": 7.454,
+   "sig": "6c4f462fc4",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "3429d253bc44": {
+   "text": "And it is gone, out to the stars. A metre high and it spirals out; a metre low and it spirals in, through the horizon. The photon sphere is a knife edge. Nothing stays on it for long.",
+   "phase": "halo",
+   "dur": 12.301,
+   "sig": "ef9d584b67",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "9f793daddf53": {
+   "text": "Back at station. I have added the laser test to the expedition log.",
+   "phase": "halo",
+   "dur": 4.63,
+   "sig": "dedd9e8c7c",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "d636ed3e943c": {
+   "text": "The helm is the low desk in the middle of the bridge. Lower the altitude to 1.500 rₛ and the field will lock there.",
+   "phase": "halo",
+   "dur": 8.964,
+   "sig": "1556c16dab",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "909ad9ca5cee": {
+   "text": "The laser controls are at the top of the helm panel, once the field is locked at 1.5 rₛ.",
+   "phase": "halo",
+   "dur": 7.51,
+   "sig": "fbf94cfbad",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  },
+  "e9c89406bca0": {
+   "text": "The second laser button on the helm panel fires from the dorsal mast, one metre further from Erebus.",
+   "phase": "halo",
+   "dur": 6.885,
+   "sig": "93c317454e",
+   "where": [
+    "src/game/act-halo.js"
+   ]
+  }
+ }
+}

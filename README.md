@@ -83,7 +83,7 @@ Each panel puts the one number that matters in large type, with a plain-words li
 
 ## Sound
 
-The soundscape is synthesized in the browser with WebAudio, with no audio files. Each room sounds different: the bridge hums, the corridor breathes, the quarters are quiet. The beacon's tone keeps its true 1/(1+z) pitch as it slides down into silence. Ines's voice is stretched and lowered by the redshift of the light that carried it. During the descent a deep drone sinks an octave and two clocks tick at their true rates.
+The soundscape is synthesized in the browser with WebAudio. Each room sounds different: the bridge hums, the corridor breathes, the quarters are quiet. The beacon's tone keeps its true 1/(1+z) pitch as it slides down into silence. Ines and WREN speak in voices made with the open Kokoro-82M model; Ines's is stretched and lowered by the redshift of the light that carried it, while WREN, the ship itself, speaks clean over the ship's PA. During the descent a deep drone sinks an octave and two clocks tick at their true rates.
 
 ## Training simulations
 

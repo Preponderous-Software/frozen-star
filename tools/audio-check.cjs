@@ -151,6 +151,26 @@ const fs = require('node:fs');
       // a line with no clip still gets the procedural voice
       { const b = await render(6, [[0.1, (a) => { a.radio(1.2, 30); a.voice('INES', 'A line nobody recorded.', 'intercom'); }]], 0.8, load); R['voice.fallback'] = { activeSec: +activeSpan(mono(b)).toFixed(2) }; }
     }
+    // WREN's recorded voice (Kokoro bm_george) over the ship's PA: full speed, never redshifted, and never
+    // over Ines: asked to speak while she is on the radio, it waits until she has finished
+    {
+      const man = await (await fetch(base + 'assets/voice/wren/manifest.json')).json();
+      const line = 'Notice the gaps between pings growing.', iline = 'Doc, the stars behind me are going blue. Is that right?';
+      const clip = Object.values(man.lines).find((e) => e.text === line);
+      const load = async (a) => { if (!(await a.voiceLoad(line, 'WREN')) || !(await a.voiceLoad(iline))) throw new Error('clip did not load'); };
+      { // even when the caller names the radio, WREN stays the ship's PA: clean and at full speed
+        let got = null;
+        const b = await render(5, [[0.1, (a) => { got = a.voice('WREN', line, 'radio'); }]], 0.8, load), m = mono(b);
+        R['voice.wren.pa'] = { clipSec: clip.dur, reportedSec: got ? +(got.dur - 0.25 - 0.05).toFixed(2) : null, activeSec: +activeSpan(m, -40).toFixed(2), centroidHz: Math.round(centroid(m, 0.2, 0.1 + Math.min(3, clip.dur))), rmsDb: +rms(m, 0.2, 0.1 + clip.dur).toFixed(1), peakDb: +peakOf(b).toFixed(1) };
+        W['voice-wren-pa'] = b;
+      }
+      { // one at a time: Ines over the radio at 1 + z = 1.3, then WREN asked in the same instant
+        let gi = null, gw = null; const z = 1.3;
+        const b = await render(Math.ceil(5 * z + clip.dur + 2), [[0.1, (a) => { a.radio(z, iline.length); gi = a.voice('INES', iline, 'radio'); gw = a.voice('WREN', line); }]], 0.8, load);
+        R['voice.queue'] = { inesEndsSec: gi && +(gi.dur - 0.25).toFixed(2), wrenStartsSec: gw && +(gw.dur - 0.25 - clip.dur).toFixed(2), wrenWaits: !!(gi && gw && gw.dur - 0.25 - clip.dur >= gi.dur - 0.25) };
+        W['voice-queue'] = b;
+      }
+    }
     // the alarm
     { const b = await render(22, [[0.1, (a) => a.alarm(true)], [21, (a) => a.alarm(false)]]), m = mono(b); R.alarm = { rmsFirst10sDb: +rms(m, 0.1, 10).toFixed(1), rmsAfter15sDb: +rms(m, 16, 21).toFixed(1), peakDb: +peakOf(b).toFixed(1) }; W.alarm = b; }
     // Orpheus feed: static and frames
