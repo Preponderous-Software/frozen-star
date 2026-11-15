@@ -38,6 +38,9 @@ export function padNav({ container, onBack, onStart }) {
       if ((dir || gp.buttons.some((x) => x.pressed)) && document.body.dataset.input !== 'pad') document.body.dataset.input = 'pad';
       const root = capture.on ? null : container(); // a gamepad button being bound does nothing else
       if (root) {
+        // the right stick scrolls long lists (Discoveries, lessons) that up/down focus alone can't reach
+        const sy = gp.axes[3] || 0;
+        if (Math.abs(sy) > 0.2) { const sc = [root, ...root.querySelectorAll('*')].find((e) => e.scrollHeight > e.clientHeight + 4 && getComputedStyle(e).overflowY !== 'visible'); sc?.scrollBy(0, sy * 16); }
         if (dir && dir !== holdDir) { move(dir); holdT = now + 380; } else if (dir && now > holdT) { move(dir); holdT = now + 110; }
         if (b(padFor('use')) && !prev.a) { const a = document.activeElement; if (a && root.contains(a) && a !== document.body) { if (a.type === 'checkbox') { a.checked = !a.checked; a.dispatchEvent(new Event('change', { bubbles: true })); } else a.click(); } else move('down'); }
         if (b(padFor('back')) && !prev.b) onBack?.();

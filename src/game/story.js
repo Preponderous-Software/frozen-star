@@ -386,7 +386,8 @@ async function rescueAttempt(g) {
       q.done = true;
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
       const style = inesStyle(f, q.tau), z = f.onePlusZ(f.rOfTau(q.tau));
-      run.log.push({ text: q.text, style }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag: z >= 1.1 ? `stretched ×${z < 10 ? z.toFixed(1) : Math.round(z)}` : null });
+      const tag = z >= 1.1 ? `stretched ×${z < 10 ? z.toFixed(1) : Math.round(z)}` : null;
+      run.log.push({ text: q.text, style, tag }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);
@@ -584,7 +585,7 @@ async function epilogue(g, haloNow) {
 
 // ---------- after the story: small things to find ----------
 function freeRoam(g) {
-  g.hud.hint('Free roam: talk to Ines at the comms console, take the helm, or drop another beacon.');
+  g.hud.hint('Free roam: talk to Ines (comms console or the capsule bay intercom), take the helm, or drop another beacon.');
   g.wait(12).then(() => g.hud.hint(null)).catch(() => {});
   // Ines, on the comms channel from the capsule bay
   const M = HOLE.mass, tideG = tidalStretch(2, M) / G_EARTH;
