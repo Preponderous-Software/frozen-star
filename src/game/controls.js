@@ -85,7 +85,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
       lookDX += rx * Math.abs(rx) * LOOK_PAD * SENS * dt; lookDY += ry * Math.abs(ry) * LOOK_PAD * 0.7 * SENS * dt;
       const a = gp.buttons[0]?.pressed, b = gp.buttons[1]?.pressed;
       if (a && !padPrev.a) { interactEdge = true; onInteract?.(); }
-      if (b && !padPrev.b) { backEdge = true; onBack?.(); }
+      // B is handled by the menu/panel navigator (ui/padnav.js), not here
       padPrev = { a, b };
     }
     const out = { forward: enabled ? forward : 0, right: enabled ? right : 0, run, lookDX: lookDX + turn * 1.8 * dt, lookDY, interact: interactEdge, back: backEdge };

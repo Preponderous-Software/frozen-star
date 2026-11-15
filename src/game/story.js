@@ -136,7 +136,7 @@ async function wake(g) {
   g.hud.hint(g.controls.isTouch() ? 'Left thumb to walk, drag to look around.' : 'Click to look around. <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>E</kbd> to use things.');
   await g.wait(4.5);
   await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
-  g.objective('Go to the bridge');
+  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' });
   await g.wait(6); g.hud.hint(null);
 }
 
@@ -163,7 +163,7 @@ async function beaconAct(g) {
   };
   await g.say('INES', 'Isn\'t it something? That black circle is Erebus. Well, its shadow. I\'m out in the capsule bay doing pre-flight.');
   await g.say('WREN', 'First item on today\'s plan: drop beacon probe K-1 and log its signal.');
-  if (!launched) { g.objective('Drop the beacon probe (probe console, left)'); g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 }; }
+  if (!launched) { g.objective('Drop the beacon probe (probe console, left)', { hint: 'The probe console is the one on the left, by the window. Walk up to it and use it.' }); g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 }; }
   await g.until(() => launched);
   g.objective('Watch the probe fall');
   const run = g.beacon, f = run.f;
@@ -273,7 +273,7 @@ async function rescueAttempt(g) {
   g.waypoint = { pos: consolePos(g, 'comms'), label: 'Comms', near: 1.4 };
   const f = run.f, D = f.rescueDeadline;
   g.say('WREN', 'Doctor, Ines\'s capsule has lost main power. It is falling.');
-  g.objective('Save Ines: fire the recall beam from the comms console. Wait as long as you dare.');
+  g.objective('Save Ines: fire the recall beam from the comms console. Wait as long as you dare.', { hint: 'The recall beam is on the comms console, to the right of the helm.', after: 12 });
   // her messages, delivered when their light arrives
   const queue = INES_LINES.map(([tau, text]) => ({ tau, text, at: f.messageArrival(tau), done: false }));
   for (const q of queue) run.signals.push({ tau: q.tau });
@@ -332,7 +332,7 @@ async function helmAct(g) {
   g.flags.helmUnlocked = true;
   await g.say('INES', 'I want to see that again. Without dying this time.');
   await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
-  g.objective('Take the Tern down until the relay clock runs twice as fast (helm)');
+  g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
   g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
   await g.until(() => 1 / hoverRate(g.shipR) >= 2);
   g.waypoint = null;
@@ -361,7 +361,7 @@ async function orpheusAct(g) {
   g.flags.orpheusReady = true; g.flags.beaconDone = true; g.flags.mapUnlocked = true;
   await g.say('INES', 'One probe left. Orpheus. It has a camera, and it streams.');
   await g.say('WREN', 'Orpheus is loaded at the probe console. Its feed will show on the starboard screen.');
-  g.objective('Launch Orpheus (probe console), then watch its feed (starboard screen)');
+  g.objective('Launch Orpheus (probe console), then watch its feed (starboard screen)', { hint: 'Orpheus is loaded at the probe console, on the left.' });
   g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 };
   let launched = false;
   g.feed = createFeed();
@@ -397,7 +397,7 @@ async function orpheusAct(g) {
     g.audio.static(frames ? Math.min(1, g.feedState().noise) * near : 0);
   };
   g.ticks.add(tick); g.ticks.add(sound);
-  g.objective('Watch the Orpheus feed (starboard screen)');
+  g.objective('Watch the Orpheus feed (starboard screen)', { hint: 'The feed is on the big screen on the starboard wall, to the right as you face the window.', after: 25 });
   await g.until(() => run.tau() >= f.tauH - 6);
   g.say('WREN', 'Frames are arriving further apart. The signal is being stretched as it climbs out.');
   await g.until(() => run.tau() >= f.tauEnd);

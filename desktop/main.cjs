@@ -22,14 +22,27 @@ app.on('second-instance', () => {
   mainWin.webContents.reloadIgnoringCache(); mainWin.focus();
 });
 
+// window size and position are remembered between launches
+const fsx = require('node:fs');
+const stateFile = () => path.join(app.getPath('userData'), 'window.json');
+function loadState() { try { return JSON.parse(fsx.readFileSync(stateFile(), 'utf8')); } catch { return {}; } }
+
 function createWindow() {
+  const st = SMOKE ? {} : loadState();
+  const { screen } = require('electron');
+  const onScreen = st.bounds && screen.getAllDisplays().some((d) => { const a = d.workArea; return st.bounds.x < a.x + a.width - 100 && st.bounds.x + st.bounds.width > a.x + 100 && st.bounds.y < a.y + a.height - 100 && st.bounds.y > a.y - 50; });
   const win = new BrowserWindow({
-    width: 1600, height: 900, minWidth: 800, minHeight: 500,
+    width: 1600, height: 900, minWidth: 800, minHeight: 500, ...(onScreen ? st.bounds : {}),
     backgroundColor: '#070812', title: 'Frozen Star', icon: path.join(__dirname, 'icon.png'),
     autoHideMenuBar: true, show: false,
     webPreferences: { contextIsolation: true, sandbox: true, backgroundThrottling: false },
   });
   mainWin = win;
+  if (!SMOKE) {
+    if (onScreen && st.maximized) win.maximize();
+    if (st.fullscreen) win.setFullScreen(true);
+    win.on('close', () => { try { fsx.writeFileSync(stateFile(), JSON.stringify({ bounds: win.getNormalBounds(), maximized: win.isMaximized(), fullscreen: win.isFullScreen() })); } catch { /* not important */ } });
+  }
   if (arg('fullscreen')) win.setFullScreen(true);
   if (!SMOKE) win.once('ready-to-show', () => win.show());
   else { win.setSkipTaskbar(true); win.setBounds({ x: -6000, y: -6000, width: 1600, height: 900 }); win.once('ready-to-show', () => win.showInactive()); smoke(win); }

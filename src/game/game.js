@@ -14,6 +14,7 @@ import { runStory } from './story.js';
 import { createAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { settingsForm } from './settings-ui.js';
+import { padNav } from '../ui/padnav.js';
 import { hoverAccel } from '../physics/body.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
@@ -66,7 +67,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const hud = createHud(el);
   g.hud = hud;
   const audio = createAudio(); g.audio = audio;
-  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); else if (g.mode === 'walk') togglePause(); }, onSkip: () => { if (!g.paused) hud.skip(); } });
+  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (!g.paused) hud.skip(); } });
   // ---- settings ----
   let settings = loadSettings();
   function applySettings() {
@@ -81,7 +82,8 @@ export function mountGame(root, { checkpoint } = {}) {
   g.wait = (sec) => new Promise((res, rej) => waiters.push({ t: g.time + sec, res, rej }));
   g.until = (fn) => new Promise((res, rej) => waiters.push({ fn, res, rej }));
   g.say = (who, text, opts) => (g.aborted ? Promise.reject(new Error('aborted')) : hud.say(who, text, opts));
-  g.objective = (t) => hud.objective(t);
+  let objState = null;
+  g.objective = (t, opts = {}) => { hud.objective(t); objState = t && opts.hint ? { hint: opts.hint, after: opts.after ?? 40, since: g.time, hinted: false } : null; };
   g.on = (id, fn) => { g.handlers[id] = fn; };
   g.enable = (id, on = true) => { const it = ship.interactables.find((i) => i.id === id); if (it) it.disabled = !on; };
   g.unlockDoor = (id, on = true) => { const d = ship.doors.find((x) => x.id === id); if (d) d.locked = !on; };
@@ -142,6 +144,7 @@ export function mountGame(root, { checkpoint } = {}) {
   function interact() {
     if (g.mode !== 'walk' || !focusIt) return;
     const fn = g.handlers[focusIt.id];
+    audio.click();
     fn?.(focusIt);
   }
 
@@ -158,6 +161,11 @@ export function mountGame(root, { checkpoint } = {}) {
     if (!controls.isTouch() && g.mode === 'walk') el.requestPointerLock?.()?.catch?.(() => {});
   }
   g.pause = setPaused;
+  const stopPad = padNav({
+    container: () => (g.paused ? menu : hud.choosing ? el.querySelector('.fp-choice') : el.querySelector('.fp-logbook') || (g.mode === 'console' ? panel : null)),
+    onBack: () => { if (g.paused) resume(); else if (g.mode === 'console') closeApp(); },
+    onStart: () => { if (g.paused) resume(); else if (g.mode === 'walk' || g.mode === 'console') setPaused(true); },
+  });
   menuBtn.addEventListener('click', () => (g.paused ? resume() : setPaused(true)));
   let wasLocked = false;
   const onLockChange = () => {
@@ -230,6 +238,7 @@ export function mountGame(root, { checkpoint } = {}) {
       if ((w.t != null && g.time >= w.t) || (w.fn && w.fn())) { waiters.splice(i, 1); w.res(); }
     }
     for (const t of g.ticks) t(dt);
+    if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after) { objState.hinted = true; hud.say('WREN', objState.hint); }
     const inp = controls.read(dt);
     hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1);
     if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
@@ -380,7 +389,7 @@ export function mountGame(root, { checkpoint } = {}) {
   runStory(g, start).catch((e) => { if (!g.aborted) console.error(e); });
 
   return () => {
-    alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); document.removeEventListener('pointerlockchange', onLockChange);
+    alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); stopPad(); document.removeEventListener('pointerlockchange', onLockChange);
     for (const w of waiters) w.rej(new Error('aborted'));
     appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
     document.body.classList.remove('fp-active');
