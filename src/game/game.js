@@ -143,13 +143,13 @@ export function mountGame(root, { checkpoint } = {}) {
     for (const it of ship.interactables) {
       if (it.disabled || !g.handlers[it.id]) continue;
       const to = it.pos.clone().sub(eye), d = to.length();
-      if (d > it.radius) continue;
+      if (Math.hypot(to.x, to.z) > it.radius) continue; // reach is measured across the floor, so low things on a desk count
       // the look must land near the thing sideways: a cone that narrows with distance (about 32° at 1 m,
       // 22° at 2 m). Up and down stays lenient, so a desk item counts without staring at the floor.
       const hd = Math.hypot(to.x, to.z), hl = Math.hypot(dir.x, dir.z) || 1;
       if (hd > 0.05 && (to.x * dir.x + to.z * dir.z) / (hd * hl) < Math.cos(Math.min(0.6, 0.14 + Math.atan(0.45 / Math.max(0.3, d))))) continue;
       const cos = to.normalize().dot(dir);
-      if (cos < 0.6) continue;
+      if (cos < 0.75) continue; // and the look must be roughly on it up and down too
       const score = cos + 0.06 * (1 - d / it.radius);
       if (score > bestScore) { bestScore = score; best = it; }
     }

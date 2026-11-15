@@ -59,7 +59,7 @@ export default {
           if (got === PINGS) {
             ctx.goal(0, true);
             if (guess === true) ctx.goal(1, true);
-            station.log.add(guess === true ? 'Your prediction was right.' : guess === false ? `Your prediction missed: it arrived at ${A9.toFixed(1)} M.` : 'No prediction this time.', guess ? 'got' : 'never');
+            station.log.add(guess === true ? 'Your prediction was right.' : guess === false ? `Your prediction missed: it arrived at ${A9.toFixed(1)} M. Each ping starts deeper in the hole's gravity than the last, so it takes longer to climb out, and the gaps keep growing.` : 'No prediction this time.', guess ? 'got' : 'never');
           }
         }
         if (!gone && f.seenAt(S).lnz > 9) {

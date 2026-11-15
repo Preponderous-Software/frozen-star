@@ -70,7 +70,7 @@ const diagrams = new WeakMap();
 export function drawMap(ctx, w, hh, run) {
   let d = diagrams.get(ctx.canvas);
   if (!d || d.f !== run.f) { d = new SpacetimeDiagram(ctx.canvas, run.f); diagrams.set(ctx.canvas, d); }
-  d.S = run.S(); d.tau = run.tau(); d.signals = run.signals || []; d.rescues = run.fired != null ? [run.fired] : []; d.showDeadline = !!run.showDeadline;
+  d.S = run.S(); d.tau = run.tau(); d.cutTau = run.saved?.tau; d.signals = run.signals || []; d.rescues = run.fired != null ? [run.fired] : []; d.showDeadline = !!run.showDeadline;
   d.draw();
   ctx.fillStyle = '#ffc882'; ctx.font = `500 ${hh * 0.05}px ${MONO}`; ctx.fillText('SPACETIME MAP · ' + (run.kind === 'capsule' ? 'capsule' : run.kind === 'orpheus' ? 'Orpheus' : 'beacon K-1'), w * 0.08, hh * 0.08);
 }
@@ -82,7 +82,9 @@ export function drawClocks(ctx, w, hh, g) {
   ctx.font = `500 ${hh * 0.5}px ${MONO}`; ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffc882'; ctx.fillText(`SHIP ${fmt(g.clocks.ship)}`, w * 0.02, hh / 2);
   ctx.fillStyle = '#8fb8ff'; ctx.fillText(`RELAY ${fmt(g.clocks.relay)}`, w * 0.33, hh / 2);
-  ctx.fillStyle = rate > 1.5 ? '#ff6b5c' : '#ece8f4'; ctx.fillText(`×${rate.toFixed(rate < 10 ? 3 : 1)}  ${(g.shipR / 2).toFixed(2)} rs`, w * 0.66, hh / 2);
+  // say what the factor is: how much faster the far-away relay's clock runs than the ship's
+  ctx.font = `500 ${hh * 0.36}px ${MONO}`;
+  ctx.fillStyle = rate > 1.5 ? '#ff6b5c' : '#ece8f4'; ctx.fillText(`RELAY RUNS ×${rate.toFixed(rate < 10 ? 2 : 1)}  ${(g.shipR / 2).toFixed(2)} rs`, w * 0.635, hh / 2);
   ctx.textBaseline = 'alphabetic';
 }
 
@@ -100,6 +102,9 @@ export function datapadApp(body) {
 }
 
 /** Beacon or Orpheus launcher, with the live station view and the probe's own telemetry. */
+// one plain-words key for the units every panel uses
+const LEGEND = 'rₛ: the horizon\'s radius (354,000 km); the ship holds at 10 rₛ. M: the black hole\'s unit of time, 0.59 s at Erebus. 1+z (redshift): how stretched the light is; at 2, every wave arrives twice as long and the picture runs at half speed.';
+
 export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
   const wrap = h('div.fp-stack');
   body.append(wrap);
@@ -111,7 +116,8 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
         wrap.append(
           h('p.eyebrow', 'Probe console'), h('h3', name),
           h('p', `Released from rest beside the ship, 10 rₛ from Erebus. It carries a clock and a beacon${/orpheus/i.test(name) ? ', and a camera that sends a frame home every few seconds of its own time' : ''}.`),
-          h('button.primary.big#fp-launch', { disabled: !canLaunch(), onclick: () => { onLaunch(); } }, `Launch ${name}`));
+          h('button.primary.big#fp-launch', { disabled: !canLaunch(), onclick: () => { onLaunch(); } }, `Launch ${name}`),
+          h('p.fine', { hidden: canLaunch() }, 'Locked for now: the survey plan launches it later.'));
       }
       return;
     }
@@ -122,7 +128,7 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
       const head = h('div.fp-twoclocks',
         h('div', h('span', 'Its own clock'), own),
         h('div', h('span', 'Its clock, as you see it'), seen), gap,
-        h('p.fp-legend', 'M is the black hole\'s natural unit of time: 1 M = 0.59 s at Erebus. rₛ is the horizon\'s radius (354,000 km); the ship holds at 10 rₛ.'));
+        h('p.fp-legend', LEGEND));
       panels = { run: r, st, pr, own, seen, gap };
       wrap.append(head, st.el, pr.el);
     }
@@ -156,7 +162,8 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   // the deadline is a calculation, not something you can see: show it as a plain clock
   const clock = h('p.fp-deadline');
   let diag = null, diagCanvas = null;
-  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, clock, after, st.el, h('p.fp-legend', 'rₛ is the horizon\'s radius; the ship holds at 10 rₛ. M is black-hole time: 1 M = 0.59 s.'), h('p.who', 'Ines, as received'), msgs);
+  // her messages first, so the Fire button and her words stay in view together
+  body.append(h('p.eyebrow', 'Comms · capsule channel'), fire, clock, after, h('p.who', 'Ines, as received'), msgs, h('p.fp-legend', LEGEND), st.el);
   if (showMap) {
     diagCanvas = h('canvas.diagram.small'); diag = new SpacetimeDiagram(diagCanvas, r.f); diag.showDeadline = true;
     body.append(h('p.who', 'Spacetime map'), diagCanvas, h('p.fine', 'The red dashed line is the last inward light ray that meets her outside the horizon.'));
@@ -177,7 +184,7 @@ export function commsApp(body, g, { run, onFire, showMap }) {
     st.update(frozenAt ?? S, { mass: HOLE.mass });
     if (frozenAt != null) st.status.set('Climbing. Her engine burn has reached you: from here on the picture shows her coming home.');
     while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.text)); }
-    if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
+    if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.cutTau = r.saved?.tau; diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
   });
   return stop;
 }
@@ -187,9 +194,9 @@ export function mapApp(body, g, { run }) {
   if (!r) { body.append(h('p.eyebrow', 'Spacetime map'), h('p', 'Nothing has been plotted yet.')); return null; }
   const c = h('canvas.diagram'); const d = new SpacetimeDiagram(c, r.f);
   body.append(h('p.eyebrow', 'Spacetime map'), h('h3', r.kind === 'capsule' ? 'Ines\'s fall' : r.kind === 'orpheus' ? 'Orpheus' : 'Beacon K-1'), c,
-    h('p', 'Time runs to the right, distance from the centre runs up. The gold line is the probe. Green lines are its signals climbing out: the closer to the horizon they start, the longer they hug it before escaping.'),
+    h('p', `Time runs to the right, distance from the centre runs up. The gold line is ${r.kind === 'capsule' ? 'Ines\'s capsule' : 'the probe'}.${r.saved ? ' It stops where the recall beam reached her; the dashed green line is her climb home.' : ''} Green lines are its signals climbing out: the closer to the horizon they start, the longer they hug it before escaping.`),
     h('p', 'Each little wedge is a light cone, the directions light can go. At the horizon the outward edge lies flat. Inside, every direction leads down to r = 0.'));
-  return loop(() => { d.S = r.S(); d.tau = r.tau(); d.signals = r.signals || []; d.rescues = r.fired != null ? [r.fired] : []; d.showDeadline = !!r.showDeadline; d.draw(); });
+  return loop(() => { d.S = r.S(); d.tau = r.tau(); d.cutTau = r.saved?.tau; d.signals = r.signals || []; d.rescues = r.fired != null ? [r.fired] : []; d.showDeadline = !!r.showDeadline; d.draw(); });
 }
 
 export function helmApp(body, g, { onTarget }) {
