@@ -1,0 +1,81 @@
+{
+  "session": "s03",
+  "goal": "The rescue: Ines's capsule loses power. Save her with the recall beam from the comms console. Note whether you understood why waiting fails, and whether anything on screen looked broken.",
+  "build": {"version": "0.1.0", "commit": "c667e1e"},
+  "seed": null,
+  "durationSec": 640,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Comms capsule view keeps showing Ines falling after her 'I'm climbing' message arrives",
+      "detail": "After firing the beam (~tick 3200) Ines's reply 'Engine's lit! ... I'm climbing. I'm coming home!' arrived at tick 3406 and the objective completed. But for the next 500+ ticks the comms panel's CAPSULE view kept showing her falling deeper (appears at 7.7 -> 6.2 rs, redshift 1.22 -> 1.36, brightness 45% -> 29%, caption still 'Falling. It looks almost normal from here.'), and another line that sounds like it was sent before the rescue arrived afterwards ('Everything overhead is so bright I can barely read the instruments.'). Radio and image both travel at light speed, so once I had heard she was climbing I expected the picture to show her climbing too. The mixed signals made me doubt the rescue had worked until WREN's debrief.",
+      "repro": "pt start --checkpoint probe-done; walk to comms, E; wait until ~tick 3000; click 'Fire recall beam' (992,179); pt wait 30; read panel",
+      "screenshot": "shots/after-rescue.png",
+      "tick": 3804
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Comms capsule panel labels Ines's clock 'PROBE CLOCK YOU SEE'",
+      "detail": "The panel is headed 'CAPSULE · WHAT YOU SEE', but the clock readout is labelled 'PROBE CLOCK YOU SEE'. The label looks copied from the probe panel. The big number (e.g. 47.7 M) with 'ship clock' and '28.2 s for this hole' is also not explained, so a newcomer cannot tell what M means or which clock is which.",
+      "repro": "pt start --checkpoint probe-done; walk to comms console; E; pt shot",
+      "screenshot": "shots/probe-label.png",
+      "tick": 2680
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "No hint of how much time is left before the beam can no longer reach her",
+      "detail": "I understood the lesson only from WREN's debrief: 'You fired 12 seconds before the last possible moment. At that moment your screen showed her 7.8 rs out, looking almost normal.' Before firing, the only clue was WREN's 'The recall beam travels at light speed. It must reach her before she crosses the horizon.' While waiting, everything on screen (7.7 rs, 'looks almost normal') suggested there was plenty of time. That is the point of the scene, but a first-time player gets no warning that the safe window is shorter than it looks, and the payoff lands only for players who fire in time. I could not check the fail branch within my time budget.",
+      "repro": "pt start --checkpoint probe-done; go to comms; watch the panel while waiting",
+      "screenshot": "shots/s11.png",
+      "tick": 3208
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at ~4-10 ticks/s with inputs landing seconds late during a timed rescue",
+      "detail": "fps was 10 and game time ran at about 4-10 ticks per real second. Key holds and scrolls landed several seconds late, or in bursts (pt face overshot or did nothing, a scroll landed after my next click, so my first 'Fire recall beam' click hit the wrong place). The machine was shared with other sessions, so this is partly environmental, but in a timed rescue, input lag on a slow machine could cost a player the rescue.",
+      "repro": "pt start --checkpoint probe-done; pt face 25; pt state (yaw unchanged); pt hold Right 2 and compare yaw",
+      "screenshot": "shots/s3.png",
+      "tick": 2014
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "World labels overlap: 'Capsule · Ines' tag sits on top of the 'Comms 2 m' marker",
+      "detail": "Walking up to the comms console, the floating tag 'Capsule · Ines / 1+z 1.13 · its clock 40.8 M' overlapped the orange 'Comms 2 m' waypoint, making both hard to read. Facing the comms console from about 1.6 m, bearing -16.",
+      "repro": "pt start --checkpoint probe-done; walk toward comms console; pt shot",
+      "screenshot": "shots/s5.png",
+      "tick": 2494
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Chrome for Testing infobar covers top 57 px of the game window",
+      "detail": "A 'Chrome for Testing ... only for automated testing' bar covers the top of the window for the whole session. This is likely a launcher/harness problem, not the game.",
+      "repro": "pt start ...; pt shot",
+      "screenshot": "shots/banner.png",
+      "tick": 3906
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {"Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 56.8},
+    "powerLossTick": 940,
+    "beamFiredTickApprox": 3200,
+    "gameSecondsWaitedAfterPowerLoss": 37.7,
+    "wrenSaysSecondsBeforeLastMoment": 12,
+    "herApparentRadiusAtFireRs": 7.76
+  },
+  "fun": 4,
+  "verdict": "The rescue is a strong scene: Ines begging you not to fire, the capsule view still looking 'almost normal', and WREN's debrief ('12 seconds before the last possible moment... 7.8 rs out, looking almost normal') make the light-delay lesson land. The weak spots are that after she says she is climbing, the panel keeps showing her falling deeper, which confused me, and that the panel's labels (a 'PROBE CLOCK' on the capsule panel, unexplained M units) are hard to read. Nothing in the ray-traced views looked broken beyond the expected blur.",
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That what you see of something falling toward a black hole is old, delayed and redshifted light. Ines looked like she was still 7-8 rs out and 'almost normal' on my screen, but the recall beam also travels at light speed and must catch her before the horizon. So you have to act on where she really is, not on how she looks. Waiting until she looks in danger fails, because by then it is already too late."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "Right after the rescue. Ines's 'Engine's lit, I'm climbing, coming home' arrived, but the capsule view kept showing her falling closer to the horizon and getting redder, still captioned 'Falling. It looks almost normal from here', and then another line arrived that sounded like it came from before the rescue ('so bright I can barely read the instruments'). I was not sure whether the rescue had worked until WREN's debrief. The clock readouts in M (ship clock vs 'probe clock you see') were also unclear."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "Nothing in the black-hole rendering looked broken beyond the expected blur: no flicker, holes or garbled colours through the bridge windows, facing forward (yaw 0) or toward comms (yaw about -31). Small issues: walking up to the comms console (about 1.6 m away, facing it), the floating 'Capsule · Ines' tag overlapped the 'Comms 2 m' waypoint. At the comms panel, the capsule's clock is labelled 'PROBE CLOCK YOU SEE'. A Chrome for Testing infobar covered the top 57 px of the window all session, which is a harness issue."}
+  ]
+}

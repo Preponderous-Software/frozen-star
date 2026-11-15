@@ -1,0 +1,118 @@
+{
+  "session": "s02",
+  "goal": "Graphics hunt. Walk every room of the ship (bridge, corridor, quarters, lab) and look in every direction, including up at the ceiling, down at the floor and out of every window. Screenshot and describe anything that looks wrong: flicker, gaps or seams between walls, surfaces fighting each other, black or garbled windows, the sky in a window not lining up as you turn, stretched or blurry textures, text or UI overlapping.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "c667e1e"
+  },
+  "seed": null,
+  "durationSec": 1040,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Corridor window shows a paneled interior wall floating out in space",
+      "detail": "At the aft end of the corridor near the quarters door, facing the side wall (yaw ~86, state yawDeg -634), the right-hand corridor window shows a blue-grey wall section with interior panel seams and bolts hanging at an angle beyond the glass, covering about half the starfield. Stepping closer confirms it is outside the ship, with stars above and below it. Expected: only stars and the black-hole sky. It looks like a neighbouring room's wall (lab/engineering) sticking out through the hull, or the window being drawn without the room behind it culled.",
+      "repro": "pt start --profile /root/frozen-star/tools/playtest/frozen-star.json --game-dir /root/frozen-star --checkpoint bridge; open bridge door, walk aft to the quarters door (x~-0.2 z~4.5); turn to face the corridor side wall with the windows (yaw ~86); look slightly up",
+      "screenshot": "shots/f06b_wall_in_window_close.png",
+      "tick": 14119
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Corridor handrail and floor edge strip run straight across the lab doorway",
+      "detail": "Looking aft down the corridor from the bridge door, and again facing the lab door from the corridor (k_yaw86.png), the waist-height handrail on the lab side runs unbroken across the open lab doorway, and so does the yellow floor edge strip. The doorway looks barred, and you walk through the rail. Expected: the rail and strip stop at the door frame.",
+      "repro": "pt start ... --checkpoint bridge; walk through the bridge door into the corridor (x0.4 z-2.6) and face aft (yaw ~190); or stand at x0.2 z-1.2 and face the lab door",
+      "screenshot": "shots/f04_rail_across_door.png",
+      "tick": 7772
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Yellow light strips above doors are stair-stepped with black dashes (z-fighting)",
+      "detail": "The yellow strip above the bridge's rear door, seen from x0 z-7 facing yaw ~187, breaks into stepped segments with black dashes along its lower edge, like two coplanar surfaces fighting. There are small slivers and steps where the wall panels meet the door frame. The same jagged strip shows on the quarters and lab doors.",
+      "repro": "pt start ... --checkpoint bridge; turn to face the rear (bridge) door from spawn, level view",
+      "screenshot": "shots/f02b_door_strip.png",
+      "tick": 5663
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Bridge overhead status readout clipped at its right end ('10.0' unit cut off)",
+      "detail": "The SHIP / RELAY / x1.054 / 10.0 readout above the bridge's front window is cut off at the right edge of its panel, so the last value has no visible unit (presumably Rs). Light wall slivers show through along the top edge of the readout panel.",
+      "repro": "pt start ... --checkpoint bridge; walk forward toward the helm (x-0.2 z-8.7), face forward (yaw 0)",
+      "screenshot": "shots/f03_readout_cut.png",
+      "tick": 6692
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "World-space 'E Open the archive' prompt covers the archive list text",
+      "detail": "In the lab, facing the archive console (yaw ~97), the use prompt sits right on the archive screen and hides entry 2 ('Last Words'). From another angle it hid entry 1 instead. The list also skips from '5 Hover' to '7 Evaporation', with no 6 shown; I could not tell whether that is deliberate (a locked entry).",
+      "repro": "pt start ... --checkpoint bridge; corridor -> lab door, E; walk to the archive console (x-3.7 z-0.7) and face it",
+      "screenshot": "shots/f08_archive_prompt_overlap.png",
+      "tick": 19941
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Strong concentric banding in the lighting on corridor and lab walls and ceilings",
+      "detail": "Around each ceiling light the falloff on the pale walls and ceilings is drawn as visible rings of flat grey steps, not a smooth gradient. It is very noticeable in the corridor and the lab, especially looking up (l_up.png). Once, the sky in the lab window behind the archive was also posterized into flat brown/black blotches (l_yaw97.png), though a later shot from nearly the same spot looked smooth. This may be partly the software renderer, but it is beyond plain blur.",
+      "repro": "pt start ... --checkpoint bridge; stand in the corridor at x0.2 z-1.2 facing aft, or in the lab at x-3.5 z-0.7 and look up at the light",
+      "screenshot": "shots/k_yaw159.png",
+      "tick": 17505
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Ceiling light fixtures have thick jagged stair-stepped black outlines",
+      "detail": "Looking straight up on the bridge (spawn x0 z-7), and in the quarters, the white light panels sit in thick black borders whose edges step in blocks instead of forming a clean rectangle, and one fixture is half-hidden behind the black ceiling beam. Silhouettes against the black ceiling trim and window frames also stair-step heavily (no anti-aliasing).",
+      "repro": "pt start ... --checkpoint bridge; click to capture mouse; pt look 0 -600 to look up",
+      "screenshot": "shots/f01_ceiling_light.png",
+      "tick": 950
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Quarters: blank dark rectangle above the bunk with a stray yellow fleck",
+      "detail": "On the wall above the bunk there is a large flat dark-brown rectangle with slightly ragged edges, no frame and no content, and one small yellow chip near its left edge. It reads as a missing texture or an unlit screen; I could not tell what it is meant to be.",
+      "repro": "pt start ... --checkpoint bridge; corridor -> quarters door, E; from the desk (x3.3 z3.3) turn to face the bunk wall",
+      "screenshot": "shots/h08_back.png",
+      "tick": 12783
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Mouse look ignores the first motion after capture and has inconsistent sensitivity",
+      "detail": "After clicking the game to capture the mouse, the first pt look 0 -300 did nothing, and a black bar appeared briefly at the top of the window (probably the pointer-lock banner). Later the same pixel deltas gave very different pitch changes (sometimes about 10 degrees, sometimes most of the range), which made it hard to level the view. Arrow-key turning at about 10 fps also turned far less than the documented 103 degrees a second (0.6 s of Right gave about 10 degrees).",
+      "repro": "pt start ... --checkpoint bridge; pt click 640 400; pt look 0 -300 (no effect); pt look 0 -300 (works); pt hold Right 0.6",
+      "screenshot": "shots/a02_up.png",
+      "tick": 433
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 0,
+    "deaths": 0,
+    "secondsToObjective": {},
+    "roomsVisited": 4,
+    "graphicsFindings": 9,
+    "fpsObserved": 10
+  },
+  "fun": 3,
+  "verdict": "The ship holds together well: rooms read clearly, the porthole and bridge windows track the black hole believably as you turn, and nothing flickered. The clearest defect is a paneled wall floating outside the aft corridor window. After that come the handrail and floor strip running across the lab doorway, and a set of polish problems: z-fighting on the door light strips, a clipped bridge readout, the archive prompt covering its own list, and heavy lighting banding.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "From the short stretch I played (only the bridge checkpoint, no objective done): how a black hole looks up close. The black disk out of the window is the hole's shadow, about two and a half times wider than the horizon itself, and the bright ring around it is starlight from behind the hole, bent all the way around. The SHIP and RELAY clocks drifting apart (x1.054) hint at gravitational time dilation, but I did not get far enough to have it explained."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Leveling the view. Mouse look skipped its first input after capture and then moved by very different amounts for the same motion, and arrow turns were slow at about 10 fps, so it was hard to look at things deliberately. Also the dark rectangle above the bunk in the quarters: I could not tell if it was a screen, a picture or a missing texture."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Yes. (1) Aft corridor near the quarters door, facing the side windows (yaw ~86): a paneled interior wall floats out in space, visible through the window. (2) Corridor, facing the lab door or looking aft from the bridge door: the handrail and yellow floor strip run straight across the lab doorway. (3) Bridge spawn facing the rear door: the yellow strip over the door is stair-stepped with black dashes (z-fighting); the same on other doors. (4) Bridge facing forward at the helm: the overhead readout is clipped after '10.0'. (5) Lab facing the archive: the 'E Open the archive' prompt covers a list entry, and the list skips number 6. (6) Corridor and lab walls and ceilings: strong concentric banding around the lights, and once the lab window sky was posterized. (7) Bridge and quarters looking up: light fixtures have jagged, stair-stepped black outlines. (8) Quarters facing the bunk wall: a blank dark panel with a stray yellow fleck. I saw no flicker, and the sky lined up with the window frames as I turned."
+    }
+  ]
+}

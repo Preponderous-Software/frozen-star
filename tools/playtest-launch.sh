@@ -32,4 +32,4 @@ sandbox=(); [ "$(id -u)" = 0 ] && sandbox=(--no-sandbox)  # Chromium refuses to 
 "$chrome" --app="http://127.0.0.1:$port/index.html$q#$hash" --user-data-dir="$data/chrome" \
   --window-size="$w,$h" --window-position=0,0 --no-first-run --no-default-browser-check --disable-features=Translate \
   --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --autoplay-policy=no-user-gesture-required \
-  --password-store=basic --class=FrozenStar "${sandbox[@]}" > "$data/chrome.log" 2>&1
+  --password-store=basic --test-type --class=FrozenStar "${sandbox[@]}" > "$data/chrome.log" 2>&1

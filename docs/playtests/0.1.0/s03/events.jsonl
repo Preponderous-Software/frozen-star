@@ -1,0 +1,18 @@
+{"type": "world", "tick": 3, "wallTimeMs": 1794715867724, "how": "created", "seed": 0}
+{"type": "screen", "tick": 3, "wallTimeMs": 1794715867726, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 379, "wallTimeMs": 1794715895826, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "dialogue", "tick": 940, "wallTimeMs": 1794715957164, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 940, "wallTimeMs": 1794715957171, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon."}
+{"type": "objective_started", "tick": 940, "wallTimeMs": 1794715957222, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 1012, "wallTimeMs": 1794715974226, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 1264, "wallTimeMs": 1794716015442, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 1660, "wallTimeMs": 1794716076294, "who": "WREN", "text": "The recall beam is on the comms console, to the right of the helm."}
+{"type": "dialogue", "tick": 1672, "wallTimeMs": 1794716078258, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}
+{"type": "dialogue", "tick": 2170, "wallTimeMs": 1794716173077, "who": "INES", "text": "Halfway to the edge of the shadow, I think. The data's beautiful."}
+{"type": "screen", "tick": 2542, "wallTimeMs": 1794716227222, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 2686, "wallTimeMs": 1794716261031, "who": "INES", "text": "Doc, the stars behind me are going blue. Is that right?"}
+{"type": "dialogue", "tick": 3190, "wallTimeMs": 1794716375870, "who": "INES", "text": "Still okay. Still waiting. Don't fire yet."}
+{"type": "dialogue", "tick": 3406, "wallTimeMs": 1794716418990, "who": "INES", "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!"}
+{"type": "objective_completed", "tick": 3406, "wallTimeMs": 1794716419222, "number": 1, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 3640, "wallTimeMs": 1794716457539, "who": "INES", "text": "Everything overhead is so bright I can barely read the instruments."}
+{"type": "dialogue", "tick": 3694, "wallTimeMs": 1794716466562, "who": "WREN", "text": "You fired 12 seconds before the last possible moment. At that moment your screen showed her 7.8 r\u209b out, looking almost normal."}

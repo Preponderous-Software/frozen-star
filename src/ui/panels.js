@@ -6,10 +6,10 @@ import { tidalStretch } from '../physics/body.js';
 
 const EMIT_NM = 470; // the probe's beacon is blue
 
-export function stationPanel(f, { title = 'Station · what you see', clockNote = 'station clock' } = {}) {
+export function stationPanel(f, { title = 'Station · what you see', clockNote = 'station clock', subject = 'Probe' } = {}) {
   const canvas = h('canvas.field', { 'aria-label': 'What the station sees of the probe' });
   const clock = h('div.clock');
-  const seenTau = stat('Probe clock you see'), seenZ = stat('Redshift 1+z'), seenB = stat('Brightness'), seenR = stat('Appears at');
+  const seenTau = stat(`${subject} clock you see`), seenZ = stat('Redshift 1+z'), seenB = stat('Brightness'), seenR = stat('Appears at');
   const st = status('The probe hangs beside the station, ready to drop.');
   const lg = log();
   const el = h('section.view',

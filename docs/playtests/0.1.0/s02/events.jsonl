@@ -1,0 +1,9 @@
+{"type": "world", "tick": 4, "wallTimeMs": 1794715866847, "how": "created", "seed": 0}
+{"type": "screen", "tick": 4, "wallTimeMs": 1794715866848, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 265, "wallTimeMs": 1794715883258, "who": "WREN", "text": "First item on today's plan: drop beacon probe K-1 and log its signal."}
+{"type": "objective_started", "tick": 601, "wallTimeMs": 1794715898847, "number": 1, "title": "Drop the beacon probe (probe console, left)"}
+{"type": "dialogue", "tick": 2995, "wallTimeMs": 1794716053385, "who": "WREN", "text": "The probe console is the one on the left, by the window. Walk up to it and use it."}
+{"type": "dialogue", "tick": 11329, "wallTimeMs": 1794716509198, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 11752, "wallTimeMs": 1794716535284, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "screen", "tick": 20151, "wallTimeMs": 1794716891847, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 20169, "wallTimeMs": 1794716903347, "from": "PAUSE", "to": "WORLD"}

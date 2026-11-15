@@ -121,7 +121,7 @@ void main() {
     float r = length(x);
     vec3 k1x, k1p, k2x, k2p, k3x, k3p, k4x, k4p;
     derivs(x, p, E, k1x, k1p);
-    float h = -(0.02 * min(r, 8.0) + 0.09 * max(0.0, r - 8.0)) / length(k1x);
+    float h = -(0.035 * min(r, 8.0) + 0.09 * max(0.0, r - 8.0)) / length(k1x);
     derivs(x + 0.5 * h * k1x, p + 0.5 * h * k1p, E, k2x, k2p);
     derivs(x + 0.5 * h * k2x, p + 0.5 * h * k2p, E, k3x, k3p);
     derivs(x + h * k3x, p + h * k3p, E, k4x, k4p);
@@ -141,6 +141,12 @@ void main() {
     float radial = dot(bdx, x) / rn;
     if (rn > 300.0 && radial > 0.0) { acc += (1.0 - accA) * sky(normalize(bdx), gCam / E); done = true; break; }
     if ((rn < 2.01 && radial < 0.0) || length(p) > 1e5 || rn < 0.05) { done = true; break; }
+  }
+  // Out of steps (a ray looping close to the photon sphere): outside it, show the sky in the
+  // direction the ray was heading instead of a hard black cut.
+  if (!done && length(x) > 3.2) {
+    vec3 bdx, bdp; derivs(x, p, E, bdx, bdp);
+    acc += (1.0 - accA) * sky(normalize(-bdx), gCam / E);
   }
   vec3 col = 1.0 - exp(-acc * uExposure);
   float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -182,12 +188,12 @@ export class BlackHoleView {
       scale: opts.scale ?? Math.min(1, 1.25 / (window.devicePixelRatio || 1)),
     };
     // ?lowgpu: a small, cheap render for weak machines (and the headless screenshot tour).
-    if (LOW_GPU) Object.assign(this.state, { scale: 0.2, steps: 260 });
+    if (LOW_GPU) Object.assign(this.state, { scale: 0.2, steps: 360 });
   }
 
   set(patch) {
     Object.assign(this.state, patch);
-    if (LOW_GPU) { this.state.scale = Math.min(this.state.scale, 0.2); this.state.steps = Math.min(this.state.steps, 260); }
+    if (LOW_GPU) { this.state.scale = Math.min(this.state.scale, 0.2); this.state.steps = Math.min(this.state.steps, 360); }
     return this;
   }
 
