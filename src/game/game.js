@@ -106,8 +106,15 @@ export function mountGame(root, { checkpoint } = {}) {
     walkPose = { ...g.me };
     g.mode = 'console'; controls.setEnabled(false); hud.crosshair(false); hud.prompt(null); controls.showUse(null);
     g.pose.pos.set(g.me.x, g.eye, g.me.z); g.pose.yaw = g.me.yaw; g.pose.pitch = g.me.pitch;
-    const a = lookAngles(it.focus.pos, it.focus.look);
-    const tween = g.tweenTo(it.focus.pos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
+    // a close-up screen must fit beside the panel: step back from it a little
+    const fd = it.focus.pos.distanceTo(it.focus.look), fpos = fd < 2.5 ? it.focus.look.clone().lerp(it.focus.pos, fd < 1.5 ? 1.3 : 1.55) : it.focus.pos;
+    const a = lookAngles(fpos, it.focus.look);
+    // the panel covers the right of the screen: turn a little so the thing you use sits in the free part
+    // (on narrow screens it covers the bottom 62%, so look down a little instead)
+    const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+    if (innerWidth > 760) a.yaw -= Math.atan((Math.min(560, innerWidth * 0.48) / innerWidth) * tv * camera.aspect);
+    else a.pitch -= Math.atan(0.62 * tv);
+    const tween = g.tweenTo(fpos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
     await Promise.race([tween, g.wait(0.25)]); // the panel opens while the camera is still settling
     panel.replaceChildren(); panel.hidden = false; audio.open();
     const close = h('button.fp-close', { type: 'button', onclick: () => closeApp() }, '← Step back');

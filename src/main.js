@@ -76,11 +76,13 @@ function titleScreen() {
   ].filter(Boolean);
   function showPanel(which) {
     panel.hidden = false;
+    for (const b of items) b.classList.toggle('open', b === document.activeElement);
     if (which === 'settings') panel.replaceChildren(settingsForm(loadSettings(), null, { onBack: () => { panel.hidden = true; } }));
     else if (which === 'about') panel.replaceChildren(h('p.eyebrow', 'About'), h('h3', 'Frozen Star'),
       h('p', 'Everything in the game follows the Schwarzschild solution of general relativity: fall times, redshift, the rescue deadline, tides, hovering clocks, and every pixel of the view outside, which is a light ray traced through curved spacetime.'),
       h('p', 'Erebus is fictional. At 120,000 suns, one unit of black-hole time is 0.59 seconds, so what you see happens at its true speed.'),
       h('p.fine', 'References: Misner, Thorne & Wheeler, Gravitation (1973); Hamilton & Lisle, The river model of black holes (2008); Page, Particle emission rates from a black hole (1976).'),
+      h('p.fine', 'Made by Preponderous Software. Open source under the MIT license: ', h('a', { href: 'https://github.com/Preponderous-Software/frozen-star', target: '_blank', rel: 'noopener' }, 'github.com/Preponderous-Software/frozen-star'), '.'),
       h('p.fine', 'Built with three.js (MIT). The desktop app runs on Electron.'),
       h('button', { type: 'button', onclick: () => { panel.hidden = true; } }, 'Back'));
     else {
