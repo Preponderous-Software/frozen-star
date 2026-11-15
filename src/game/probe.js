@@ -1,7 +1,7 @@
 // Playtester probe (Preponderous-Software/playtester, docs/PROBE_CONTRACT.md). Only with ?probe:
 // about twice a second the page posts what the player sees to tools/serve.py (--probe-dir), which
 // writes state.json and events.jsonl. It reads the game and never changes it; failures are ignored.
-const VERSION = '0.1.0';
+import { VERSION } from '../version.js';
 const post = (path, body) => { fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true }).catch(() => {}); };
 
 export function startProbe() {
@@ -12,9 +12,10 @@ export function startProbe() {
 
   function screenNow() {
     const g = window.__fsGame, hash = location.hash.slice(1);
-    if (hash !== 'ship' || !g) return hash === 'title' || hash === '' ? 'TITLE' : hash === 'training' ? 'TRAINING' : hash === 'observatory' ? 'OBSERVATORY' : 'LESSON';
-    if (g.paused) return 'PAUSE';
+    if (hash !== 'ship' || !g) return (hash === 'title' || hash === '') && document.querySelector('.disc-view') ? 'DISCOVERIES' : hash === 'title' || hash === '' ? 'TITLE' : hash === 'training' ? 'TRAINING' : hash === 'observatory' ? 'OBSERVATORY' : 'LESSON';
+    if (g.paused) return g.menuView === 'discoveries' ? 'DISCOVERIES' : 'PAUSE';
     if (g.hud.choosing) return 'CHOICE';
+    if (g.photo?.on) return 'PHOTO';
     if (g.skyOverride && g.hideShip) return 'DREAM';
     if (document.querySelector('.fp-logbook')) return 'LOGBOOK';
     return { walk: 'WORLD', console: 'CONSOLE', cutscene: 'CUTSCENE', tweening: 'CUTSCENE' }[g.mode] || 'WORLD';

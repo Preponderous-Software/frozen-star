@@ -12,25 +12,25 @@ export const PROPS = ['datapad', 'photo', 'porthole', 'log', 'mug', 'whiteboard'
 
 export const DISCOVERIES = [
   // ---- aboard the Tern ----
-  { id: 'metronome', title: 'Metronome', hint: 'Listen to all of K-1\'s pings.',
+  { id: 'metronome', act: 'bridge', title: 'Metronome', hint: 'Listen to all of K-1\'s pings.',
     fact: 'K-1\'s clock ticked steadily all the way down. Only its signals reached the ship later and later.' },
-  { id: 'called-it', title: 'Called it', hint: 'Predict when the ninth ping will arrive.',
+  { id: 'called-it', act: 'bridge', title: 'Called it', hint: 'Predict when the ninth ping will arrive.',
     fact: 'Each ping climbs out of a deeper well than the last, so the gaps grow without limit near the horizon.' },
-  { id: 'cutting-it-fine', title: 'Cutting it fine', hint: 'Save Ines with almost no time to spare.',
+  { id: 'cutting-it-fine', act: 'probe-done', title: 'Cutting it fine', hint: 'Save Ines with almost no time to spare.',
     fact: 'You fired with under 5 s to spare. The deadline is set by light speed, and her picture never showed it.' },
-  { id: 'four-to-one', title: 'Four to one', hint: 'Take the Tern lower than you were asked to, and hold there.',
+  { id: 'four-to-one', act: 'rescue-done', title: 'Four to one', hint: 'Take the Tern lower than you were asked to, and hold there.',
     fact: 'At 1.07 rₛ every second aboard is four seconds far away. The field cannot hold a ship below about 1.03 rₛ.' },
-  { id: 'into-the-black', title: 'Into the black', hint: 'Look out of the bridge window while hovering deep.',
+  { id: 'into-the-black', act: 'rescue-done', title: 'Into the black', hint: 'Look out of the bridge window while hovering deep.',
     fact: 'Hovering this low, the shadow covers more than half the sky, and every star crowds into a patch behind you.' },
-  { id: 'a-minute-behind', title: 'A minute behind', hint: 'Let the relay clock get a whole minute ahead of yours.',
+  { id: 'a-minute-behind', act: 'rescue-done', title: 'A minute behind', hint: 'Let the relay clock get a whole minute ahead of yours.',
     fact: 'Gravity slows clocks for real: GPS satellites correct for it, about 45 microseconds a day.' },
-  { id: 'pulling-ahead', title: 'Pulling ahead', hint: 'Look at the photo of home from somewhere deep.',
+  { id: 'pulling-ahead', act: 'rescue-done', title: 'Pulling ahead', hint: 'Look at the photo of home from somewhere deep.',
     fact: 'Low in the well, home lives faster than you do. The gap is never paid back when you climb out.' },
   { id: 'window-gazer', title: 'Window gazer', hint: 'Stand at the bridge window and just look for a while.',
     fact: 'Light that loops the hole once makes one bright ring; light that loops twice makes a thinner one inside it.' },
   { id: 'curious', title: 'Curious', hint: 'Read everything aboard that has something to say.',
     fact: 'Matter tells spacetime how to curve; spacetime tells matter how to move. (John Wheeler)' },
-  { id: 'it-fell-in', title: 'It fell in', hint: 'Tell Ines the truth about Orpheus.',
+  { id: 'it-fell-in', act: 'helm-done', title: 'It fell in', hint: 'Tell Ines the truth about Orpheus.',
     fact: 'Orpheus crossed the horizon in finite time by its own clock. Only its last light is "frozen", and it fades.' },
   { id: 'frozen-star', title: 'Frozen star', hint: 'Finish the survey.',
     fact: 'Before the name "black hole" caught on in 1967, they were called frozen stars, for how they look from outside.' },
@@ -55,6 +55,21 @@ export const DISCOVERIES = [
     fact: 'A hole\'s lifetime grows as its mass cubed: one of the Sun\'s mass would last about 10⁶⁷ years.' },
 ];
 const BY_ID = Object.fromEntries(DISCOVERIES.map((d) => [d.id, d]));
+
+// Story discoveries keep their hints vague until the story reaches their act, so the list never gives the
+// plot away. `act` is the checkpoint where that act begins (the order matches story.js).
+const ACT_ORDER = ['start', 'bridge', 'probe-done', 'rescue-done', 'helm-done', 'epilogue', 'halo'];
+const ACT_NAME = { bridge: 'Chapter I', 'probe-done': 'Chapter II', 'rescue-done': 'Chapter III', 'helm-done': 'Chapter IV' };
+function storyReached() {
+  let cp = null;
+  try { cp = JSON.parse(localStorage.getItem('frozen-star.fp.v1'))?.cp; } catch { /* no storage */ }
+  return Math.max(0, ACT_ORDER.indexOf(cp));
+}
+/** The hint to show for a locked discovery: the real one, or a spoiler-free one before its act. */
+export function hintFor(d, reached = storyReached()) {
+  if (!d.act || reached >= ACT_ORDER.indexOf(d.act)) return d.hint;
+  return `Something to notice in ${ACT_NAME[d.act]}. Its hint appears when you get there.`;
+}
 
 // ---- storage: unknown fields are kept, so an older or newer build can share the record ----
 let mem = null;
@@ -137,12 +152,12 @@ export function noteUse(id, g) {
 
 /** The list, as shown on the title menu and the pause menu. Locked ones are silhouettes with a hint. */
 export function discoveriesView() {
-  const n = foundCount();
+  const n = foundCount(), reached = storyReached();
   const item = (d) => {
     const got = has(d.id);
     return h('li.disc' + (got ? '.got' : '.locked'),
       h('span.disc-mark', { 'aria-hidden': 'true' }),
-      h('div', h('b', got ? d.title : '? ? ?'), h('p', got ? d.fact : d.hint)),
+      h('div', h('b', got ? d.title : '? ? ?'), h('p', got ? d.fact : hintFor(d, reached))),
       h('span.sr-only', got ? ' (found)' : ' (not found yet)'));
   };
   const ship = DISCOVERIES.filter((d) => !d.lesson), lessons = DISCOVERIES.filter((d) => d.lesson);

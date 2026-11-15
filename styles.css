@@ -289,7 +289,7 @@ body[data-input=touch] .menu-hints { display: none; }
 .fp-controls td { color: #cfcbdd; }
 .controls-ref { display: grid; gap: 10px; overflow-x: auto; }
 /* Settings > Controls: change keys and gamepad buttons */
-.fp-bind-status { min-height: 2.9em; padding: 8px 10px; border-radius: 8px; background: var(--ink); border: 1px solid var(--line); color: #d6d2e3 !important; }
+.fp-bind-status { min-height: calc(4.35em + 18px); /* three lines, reserved: the key list must not jump after a rebind */ padding: 8px 10px; border-radius: 8px; background: var(--ink); border: 1px solid var(--line); color: #d6d2e3 !important; }
 .fp-bind-row { display: grid; grid-template-columns: 1fr repeat(2, minmax(64px, auto)); gap: 6px; align-items: center; font-size: 14px; min-height: 40px; }
 .fp-bind-row > span { color: #cfcbdd; }
 .fp-bind-row > .fp-bind:only-of-type { grid-column: 2 / 4; justify-self: end; }

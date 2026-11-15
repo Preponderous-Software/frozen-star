@@ -185,12 +185,14 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
       const blob = await new Promise((res) => out.toBlob(res, 'image/png'));
       if (!blob) throw new Error('no image');
       api.last = blob;
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
-      const a = h('a', { href: URL.createObjectURL(blob), download: `frozen-star-${stamp}.png` });
+      // named in local time, the time on the player's own clock
+      const d = new Date(), two = (n) => String(n).padStart(2, '0');
+      const name = `frozen-star-${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}-${two(d.getHours())}-${two(d.getMinutes())}-${two(d.getSeconds())}.png`;
+      const a = h('a', { href: URL.createObjectURL(blob), download: name });
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 10000);
       if (!reduceMotion()) { const f = h('div.ph-flash', { 'aria-hidden': 'true' }); el.append(f); setTimeout(() => f.remove(), 450); }
-      g.hud.toast('Picture saved');
+      g.hud.toast(`Saved ${name}`, { sub: 'In your Downloads folder (or wherever your browser saves files).', sec: 6 });
       unlock('shutterbug');
       return blob;
     } catch (e) {

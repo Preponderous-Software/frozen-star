@@ -97,7 +97,8 @@ export function controlsHintHtml({ touch = false } = {}) {
   if (padMode()) return `Left stick to walk, right stick to look, ${keyHtml('use')} to use things, <kbd>${esc(padName(padFor('pause')))}</kbd> to pause.`;
   const k = (a) => `<kbd>${esc(keyName(keysFor(a)[0]) || '?')}</kbd>`;
   const turn = keysFor('turnLeft').length && keysFor('turnRight').length ? ` or ${k('turnLeft')}${k('turnRight')}` : '';
-  return `${k('forward')}${k('left')}${k('backward')}${k('right')} to walk, mouse${turn} to look, ${keyHtml('use')} to use things, <kbd>Esc</kbd> to pause.`;
+  const run = keysFor('run').length ? (loadSettings().runMode === 'toggle' ? `, ${k('run')} to run (press again to walk)` : `, hold ${k('run')} to run`) : '';
+  return `${k('forward')}${k('left')}${k('backward')}${k('right')} to walk${run}, mouse${turn} to look, ${keyHtml('use')} to use things, <kbd>Esc</kbd> to pause.`;
 }
 
 // ---- settings ----

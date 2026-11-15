@@ -223,10 +223,11 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
-function compile(gl, type, src) {
+function compile(gl, type, src, check = true) {
   const s = gl.createShader(type);
   gl.shaderSource(s, src); gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  // checking blocks until the driver is done; a parallel build checks the link instead, later
+  if (check && !gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
   return s;
 }
 
@@ -285,23 +286,35 @@ export class BlackHoleView {
   /** Compile the program and upload the triangle. Runs at start and again after a lost context comes back. */
   _build() {
     const gl = this.gl;
+    // opts.parallel: where the browser can compile and link in the background (KHR_parallel_shader_compile),
+    // do not wait for it here. Asking for the status blocks the page until the driver has finished, which
+    // took seconds on a busy machine; render() draws nothing until the program is ready instead.
+    this.pkhr = this.opts.parallel ? gl.getExtension('KHR_parallel_shader_compile') : null;
     const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT, !this.pkhr));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG, !this.pkhr));
+    gl.bindAttribLocation(prog, 0, 'aPos');
     gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
     this.prog = prog;
+    this.linking = !!this.pkhr;
+    if (!this.linking) this._linked();
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'aPos');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     // GPU time of each draw, where the browser offers it (most desktop Chrome/Electron builds): lets the
     // resolution adapt to what the ray trace itself costs, not to the frame time, which vsync rounds
     // to 16.7 / 33.3 / 50 ms and which includes everything else on the page.
     this.timer = gl.getExtension('EXT_disjoint_timer_query_webgl2');
     this.query = null; this.gpuMs = null; this.gpuAt = 0;
+  }
+
+  /** The program has linked: check it and look up the uniforms. */
+  _linked() {
+    const { gl, prog } = this;
+    this.linking = false;
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
     this.u = {};
     for (const n of ['uRes', 'uCam', 'uBasis', 'uV', 'uFov', 'uTime', 'uDisk', 'uGrid', 'uShift', 'uSteps', 'uExposure', 'uDiskOuter', 'uRing']) this.u[n] = gl.getUniformLocation(prog, n);
   }
@@ -320,7 +333,11 @@ export class BlackHoleView {
 
   /** Draw. `scissor` = [x0, y0, x1, y1] in 0..1 of the canvas (bottom-left origin) limits the work to that rectangle. */
   render(scissor) {
-    if (this.lost || this.disposed) return;
+    if (this.lost || this.disposed) return false;
+    if (this.linking) {
+      if (!this.gl.getProgramParameter(this.prog, this.pkhr.COMPLETION_STATUS_KHR)) return false;
+      try { this._linked(); } catch (err) { console.error('The sky shader did not link:', err); this.lost = true; return false; }
+    }
     this.resize();
     const { gl, u, state: st } = this;
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -355,7 +372,11 @@ export class BlackHoleView {
       gl.disable(gl.SCISSOR_TEST);
     }
     if (timing) gl.endQuery(this.timer.TIME_ELAPSED_EXT);
+    return true;
   }
+
+  /** True once the program has linked and render() draws. */
+  get ready() { return !this.linking && !this.lost; }
 
   /** Read the last timer query if it is ready, and start a new one if none is in flight. */
   _timeBegin() {

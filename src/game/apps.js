@@ -288,7 +288,9 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   const stop = loop(() => {
     const S = r.S();
     const since = S * SEC_PER_M, left = (r.f.rescueDeadline - (r.fired ?? S)) * SEC_PER_M;
-    clock.textContent = r.fired != null ? `Beam fired ${Math.round(since - (S - r.fired) * SEC_PER_M)} s after her mayday, ${left >= 0 ? `${Math.round(left)} s before the deadline` : `${Math.round(-left)} s after the deadline`}.`
+    // after firing, both numbers come from one rounded total, so they always add up to the stated deadline
+    const firedS = r.fired != null ? Math.round(r.fired * SEC_PER_M) : 0, leftS = Math.round(r.f.rescueDeadline * SEC_PER_M) - firedS;
+    clock.textContent = r.fired != null ? `Beam fired ${firedS} s after her mayday, ${leftS >= 0 ? `${leftS} s before the deadline` : `${-leftS} s after the deadline`}.`
       : left > 0 ? `Since her mayday: ${Math.floor(since)} s. The beam must leave within ${Math.max(1, Math.round(r.f.rescueDeadline * SEC_PER_M) - Math.floor(since))} s.` : `Since her mayday: ${Math.floor(since)} s. The deadline has passed.`;
     clock.classList.toggle('late', r.fired == null && left < 10);
     fuse.set((r.fired ?? S) * SEC_PER_M, r.fired != null ? (left >= 0 ? 'good' : 'bad') : undefined);
