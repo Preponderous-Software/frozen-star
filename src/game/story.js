@@ -41,7 +41,7 @@ export async function runStory(g, cp) {
 function baseScreens(g) {
   g.screenDraw.clocks = (ctx, w, h) => drawClocks(ctx, w, h, g);
   g.screenDraw.probe = (ctx, w, h) => { if (g.beacon || g.orpheus) drawRunOnScreen(ctx, w, h, g.orpheus || g.beacon, g.orpheus ? 'ORPHEUS · as seen from the ship' : 'BEACON K-1 · as seen from the ship'); else { screenFrame(ctx, w, h, 'PROBE', 'bay 1: beacon K-1 · bay 2: Orpheus'); screenLines(ctx, w, h, [g.flags.beaconDone ? 'K-1     spent' : 'K-1     ready', 'ORPHEUS ' + (g.flags.orpheusReady ? 'ready' : 'locked')]); } };
-  g.screenDraw.comms = (ctx, w, h) => { if (g.capsule) drawRunOnScreen(ctx, w, h, g.capsule, 'CAPSULE · as seen from the ship'); else { screenFrame(ctx, w, h, 'COMMS', 'channel: Ines Okafor (capsule)'); screenLines(ctx, w, h, [g.flags.inesHome ? 'Capsule docked.' : 'Capsule in bay.', g.flags.inesHome ? 'Recall beam: standing by' : 'Recall beam: armed']); } };
+  g.screenDraw.comms = (ctx, w, h) => { if (g.capsule) drawRunOnScreen(ctx, w, h, g.capsule, 'CAPSULE · as seen from the ship'); else { screenFrame(ctx, w, h, 'COMMS', 'channel: Ines Okafor (capsule)'); screenLines(ctx, w, h, [g.flags.inesHome ? 'Capsule docked.' : g.bay?.state === 'out' ? 'Capsule out.' : 'Capsule in bay: pre-flight.', g.flags.inesHome ? 'Recall beam: standing by' : 'Recall beam: armed']); } };
   g.screenDraw.helm = (ctx, w, h) => {
     if (g.rear && g.shipR < 6) { drawRear(ctx, w, h, g); return; }
     screenFrame(ctx, w, h, 'HELM', 'station-keeping field'); screenLines(ctx, w, h, [`altitude  ${(g.shipR / 2).toFixed(3)} rs`, `relay     x${(1 / hoverRate(g.shipR)).toFixed(3)}`, g.flags.helmUnlocked ? 'descent:  authorised' : 'descent:  locked']); };
@@ -327,6 +327,7 @@ async function rescueAct(g) {
   g.flags.rescueTries = g.flags.rescueTries || 0;
   if (!g.flags.rescueIntro) {
     await g.say('INES', 'My turn. I\'m taking the capsule out to sample the disk light. Back in twenty minutes.');
+    g.bay?.launch(); // [capsule bay] the capsule leaves its cradle and runs forward past the port windows
     await g.say('WREN', 'Capsule away. She is holding position beside us.');
     await g.wait(5);
     g.flags.rescueIntro = true;

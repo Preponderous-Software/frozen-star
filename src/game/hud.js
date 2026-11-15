@@ -24,9 +24,12 @@ export function createHud(root) {
   subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
-    say(who, text, { dur, style } = {}) {
+    say(who, text, { dur, style, where } = {}) {
       const sp = SPEAKERS[who] || { name: who, color: '#ece8f4' };
-      const el = h('p.fp-line', h('b', { style: { color: sp.color } }, sp.name), ' ', h('span', text));
+      // where an off-screen speaker is talking from (Ines: "capsule bay", "capsule"), as a quiet tag after the name
+      const at = where ?? this?.where?.[who];
+      const tag = at ? h('small', { style: { fontWeight: 400, opacity: 0.72, fontSize: '0.82em', marginLeft: '0.35em' } }, `· ${at}`) : null;
+      const el = h('p.fp-line', h('b', { style: { color: sp.color } }, sp.name, tag), ' ', h('span', text));
       if (style) Object.assign(el.querySelector('span').style, style);
       subs.append(el);
       while (subs.children.length > 3) subs.firstChild.remove();
@@ -38,6 +41,8 @@ export function createHud(root) {
       });
     },
     clearSubs() { subs.innerHTML = ''; },
+    /** Speaker id → where they are talking from, shown after the name (set by the capsule bay for Ines). */
+    where: {},
     /** Finish the current line now (Space, or a tap on the subtitles). */
     skip() { pending?.done(); },
     /** Advance subtitle timers by dt seconds of game time (0 while paused). */
