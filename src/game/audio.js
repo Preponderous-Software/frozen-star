@@ -144,6 +144,8 @@ export function createAudio(opts = {}) {
     clockTicks(g, hidden);
     if (now - S.sceneAt < 0.1) return;
     S.sceneAt = now;
+    const ph = phaseOf(g.flags); // fetch Ines's clips for this act (and the next) once it starts
+    if (ph !== V.phase) { V.phase = ph; if (V.manifest) loadPhase(ph); else loadManifest(); }
     const room = ROOM_IDS.find((id) => g.inRoom?.(id)) || S.room || 'corridor';
     S.room = room; S.hidden = hidden;
     const R = ROOMS[room];
@@ -217,18 +219,42 @@ export function createAudio(opts = {}) {
   // A line from Ines, as it reaches the ship: her voice (a buzz shaped by moving formants into syllables)
   // stretched in time and lowered in pitch by 1 + z, then the receiver's own band and static, which do
   // not redshift. Squelch clicks open and close the transmission.
+  //
+  // If a recorded line claims the transmission (voice(), called by the game's say() in the same turn),
+  // the recording goes through the same receiver instead of the buzz: see playRecorded.
   function radio(onePlusZ = 1, chars = 40) {
     if (!ctx) return;
-    const s = Math.min(40, Math.max(1, onePlusZ || 1)), redness = Math.min(1, Math.log(s) / 2.5);
-    const t0 = ctx.currentTime + 0.14;
-    const dur = Math.min(8.5, Math.max(0.8, chars * 0.052 * s));
-    hiss({ f: 2400, q: 1.6, d: 0.1, vol: 0.05, bus: buses.sig }); // squelch open
-    // receiver chain: local band-pass and a little grit
+    const req = { z: onePlusZ, chars };
+    V.radioReq = req;
+    Promise.resolve().then(safe(() => { if (V.radioReq === req) { V.radioReq = null; murmur(onePlusZ, chars); } }));
+  }
+  const zOf = (onePlusZ) => Math.min(40, Math.max(1, onePlusZ || 1));
+  // the ship's receiver, which does not redshift: band-pass, a little grit, a static bed and squelch clicks
+  function receiver(t0, end, s, lvl) {
+    const redness = Math.min(1, Math.log(s) / 2.5);
+    hiss({ f: 2400, q: 1.6, at: Math.max(ctx.currentTime, t0 - 0.14), d: 0.1, vol: 0.05, bus: buses.sig }); // squelch open
     const out = gain(0, buses.sig); out.connect(gain(0.25, buses.verb));
     const shaper = ctx.createWaveShaper(); const curve = new Float32Array(256);
     for (let i = 0; i < 256; i++) { const x = i / 127.5 - 1; curve[i] = Math.tanh(2.2 * x) / Math.tanh(2.2); }
     shaper.curve = curve; shaper.connect(filter('highpass', 180, 0.6, filter('lowpass', 3200, 0.7, out)));
-    const voice = gain(0, shaper);
+    out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(lvl, t0 + 0.05); out.gain.setValueAtTime(lvl, end); out.gain.linearRampToValueAtTime(0, end + 0.1);
+    // static bed under the voice, louder as the signal reddens
+    const st = loop(buses.noise), stG = gain(0, buses.sig); st.connect(filter('bandpass', 1900, 0.6, stG));
+    const sv = 0.008 + 0.02 * redness;
+    stG.gain.setValueAtTime(0, t0); stG.gain.linearRampToValueAtTime(sv, t0 + 0.08); stG.gain.setValueAtTime(sv, end); stG.gain.linearRampToValueAtTime(0, end + 0.12);
+    st.start(t0); st.stop(end + 0.3);
+    hiss({ f: 1800, q: 2, at: end + 0.1, d: 0.08, vol: 0.035, bus: buses.sig }); // squelch close
+    tone({ f: 1100, at: end + 0.12, d: 0.05, vol: 0.012, bus: buses.sig });
+    return { input: shaper, out, stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); stG.gain.cancelScheduledValues(t); stG.gain.setTargetAtTime(0, t, 0.03); } };
+  }
+  function murmur(onePlusZ, chars) {
+    const s = zOf(onePlusZ);
+    const t0 = ctx.currentTime + 0.14;
+    const dur = Math.min(8.5, Math.max(0.8, chars * 0.052 * s));
+    // level: dimmer as the light that carries her weakens, but never so faint the stretch cannot be heard
+    const lvl = 0.1 * Math.max(0.35, Math.pow(s, -0.5));
+    // the length is only known once the syllables are laid out, so the receiver is built after them
+    const voice = gain(0);
     // the voice: a glottal buzz and breath through three formants, everything divided by 1 + z
     const src = osc('sawtooth', 205 / s), breath = loop(buses.noise), bG = gain(0.06);
     breath.connect(filter('highpass', 2500 / s, 0.7, bG));
@@ -248,16 +274,110 @@ export function createAudio(opts = {}) {
     }
     voice.gain.setTargetAtTime(0, t, 0.04 * s);
     const end = t + 0.3 * s;
-    // level: dimmer as the light that carries her weakens, but never so faint the stretch cannot be heard
-    const lvl = 0.1 * Math.max(0.35, Math.pow(s, -0.5));
-    out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(lvl, t0 + 0.05); out.gain.setValueAtTime(lvl, end); out.gain.linearRampToValueAtTime(0, end + 0.1);
-    // static bed under the voice, louder as the signal reddens
-    const st = loop(buses.noise), stG = gain(0, buses.sig); st.connect(filter('bandpass', 1900, 0.6, stG));
-    const sv = 0.008 + 0.02 * redness;
-    stG.gain.setValueAtTime(0, t0); stG.gain.linearRampToValueAtTime(sv, t0 + 0.08); stG.gain.setValueAtTime(sv, end); stG.gain.linearRampToValueAtTime(0, end + 0.12);
-    for (const n of [src, breath, st]) { n.start(t0); n.stop(end + 0.3); }
-    hiss({ f: 1800, q: 2, at: end + 0.1, d: 0.08, vol: 0.035, bus: buses.sig }); // squelch close
-    tone({ f: 1100, at: end + 0.12, d: 0.05, vol: 0.012, bus: buses.sig });
+    voice.connect(receiver(t0, end, s, lvl).input);
+    for (const n of [src, breath]) { n.start(t0); n.stop(end + 0.3); }
+  }
+
+  // ---------- Ines's recorded voice ----------
+  // Lines recorded with Kokoro-82M (voice af_sky) live in assets/voice/ines, listed in manifest.json by
+  // their text. Clips are fetched an act at a time (the act the save is in, and the next), never all at
+  // once. A line with no clip yet, or one that has not finished loading, keeps the old behaviour.
+  //
+  // Over the radio a clip plays at playbackRate 1/(1+z): gravitational redshift stretches time and
+  // lowers every frequency by the same factor, which is exactly what slowing a recording does. The
+  // receiver after it (band-pass, grit, static, squelch) is the ship's own and is not redshifted.
+  const VOICE_DIR = new URL('../../assets/voice/ines/', import.meta.url);
+  const V = { manifest: null, loading: null, byText: new Map(), patterns: [], clips: new Map(), phase: null, phaseLoaded: new Set(), radioReq: null, busyUntil: 0, played: [] };
+  function loadManifest() {
+    if (V.loading) return V.loading;
+    V.loading = fetch(new URL('manifest.json', VOICE_DIR)).then((r) => (r.ok ? r.json() : null)).then((m) => {
+      if (!m?.lines) return null;
+      V.manifest = m;
+      for (const [key, e] of Object.entries(m.lines)) {
+        if (e.pattern) { try { V.patterns.push({ re: new RegExp(e.pattern, 'u'), key }); } catch { /* skip */ } } else V.byText.set(e.text, key);
+      }
+      if (V.phase) loadPhase(V.phase);
+      return m;
+    }).catch(() => null);
+    return V.loading;
+  }
+  function decode(ab) { return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p?.then) p.then(res, rej); }); }
+  function loadClip(key) {
+    if (!ctx || V.clips.has(key)) return V.clips.get(key)?.p;
+    const c = { buf: null };
+    c.p = fetch(new URL(`${key}.ogg`, VOICE_DIR)).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))).then(decode)
+      .then((b) => { c.buf = b; return b; }, () => null);
+    V.clips.set(key, c);
+    return c.p;
+  }
+  function loadPhase(name) {
+    const m = V.manifest; if (!m) return;
+    const i = m.phases.indexOf(name);
+    for (const ph of [name, m.phases[i + 1]]) {
+      if (!ph || V.phaseLoaded.has(ph)) continue;
+      V.phaseLoaded.add(ph);
+      for (const [key, e] of Object.entries(m.lines)) if (e.phase === ph) loadClip(key);
+    }
+  }
+  // which act the game is in, from its flags: only the clips for this act and the next are fetched
+  function phaseOf(f = {}) {
+    return f.finished ? 'free' : f.orpheusReady ? 'orpheus' : f.inesHome ? 'helm' : f.beaconDone ? 'rescue' : 'opening';
+  }
+  const keyOf = (text) => V.byText.get(text) ?? V.patterns.find((p) => p.re.test(text))?.key;
+
+  /** Play a clip of `key` from time t0 in one of three settings; returns {end, stop}. */
+  function playRecorded(buf, t0, setting, onePlusZ) {
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    let end, chain;
+    if (setting === 'radio') {
+      const s = zOf(onePlusZ);
+      src.playbackRate.value = 1 / s;
+      end = t0 + buf.duration * s;
+      // as loud as the old radio voice at z = 1, dimming the same way with the redshift
+      chain = receiver(t0, end, s, 0.1 * Math.max(0.35, Math.pow(s, -0.5)));
+      src.connect(gain(1.5, chain.input));
+    } else if (setting === 'intercom') {
+      // the ship's intercom: a small speaker's band, a touch of presence, a short key click either side
+      end = t0 + buf.duration;
+      const out = gain(0.55, buses.sig); out.connect(gain(0.08, buses.verb));
+      const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 2200; pres.gain.value = 4; pres.Q.value = 0.9; pres.connect(out);
+      src.connect(filter('highpass', 320, 0.7, filter('lowpass', 4200, 0.7, pres)));
+      tone({ f: 1400, at: t0 - 0.06, d: 0.035, vol: 0.012, bus: buses.sig });
+      tone({ f: 1050, at: end + 0.05, d: 0.035, vol: 0.01, bus: buses.sig });
+      chain = { stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); } };
+    } else {
+      // in the room with you: dry, with a little of the ship's own reverb
+      end = t0 + buf.duration;
+      const out = gain(0.6, buses.sfx); out.connect(gain(0.12, buses.verb));
+      src.connect(filter('highpass', 90, 0.6, out));
+      chain = { stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); } };
+    }
+    src.start(t0); src.stop(end + 0.05);
+    return { end, stop: safe(() => { const t = ctx.currentTime; if (t < end) { chain.stop(t); src.stop(t + 0.15); if (V.busyUntil === end) V.busyUntil = t; } }) };
+  }
+
+  /**
+   * Speak a line in Ines's recorded voice if there is a clip for it and it has loaded.
+   * setting: 'radio' (from the capsule), 'intercom' (from the capsule bay) or 'room' (in person). Over the
+   * radio, 1 + z comes from a radio(onePlusZ) call made in the same turn (it is 1 without one); the clip
+   * takes that call's place, so the procedural buzz only plays for lines that have no clip.
+   * Returns { dur, stop } (dur: seconds from now until the line has finished) or null.
+   */
+  function voice(who, text, setting = 'room') {
+    if (who !== 'INES' || !ctx) return null;
+    if (!V.manifest) { loadManifest(); return null; }
+    const key = keyOf(text);
+    const clip = key && V.clips.get(key);
+    if (!clip?.buf) { if (key) loadClip(key); return null; }
+    const req = V.radioReq;
+    if (req) V.radioReq = null; // claimed: no buzz for this line
+    const how = req && setting === 'room' ? 'radio' : setting; // a radio() call means a transmission, wherever she is
+    // one voice at a time: a line that arrives while she is still talking waits its turn
+    const now = ctx.currentTime, t0 = Math.max(now + (how === 'radio' ? 0.14 : 0.05), V.busyUntil + 0.15);
+    const p = playRecorded(clip.buf, t0, how, req?.z);
+    V.busyUntil = p.end;
+    V.played.push({ key, how, z: req?.z ?? 1, sec: +(p.end - t0).toFixed(2) }); if (V.played.length > 20) V.played.shift();
+    return { dur: p.end - now + 0.25, stop: p.stop };
   }
 
   // ---------- the alarm ----------
@@ -316,7 +436,7 @@ export function createAudio(opts = {}) {
     get ready() { return !!ctx; },
     get muted() { return muted; },
     /** For tests and the debug probe: the context and the current room/depth. */
-    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks } }; },
+    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks }, voice: { phase: V.phase, loaded: [...V.clips.values()].filter((c) => c.buf).length, played: [...V.played] } }; },
     setMuted(m) { muted = !!m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
     setVolume(v) { volume = Math.min(1, Math.max(0, +v || 0)); applyLevel(); },
     duck(on) { ducked = !!on; applyLevel(); },
@@ -394,6 +514,9 @@ export function createAudio(opts = {}) {
     },
 
     radio,
+    voice,
+    /** For tests: fetch and decode the clip for a line; resolves true once voice() can play it. */
+    async voiceLoad(text) { if (!ctx) return false; await loadManifest(); const k = keyOf(text); return !!(k && await loadClip(k)); },
     alarm: setAlarm,
 
     /** Static hiss level 0..1 (the Orpheus feed losing its signal). */

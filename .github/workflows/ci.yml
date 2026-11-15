@@ -33,7 +33,7 @@ jobs:
       - name: Assemble the site
         run: |
           mkdir -p site
-          cp -r index.html styles.css game.css src vendor site/
+          cp -r index.html styles.css game.css src vendor assets site/
           version=$(node -p "require('./package.json').version")
           echo "${version}+g${GITHUB_SHA::7}" > site/version.txt
           cat site/version.txt

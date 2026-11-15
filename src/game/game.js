@@ -82,7 +82,16 @@ export function mountGame(root, { checkpoint } = {}) {
   const waiters = [];
   g.wait = (sec) => new Promise((res, rej) => waiters.push({ t: g.time + sec, res, rej }));
   g.until = (fn) => new Promise((res, rej) => waiters.push({ fn, res, rej }));
-  g.say = (who, text, opts) => (g.aborted ? Promise.reject(new Error('aborted')) : hud.say(who, text, opts));
+  g.say = (who, text, opts) => {
+    if (g.aborted) return Promise.reject(new Error('aborted'));
+    // Ines's recorded voice, when the line has a clip: the subtitle stays up at least as long as she talks
+    // (the treatment follows her subtitle tag: "capsule" is the radio, "capsule bay" the intercom, none in person)
+    const at = opts?.where ?? hud.where?.[who];
+    const v = audio.voice(who, text, at === 'capsule' ? 'radio' : at === 'capsule bay' ? 'intercom' : 'room');
+    const pr = hud.say(who, text, v ? { ...opts, minDur: v.dur } : opts);
+    if (v) pr.then(v.stop, v.stop); // skipping the line stops the clip
+    return pr;
+  };
   let objState = null;
   g.objective = (t, opts = {}) => { hud.objective(t); objState = t && opts.hint ? { hint: opts.hint, after: opts.after ?? 40, since: g.time, hinted: false } : null; };
   g.on = (id, fn) => { g.handlers[id] = fn; };
