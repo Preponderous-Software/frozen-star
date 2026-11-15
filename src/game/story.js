@@ -427,6 +427,7 @@ async function rescueAttempt(g) {
     g.alarm(false); g.objective(null);
     g.flags.stats.margin = secs(D - run.fired); g.flags.stats.marginS = Math.round(secs(D)) - Math.round(secs(run.fired)); // the rounded margin adds up with the rounded deadline g.flags.stats.seenAt = f.seenAt(run.fired).r / 2; g.flags.stats.metAt = result.r / 2;
     // her reply can only reach us with the light of the burn, after everything she sent before it
+    g.objective('Wait for Ines\'s reply: its light is still on the way (comms console)');
     await g.say('WREN', 'Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them.');
     await g.until(() => run.S() >= run.saved.seenAt);
     const lit = 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!';
@@ -440,9 +441,14 @@ async function rescueAttempt(g) {
     g.flags.inesHome = true; // the bay screens show her docked from here on
     await g.hud.card('Twenty minutes later', null, 2.4);
     await g.hud.fade(0, 1.5);
-    await g.say('INES', 'Docked. Hands still shaking.');
-    await g.say('INES', 'You know what scares me? On your screen I looked fine the whole time. If you\'d waited until I looked like I was in trouble...');
-    await g.say('WREN', 'It would have been far too late. By the deadline, her picture was still only a third of the way down.');
+    // the debrief runs alongside the next objective (the helm act waits for it before talking), so there is
+    // never a long stretch with nothing to do
+    g.objective(null);
+    g.dockTalk = (async () => {
+      await g.say('INES', 'Docked. Hands still shaking.');
+      await g.say('INES', 'You know what scares me? On your screen I looked fine the whole time. If you\'d waited until I looked like I was in trouble...');
+      await g.say('WREN', 'It would have been far too late. By the deadline, her picture was still only a third of the way down.');
+    })().catch(() => {});
   } else {
     await g.say('WREN', !result ? 'You did not fire. She crossed the horizon long ago.'
       : result.r > 0.01 ? `The beam reached the capsule at ${(result.r / 2).toFixed(2)} rₛ. Inside the horizon. Her engine cannot help her there.`
@@ -466,6 +472,7 @@ async function helmAct(g) {
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
   g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
   (async () => {
+    if (g.dockTalk) { await g.dockTalk; g.dockTalk = null; await g.wait(1); }
     await g.say('INES', 'I want to see that again. Without dying this time.');
     await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
   })().catch(() => {});

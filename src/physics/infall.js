@@ -127,3 +127,22 @@ export class Infall {
 }
 
 export { rStar };
+
+/** How long the seen climb home takes, in M of station time (about 24 s at Erebus). */
+export const CLIMB_M = 40;
+
+/**
+ * What the station sees of a faller rescued by the recall beam, once the light of its engine burn arrives
+ * (station time S ≥ saved.seenAt). A simple, continuous picture rather than a solved trajectory: the seen
+ * height eases from the burn back up to the station over CLIMB_M; the redshift eases from its value at the
+ * burn to the static gravitational one for that height, √(f0 / (1 − 2/r)); and its clock runs at that rate.
+ * saved = { seenAt } (station time the burn is seen); returns { r, tau, lnz } like Infall#seenAt.
+ */
+export function climbSeen(f, saved, S) {
+  const b = f.seenAt(saved.seenAt), dt = Math.max(0, S - saved.seenAt);
+  const k = Math.min(1, dt / CLIMB_M), e = k * k * (3 - 2 * k);
+  const r = b.r + (f.R0 - b.r) * e;
+  const lnStatic = (x) => 0.5 * Math.log(f.f0 / (1 - 2 / x));
+  const lnz = lnStatic(r) + (b.lnz - lnStatic(b.r)) * (1 - e);
+  return { r, tau: b.tau + dt / Math.exp(lnz), lnz };
+}

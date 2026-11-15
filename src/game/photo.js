@@ -56,6 +56,7 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
     const toggle = (label, key) => h('button.ph-toggle', { type: 'button', 'aria-pressed': 'false', onclick: () => { look[key] = !look[key]; applyLook(); } }, label);
     const fov = range('Field of view', FOV_MIN, FOV_MAX, 1, 'fov'), ev = range('Exposure', -EV, EV, 0.1, 'ev');
     const toggles = { noShip: toggle('Sky only', 'noShip'), vignette: toggle('Vignette', 'vignette') };
+    const savedLine = h('p.ph-saved', { role: 'status', hidden: true });
     const b = h('div.ph-bar', { role: 'toolbar', 'aria-label': 'Photo mode' },
       h('div.ph-row', h('p.eyebrow', 'Photo mode'), h('span.ph-keys',
         h('span.hint-keys', `Drag or click to look · ${moveKeysText()} move · R F up and down · C save · H hide · P done`),
@@ -63,8 +64,10 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
       h('div.ph-row', fov.el, ev.el),
       h('div.ph-row', toggles.noShip, toggles.vignette,
         h('button.ph-save', { type: 'button', onclick: () => capture() }, 'Save picture'),
-        h('button.ph-done', { type: 'button', onclick: () => exit() }, 'Done')));
-    return Object.assign(b, { fov, ev, toggles });
+        h('button.ph-done', { type: 'button', onclick: () => exit() }, 'Done')),
+      // the last save stays named here, so the confirmation cannot be missed (the toast fades)
+      savedLine);
+    return Object.assign(b, { fov, ev, toggles, savedLine });
   }
 
   const onKey = (e) => {
@@ -192,6 +195,7 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 10000);
       if (!reduceMotion()) { const f = h('div.ph-flash', { 'aria-hidden': 'true' }); el.append(f); setTimeout(() => f.remove(), 450); }
+      if (bar?.savedLine) { bar.savedLine.hidden = false; bar.savedLine.textContent = `Saved ${name} to your Downloads folder.`; }
       g.hud.toast(`Saved ${name}`, { sub: 'In your Downloads folder (or wherever your browser saves files).', sec: 6 });
       unlock('shutterbug');
       return blob;

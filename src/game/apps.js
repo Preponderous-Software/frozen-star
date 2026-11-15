@@ -1,7 +1,7 @@
 // Console apps (DOM panels opened at a console) and the drawings on the ship's own screens.
 // Physics runs live in the world (createRun); apps and screens only look at them.
 import { h, loop, slider, stat, hero, meter, sparkline } from '../ui/dom.js';
-import { Infall } from '../physics/infall.js';
+import { Infall, climbSeen } from '../physics/infall.js';
 import { FieldView, wavelengthRGB } from '../ui/scene2d.js';
 import { SpacetimeDiagram } from '../ui/diagram.js';
 import { stationPanel, probePanel } from '../ui/panels.js';
@@ -83,9 +83,9 @@ export function screenLines(ctx, w, hh, lines, y0 = 0.32, color = '#ece8f4') {
 const fieldViews = new WeakMap();
 export function drawRunOnScreen(ctx, w, hh, run, title) {
   let fv = fieldViews.get(ctx.canvas); if (!fv) { fv = new FieldView(ctx.canvas, { R0: R_STATION }); fieldViews.set(ctx.canvas, fv); }
-  // after a rescue, once the light of the engine burn arrives, the picture stops falling
+  // after a rescue, once the light of the engine burn arrives, the picture stops falling and climbs home
   const climbing = run.saved && run.S() >= run.saved.seenAt;
-  const s = climbing ? run.f.seenAt(run.saved.seenAt) : run.seen(), z = Math.exp(s.lnz);
+  const s = climbing ? climbSeen(run.f, run.saved, run.S()) : run.seen(), z = Math.exp(s.lnz);
   if (climbing) title = title.replace('as seen from the ship', 'engine burn seen, climbing home');
   fv.begin().hole().station().glow(s.r, { nm: 470 * z, flux: Math.exp(-4 * s.lnz) });
   ctx.fillStyle = 'rgba(5,7,15,.7)'; ctx.fillRect(0, 0, w, hh * 0.15); ctx.fillRect(0, hh * 0.84, w, hh * 0.16);
@@ -265,7 +265,9 @@ export function commsApp(body, g, { run, onFire, showMap }) {
       h('p.fine', 'Ines\'s capsule talks to the ship on this console. The recall beam, a light-speed command to fire her engine, is sent from here too.'));
     return null;
   }
-  const st = stationPanel(r.f, { title: 'Capsule · what you see', clockNote: 'ship clock', subject: 'Her', tag: 'Ines', hints: true });
+  // what the ship sees of her: falling, then (once her burn's light arrives) climbing home
+  const seenF = Object.create(r.f); seenF.seenAt = (S) => (r.saved && S >= r.saved.seenAt ? climbSeen(r.f, r.saved, S) : r.f.seenAt(S));
+  const st = stationPanel(seenF, { title: 'Capsule · what you see', clockNote: 'ship clock', subject: 'Her', tag: 'Ines', hints: true });
   const after = h('p.fp-gap', { hidden: true });
   const fire = h('button.danger.big#fp-fire', { onclick: () => { onFire(); fire.disabled = true; fire.textContent = 'Recall beam fired'; } }, 'Fire recall beam');
   if (r.fired != null) { fire.disabled = true; fire.textContent = 'Recall beam fired'; }
@@ -284,7 +286,7 @@ export function commsApp(body, g, { run, onFire, showMap }) {
     body.append(h('p.who', 'Spacetime map'), diagCanvas, h('p.fine', 'The red dashed line is the last inward light ray that meets her outside the horizon.'));
   }
   let n = 0;
-  let frozenAt = null;
+  let climbing = false;
   const stop = loop(() => {
     const S = r.S();
     const since = S * SEC_PER_M, left = (r.f.rescueDeadline - (r.fired ?? S)) * SEC_PER_M;
@@ -297,10 +299,10 @@ export function commsApp(body, g, { run, onFire, showMap }) {
     if (r.saved) {
       after.hidden = false;
       if (S < r.saved.seenAt) { after.textContent = 'Beam delivered. The picture below is old light from before it reached her: it will keep falling until the light of her engine burn arrives.'; after.className = 'fp-gap warn'; }
-      else { if (frozenAt == null) frozenAt = r.saved.seenAt; after.textContent = `Engine burn seen at ${(r.saved.r / 2).toFixed(2)} rₛ. She is climbing out and coming home.`; after.className = 'fp-gap'; }
+      else { climbing = true; after.textContent = `Engine burn seen at ${(r.saved.r / 2).toFixed(2)} rₛ. She is climbing out and coming home.`; after.className = 'fp-gap'; }
     }
-    st.update(frozenAt ?? S, { mass: HOLE.mass });
-    if (frozenAt != null) st.status.set('Climbing. Her engine burn has reached you: from here on the picture shows her coming home.');
+    st.update(S, { mass: HOLE.mass });
+    if (climbing) st.status.set('Climbing. Her engine burn has reached you: from here on the picture shows her coming home.');
     while (n < r.log.length) { const m = r.log[n++]; msgs.prepend(h('p', { style: m.style || {} }, m.tag ? h('small.fp-tag', `${m.tag} `) : null, m.text)); }
     if (diag) { diag.S = r.S(); diag.tau = r.tau(); diag.cutTau = r.saved?.tau; diag.rescues = r.fired != null ? [r.fired] : []; diag.draw(); }
   });
@@ -338,8 +340,9 @@ export function mapApp(body, g, { run }) {
 }
 
 export function helmApp(body, g, { onTarget }) {
-  const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.001, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => (x >= Math.log10(9) - 0.002 ? '10 rₛ' : `${sig(1 + 10 ** x, 4)} rₛ`) });
-  target.input.addEventListener('input', () => onTarget(2 * (1 + 10 ** target.value)));
+  const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.002, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => (x >= Math.log10(9) - 0.002 ? '10 rₛ' : `${sig(1 + 10 ** x, 4)} rₛ`) });
+  // the top of the slider is the station itself (the browser rounds max down to a whole step)
+  target.input.addEventListener('input', () => onTarget(target.value >= Math.log10(9) - 0.002 ? R_STATION : 2 * (1 + 10 ** target.value)));
   const rateHero = hero('Far-away clocks run', { note: '' });
   const rateMeter = meter({ min: 1, max: 8, log: true, ticks: [[1, '×1'], [2, '×2 · 1.33 rₛ'], [4, '×4 · 1.07 rₛ'], [8, '×8']], zones: [[2, 'warn'], [4, 'bad']], label: 'How much faster far-away clocks run than the ship\'s' });
   const sR = stat('Altitude now', '–', 'in horizon radii; 1 rₛ is the horizon'), sGain = stat('Relay clock ahead of yours', '–', 'gained since you woke');
