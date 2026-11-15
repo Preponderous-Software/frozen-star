@@ -10,11 +10,11 @@
   "halo"
  ],
  "lines": {
-  "a1222e5fef75": {
-   "text": "Morning, doc. Checklist first, then coffee. The view's on the bridge, not in here.",
+  "a50f284222dd": {
+   "text": "Hey, doc. Checklist first, then coffee. The view's on the bridge, not in here.",
    "phase": "opening",
-   "dur": 4.484,
-   "sig": "08a833d132",
+   "dur": 4.23,
+   "sig": "155760e42a",
    "where": [
     "src/game/bay.js"
    ]
@@ -55,11 +55,11 @@
     "src/game/story.js"
    ]
   },
-  "4f3e17f75889": {
-   "text": "Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.",
+  "2972f521a079": {
+   "text": "Morning, doc! You slept through the arrival. I'm down in the capsule bay. Get yourself up to the bridge, the view is ridiculous.",
    "phase": "opening",
-   "dur": 4.798,
-   "sig": "d01df40dc5",
+   "dur": 6.871,
+   "sig": "71e38c484f",
    "where": [
     "src/game/story.js"
    ]

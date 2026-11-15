@@ -183,7 +183,7 @@ export function buildBay({ group, M, interactables, blinkers }) {
       g.bay = ctl;
       g.hud.where = g.hud.where || {};
       const lines = {
-        preflight: [['INES', 'Morning, doc. Checklist first, then coffee. The view\'s on the bridge, not in here.'], ['INES', 'Seals, fuel, transponder. She\'s a good little boat. I\'ll wave when I go past the window.']],
+        preflight: [['INES', 'Hey, doc. Checklist first, then coffee. The view\'s on the bridge, not in here.'], ['INES', 'Seals, fuel, transponder. She\'s a good little boat. I\'ll wave when I go past the window.']],
         out: [['WREN', 'The cradle is empty, Doctor. Ines is out in the capsule. Her channel is on the bridge comms console.']],
         docked: [['INES', 'Still here, doc. Topping up the tanks, and my nerves.'], ['INES', 'I\'m fine in here. Go on, the window\'s yours.']],
       };

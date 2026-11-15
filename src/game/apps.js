@@ -221,7 +221,7 @@ export function probeApp(body, g, { run, canLaunch, onLaunch, name }) {
           h('p', `Released from rest beside the ship, 10 rₛ from Erebus, the black hole. It carries a clock and a beacon${/orpheus/i.test(name) ? ', and a camera that sends a frame home every few seconds of its own time' : ''}.`),
           h('div.fp-facts',
             fact('10', ' rₛ', 'its starting height, ten horizon radii'),
-            fact(/orpheus/i.test(name) ? 'camera' : 'every 10', /orpheus/i.test(name) ? '' : ' M', /orpheus/i.test(name) ? 'frames sent home as it falls' : 'a ping on its own clock, about 6 s')),
+            fact(/orpheus/i.test(name) ? 'camera' : 'every 10', /orpheus/i.test(name) ? '' : ' M', /orpheus/i.test(name) ? 'frames sent home as it falls' : `a ping on its own clock: M is Erebus's unit of time, ${SEC_PER_M.toFixed(2)} s, so about 6 s`)),
           h('button.primary.big#fp-launch', { disabled: !can, onclick: () => { onLaunch(); } }, can ? `Launch ${name}` : `${name}: locked`),
           h('p.fine', { hidden: can }, /orpheus/i.test(name) ? 'Locked for now: the survey plan launches Orpheus after the descent trial.' : 'Locked for now: the survey plan launches it later.'));
       }

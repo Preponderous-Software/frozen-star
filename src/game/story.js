@@ -233,12 +233,12 @@ async function wake(g) {
   await g.tweenTo(new THREE.Vector3(3.8, 1.15, 5.3), -0.12, -0.04, 2.2);
   await g.tweenTo(new THREE.Vector3(3.7, EYE, 4.7), -0.1, 0.0, 1.4);
   setWalk(g, 3.7, 4.7, -0.1, 0.0);
-  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.', when: () => !g.inRoom('bridge') });
+  g.objective('Go to the bridge', { hint: 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.', when: () => !g.inRoom('bridge') && !g.inRoom('corridor') });
   g.waypoint = { pos: new THREE.Vector3(1, 1.2, 4.1), label: 'Door', near: 0.9 };
   g.say('WREN', 'We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady.');
   g.controlsHint(controlsHintHtml({ touch: g.controls.isTouch() }));
   await g.wait(4.5);
-  await g.say('INES', 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.');
+  await g.say('INES', 'Morning, doc! You slept through the arrival. I\'m down in the capsule bay. Get yourself up to the bridge, the view is ridiculous.');
   g.wait(8).then(() => g.hud.hint(null)).catch(() => {});
 }
 
@@ -265,9 +265,9 @@ async function beaconAct(g) {
     run.log.push({ who: 'probe', text: 'Released at τ = 0' });
     g.waypoint = null;
   };
-  await g.say('INES', 'Isn\'t it something? That black circle is Erebus. Well, its shadow. I\'m out in the capsule bay doing pre-flight.');
-  await g.say('WREN', 'First item on today\'s plan: drop beacon probe K-1 and log its signal.');
-  if (launched) g.waypoint = null;
+  // a quick player may launch while these play: the objective moves on at once, and a briefing nobody needs is dropped
+  await Promise.race([g.say('INES', 'Isn\'t it something? That black circle is Erebus. Well, its shadow. I\'m out in the capsule bay doing pre-flight.'), g.until(() => launched)]);
+  if (!launched) await Promise.race([g.say('WREN', 'First item on today\'s plan: drop beacon probe K-1 and log its signal.'), g.until(() => launched)]);
   await g.until(() => launched);
   g.objective('Watch the probe fall');
   const run = g.beacon, f = run.f;
