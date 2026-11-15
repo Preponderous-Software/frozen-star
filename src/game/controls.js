@@ -3,6 +3,7 @@
 import { stick, deadzone } from './walk.js';
 
 const LOOK_MOUSE = 0.0022, LOOK_TOUCH = 0.0055, LOOK_PAD = 2.4;
+let SENS = 1;
 
 export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   const keys = new Set();
@@ -28,7 +29,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     keys.add(k);
   };
   const ku = (e) => keys.delete(e.code);
-  const mm = (e) => { if (document.pointerLockElement === el && enabled) { lookDX += e.movementX * LOOK_MOUSE; lookDY += e.movementY * LOOK_MOUSE; } };
+  const mm = (e) => { if (document.pointerLockElement === el && enabled) { lookDX += e.movementX * LOOK_MOUSE * SENS; lookDY += e.movementY * LOOK_MOUSE * SENS; } };
   const click = (e) => {
     if (!enabled || isTouch() || e.target !== el.querySelector('canvas.fp-three')) return;
     if (document.pointerLockElement !== el) el.requestPointerLock?.()?.catch?.(() => {});
@@ -52,7 +53,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
         stickVec = stick(dx, dy, R);
         e.preventDefault();
       } else if (touchLook && t.identifier === touchLook.id) {
-        lookDX += (t.clientX - touchLook.x) * LOOK_TOUCH; lookDY += (t.clientY - touchLook.y) * LOOK_TOUCH;
+        lookDX += (t.clientX - touchLook.x) * LOOK_TOUCH * SENS; lookDY += (t.clientY - touchLook.y) * LOOK_TOUCH * SENS;
         touchLook.x = t.clientX; touchLook.y = t.clientY; e.preventDefault();
       }
     }
@@ -81,7 +82,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     if (gp && gp.mapping === 'standard') {
       const [lx, ly] = deadzone(gp.axes[0] || 0, gp.axes[1] || 0), [rx, ry] = deadzone(gp.axes[2] || 0, gp.axes[3] || 0);
       if (lx || ly) { forward = -ly; right = lx; run = Math.hypot(lx, ly) > 0.92 || gp.buttons[10]?.pressed; }
-      lookDX += rx * Math.abs(rx) * LOOK_PAD * dt; lookDY += ry * Math.abs(ry) * LOOK_PAD * 0.7 * dt;
+      lookDX += rx * Math.abs(rx) * LOOK_PAD * SENS * dt; lookDY += ry * Math.abs(ry) * LOOK_PAD * 0.7 * SENS * dt;
       const a = gp.buttons[0]?.pressed, b = gp.buttons[1]?.pressed;
       if (a && !padPrev.a) { interactEdge = true; onInteract?.(); }
       if (b && !padPrev.b) { backEdge = true; onBack?.(); }
@@ -94,6 +95,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
 
   return {
     read,
+    setSensitivity(v) { SENS = v; },
     setEnabled(v) { enabled = v; if (!v) { keys.clear(); touchStick = null; stickVec = { forward: 0, right: 0, run: false }; stickEl.classList.remove('on'); if (document.pointerLockElement === el) document.exitPointerLock?.(); } },
     showUse(label) { useBtn.hidden = !label || !isTouch(); if (label) useBtn.textContent = label; },
     unlock() { if (document.pointerLockElement === el) document.exitPointerLock?.(); },

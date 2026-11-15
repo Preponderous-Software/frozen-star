@@ -18,6 +18,9 @@ export function createHud(root) {
   root.append(cross, objective, prompt, subs, hint, card, fade);
 
   let lineId = 0, pending = null;
+  const timers = new Set(); // lines on screen, counted down in game time so pausing freezes them
+  const look = h('div.fp-look', { hidden: true }, 'Click to look around');
+  root.append(look);
   subs.addEventListener('click', () => pending?.done());
   return {
     /** Show a line of dialogue. Resolves when it has been on screen long enough to read. */
@@ -30,14 +33,17 @@ export function createHud(root) {
       const id = ++lineId, t = dur ?? Math.min(9, 1.6 + text.length * 0.055);
       setTimeout(() => el.remove(), t * 1000 + 9000);
       return new Promise((res) => {
-        const done = () => { clearTimeout(timer); el.classList.add('old'); if (pending?.id === id) pending = null; res(id); };
-        const timer = setTimeout(done, t * 1000);
-        pending = { id, done };
+        const p = { id, remain: t, done: () => { if (p.finished) return; p.finished = true; el.classList.add('old'); timers.delete(p); if (pending === p) pending = null; res(id); } };
+        timers.add(p); pending = p;
       });
     },
     clearSubs() { subs.innerHTML = ''; },
     /** Finish the current line now (Space, or a tap on the subtitles). */
     skip() { pending?.done(); },
+    /** Advance subtitle timers by dt seconds of game time (0 while paused). */
+    tick(dt) { for (const p of [...timers]) { p.remain -= dt; if (p.remain <= 0) p.done(); } },
+    lookHint(on) { look.hidden = !on; },
+    choosing: false,
     objective(text) { objective.hidden = !text; if (text) objective.querySelector('b').textContent = text; objective.classList.remove('flash'); void objective.offsetWidth; objective.classList.add('flash'); },
     prompt(text) { prompt.hidden = !text; if (text) prompt.innerHTML = text; },
     crosshair(on) { cross.hidden = !on; },
@@ -57,7 +63,9 @@ export function createHud(root) {
     choice(question, options, { timeout } = {}) {
       return new Promise((res) => {
         let done = false;
-        const finish = (i) => { if (done) return; done = true; box.remove(); res(i); };
+        const api = this;
+        api.choosing = true;
+        const finish = (i) => { if (done) return; done = true; api.choosing = false; box.remove(); res(i); };
         const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${i + 1}. ${o}`))));
         root.append(box);
         const key = (e) => { const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
@@ -66,6 +74,6 @@ export function createHud(root) {
         if (timeout) setTimeout(() => { removeEventListener('keydown', key); finish(null); }, timeout * 1000);
       });
     },
-    dispose() { for (const e of [subs, objective, prompt, cross, fade, card, hint]) e.remove(); },
+    dispose() { for (const e of [subs, objective, prompt, cross, fade, card, hint, look]) e.remove(); },
   };
 }

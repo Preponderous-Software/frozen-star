@@ -18,6 +18,11 @@ const consolePos = (g, id) => g.ship.interactables.find((i) => i.id === id).pos.
 
 export async function runStory(g, cp) {
   const at = Math.max(0, ORDER.indexOf(cp));
+  // starting partway (continue or chapter select): unlock what earlier acts would have
+  if (at >= 2) Object.assign(g.flags, { beaconDone: true, mapUnlocked: true });
+  if (at >= 3) Object.assign(g.flags, { inesHome: true, rescueIntro: true });
+  if (at >= 4) Object.assign(g.flags, { helmUnlocked: true });
+  g.flags.stats = g.flags.stats || {};
   g.helmTarget = R_STATION;
   baseScreens(g);
   baseHandlers(g);
@@ -78,6 +83,7 @@ function setWalk(g, x, z, yaw, pitch = 0) {
 function spawnOnBridge(g) {
   g.flags.mapUnlocked = g.flags.mapUnlocked ?? false;
   setWalk(g, 0, -7.0, 0);
+  g.hud.fade(1, 0); g.hud.fade(0, 1.4);
 }
 
 // ---------- prologue: a dream of falling ----------
@@ -180,6 +186,7 @@ async function beaconAct(g) {
     'Never: it will be too close to the horizon',
   ], { timeout: Math.max(5, secs(A9 - run.S()) - 1) }).then((i) => { answer = i; });
   await g.until(() => got >= 9);
+  g.flags.stats.prediction = answer === 1 ? 'right' : answer == null ? 'none' : 'wrong';
   g.say('WREN', answer === 1 ? 'Ping 9, right on your prediction.' : answer == null ? `Ping 9, at ${Math.round(secs(A9))} seconds.` : `Ping 9, at ${Math.round(secs(A9))} seconds. Each ping has to climb out of a deeper well than the last.`);
   await g.until(() => run.tau() >= f.tauEnd);
   await g.wait(1.5);
@@ -298,6 +305,7 @@ async function rescueAttempt(g) {
   if (saved) {
     run.hidden = true; removeMarker();
     g.alarm(false); g.objective(null);
+    g.flags.stats.margin = secs(D - run.fired); g.flags.stats.seenAt = f.seenAt(run.fired).r / 2;
     await g.say('INES', 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!');
     await g.say('WREN', `You fired ${Math.round(secs(D - run.fired))} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
     g.ticks.delete(tick);
@@ -342,6 +350,7 @@ async function helmAct(g) {
   g.objective('Return to 10 rₛ (helm)');
   await g.until(() => g.shipR > R_STATION - 0.05);
   const lost = (g.clocks.relay - relay0) - (g.clocks.ship - ship0);
+  g.flags.stats.lost = lost;
   await g.say('WREN', `Back at station. The rest of the universe aged ${Math.round(lost)} seconds more than we did down there.`);
   g.objective(null);
   g.save('helm-done');
@@ -399,6 +408,7 @@ async function orpheusAct(g) {
   g.objective(null);
   await g.say('INES', 'So that last frame is all we get. Did it fall in, or is it stuck there?');
   const pick = await g.hud.choice('What do you tell Ines?', ['It fell in. Its last light just never reaches us.', 'It is frozen at the edge, forever.']);
+  g.flags.stats.frames = frames; g.flags.stats.answer = pick === 0 ? 'fell in' : 'frozen';
   if (pick === 1) {
     await g.say('WREN', 'Its clock never stopped. Orpheus reached the centre less than a second after crossing, by its own clock. The frozen picture is only the last light that could still climb out, and even that has faded.');
     await g.say('INES', 'So "frozen" is just what it looks like from here.');
@@ -415,7 +425,10 @@ async function orpheusAct(g) {
 // ---------- epilogue ----------
 async function epilogue(g) {
   g.flags.helmUnlocked = true; g.flags.mapUnlocked = true; g.flags.orpheusReady = true; g.flags.beaconDone = true; g.flags.inesHome = true;
+  const first = !g.flags.finished;
+  g.flags.finished = true; g.save('epilogue');
   await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
+  if (first) await logbook(g);
   g.objective('Explore the Tern. The lab archive has more.');
   // free play: the beacon can be dropped again from the probe console
   g.flags.beaconDone = false; g.beacon = null; g.orpheus = null;
@@ -430,4 +443,30 @@ async function epilogue(g) {
     };
     g.ticks.add(tick);
   };
+}
+
+// ---------- the logbook: the player's own numbers ----------
+function logbook(g) {
+  const st = g.flags.stats || {}, tries = g.flags.rescueTries || 0;
+  const row = (k, v, note) => { const li = document.createElement('li'); li.innerHTML = `<b>${k}</b><span>${v}</span>${note ? `<em>${note}</em>` : ''}`; return li; };
+  const box = document.createElement('div'); box.className = 'fp-logbook';
+  box.innerHTML = '<p class="eyebrow">Expedition log · Tern above Erebus</p><h2>What you saw</h2>';
+  const ul = document.createElement('ul');
+  ul.append(
+    row('Beacon K-1', 'crossed the horizon 58 s after release, by its own clock', st.prediction === 'right' ? 'You predicted ping 9 correctly.' : 'Ping 9 arrived 64 s after release, not 53.'),
+    row('Rescue', st.margin != null ? `fired ${Math.round(st.margin)} s before the deadline` : 'Ines came home', st.seenAt == null ? 'The picture on your screen was old light the whole time.' : tries ? `It took ${tries + 1} tries. On the try that worked, your screen showed her at ${st.seenAt.toFixed(1)} rₛ.` : `Your screen showed her at ${st.seenAt.toFixed(1)} rₛ, still looking fine.`),
+    row('Descent', st.lost != null ? `the universe aged ${Math.round(st.lost)} s more than you` : 'held at twice the relay rate', 'Hovering clocks run slow; the field paid for it.'),
+    row('Orpheus', st.frames ? `${st.frames} frames received, the last from just above the horizon` : 'its last frame froze at the horizon', st.answer === 'fell in' ? 'You told Ines it fell in. It did.' : 'Its clock never stopped; only its light did.'),
+  );
+  box.append(ul);
+  const p = document.createElement('p'); p.className = 'fp-logbook-foot';
+  p.textContent = 'From far away, nothing is ever seen to fall in. That is a fact about light, not about the things that fall.';
+  const actions = document.createElement('div'); actions.className = 'fp-logbook-actions';
+  return new Promise((res) => {
+    const keep = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Keep exploring', className: 'primary' });
+    keep.onclick = () => { box.remove(); res(); };
+    const menu = Object.assign(document.createElement('a'), { href: '#title', textContent: 'Main menu', className: 'button' });
+    actions.append(keep, menu); box.append(p, actions);
+    g.el.append(box); g.controls.unlock(); keep.focus();
+  });
 }

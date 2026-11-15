@@ -12,6 +12,8 @@ import { shipPosition, toHole, fromHole, SEC_PER_M, R_STATION, DISK_OUTER } from
 import { hoverRate } from '../physics/body.js';
 import { runStory } from './story.js';
 import { createAudio } from './audio.js';
+import { loadSettings } from './settings.js';
+import { settingsForm } from './settings-ui.js';
 import { hoverAccel } from '../physics/body.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
@@ -64,7 +66,14 @@ export function mountGame(root, { checkpoint } = {}) {
   const hud = createHud(el);
   g.hud = hud;
   const audio = createAudio(); g.audio = audio;
-  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); }, onSkip: () => hud.skip() });
+  const controls = createControls(el, { onBack: () => { if (g.mode === 'console') closeApp(); else if (g.mode === 'walk') togglePause(); }, onSkip: () => { if (!g.paused) hud.skip(); } });
+  // ---- settings ----
+  let settings = loadSettings();
+  function applySettings() {
+    controls.setSensitivity(settings.sens); audio.setVolume(settings.volume);
+    el.classList.toggle('fp-subs-large', settings.subs === 'large');
+    resize?.();
+  }
   g.controls = controls;
 
   // ---- story helpers ----
@@ -136,16 +145,51 @@ export function mountGame(root, { checkpoint } = {}) {
     fn?.(focusIt);
   }
 
-  // ---- menu ----
-  menuBtn.addEventListener('click', () => { menu.hidden = !menu.hidden; if (!menu.hidden) controls.unlock(); });
-  menu.append(
-    h('p.eyebrow', 'Paused'),
-    h('button', { type: 'button', onclick: () => { menu.hidden = true; } }, 'Resume'),
-    h('button#fp-sound', { type: 'button', onclick: (e) => { audio.setMuted(!audio.muted); e.currentTarget.textContent = audio.muted ? 'Sound: off' : 'Sound: on'; } }, audio.muted ? 'Sound: off' : 'Sound: on'),
-    h('a.button', { href: '#title' }, 'Leave the ship'),
-    h('button', { type: 'button', onclick: () => { try { localStorage.removeItem('frozen-star.fp.v1'); } catch { /* */ } location.hash = '#title'; } }, 'Forget my progress'),
-    h('p.fine', 'WASD or arrows to walk, mouse to look (click to capture it), E to use, Shift to run, Space to skip a line. On touch: left thumb walks, drag to look, tap a line to skip it.'),
-  );
+  // ---- pause menu ----
+  g.paused = false;
+  const isDesktop = /Electron/.test(navigator.userAgent);
+  function setPaused(p) {
+    g.paused = p; menu.hidden = !p; audio.duck(p);
+    if (p) { controls.unlock(); renderMenu('main'); }
+  }
+  function togglePause() { setPaused(!g.paused); }
+  function resume() {
+    setPaused(false);
+    if (!controls.isTouch() && g.mode === 'walk') el.requestPointerLock?.()?.catch?.(() => {});
+  }
+  g.pause = setPaused;
+  menuBtn.addEventListener('click', () => (g.paused ? resume() : setPaused(true)));
+  let wasLocked = false;
+  const onLockChange = () => {
+    const locked = document.pointerLockElement === el;
+    if (wasLocked && !locked && g.mode === 'walk' && !g.paused && !hud.choosing && !menuSuppress) setPaused(true);
+    wasLocked = locked;
+  };
+  let menuSuppress = false;
+  document.addEventListener('pointerlockchange', onLockChange);
+
+  function renderMenu(view) {
+    const btn = (label, fn, id) => h('button', { type: 'button', id, onclick: fn }, label);
+    if (view === 'main') {
+      menu.replaceChildren(
+        h('p.eyebrow', 'Paused'),
+        h('h3', 'Frozen Star'),
+        btn('Resume', resume, 'fp-resume'),
+        btn('Settings', () => renderMenu('settings'), 'fp-settings'),
+        btn('Controls', () => renderMenu('controls')),
+        h('a.button', { href: '#title' }, 'Main menu'),
+        isDesktop ? btn('Quit', () => window.close()) : null,
+        h('p.fine', 'Progress saves automatically at each chapter.'));
+      menu.querySelector('#fp-resume').focus();
+    } else if (view === 'controls') {
+      menu.replaceChildren(h('p.eyebrow', 'Controls'),
+        h('dl.fp-keys',
+          ...[['Walk', 'W A S D or arrows · left stick · left thumb'], ['Look', 'Mouse (click to capture) · right stick · drag'], ['Use', 'E · A button · Use button'], ['Run', 'Shift · click the stick'], ['Skip a line', 'Space · tap the subtitles'], ['Step back / pause', 'Esc · B button · ☰'], ['Fullscreen', isDesktop ? 'F11' : 'Settings']].flatMap(([k, v]) => [h('dt', k), h('dd', v)])),
+        btn('Back', () => renderMenu('main')));
+    } else if (view === 'settings') {
+      menu.replaceChildren(settingsForm(settings, () => applySettings(), { onBack: () => renderMenu('main') }));
+    }
+  }
 
   // ---- main loop ----
   const tmpV = new THREE.Vector3(), frustum = new THREE.Frustum(), projM = new THREE.Matrix4(), wBox = new THREE.Box3();
@@ -156,6 +200,8 @@ export function mountGame(root, { checkpoint } = {}) {
   el.append(way);
   g.waypoint = null;
   const brackets = new Map();
+  const focusBox = h('div.fp-focus', { hidden: true }, h('i'));
+  el.append(focusBox);
   function resize() {
     const w = el.clientWidth, hh = el.clientHeight;
     renderer.setPixelRatio(dpr);
@@ -163,16 +209,18 @@ export function mountGame(root, { checkpoint } = {}) {
     camera.aspect = w / Math.max(1, hh);
     // keep at least ~80° across on tall (portrait) screens
     const hfov = THREE.MathUtils.degToRad(80);
-    camera.fov = camera.aspect < 1.15 ? Math.min(105, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / camera.aspect))) : 70;
+    camera.fov = camera.aspect < 1.15 ? Math.min(105, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / camera.aspect))) : settings.fov;
     camera.updateProjectionMatrix();
   }
-  const ro = new ResizeObserver(resize); ro.observe(el); resize();
+  const ro = new ResizeObserver(resize); ro.observe(el); applySettings();
 
   let frameN = 0;
   function frame(now) {
     if (!alive) return;
     if (frameN < 3) mark('frame ' + frameN); frameN++;
-    const dt = Math.min(0.1, (now - last) / 1000) * TIME_SCALE; last = now;
+    const realDt = Math.min(0.1, (now - last) / 1000) * TIME_SCALE; last = now;
+    const dt = g.paused ? 0 : realDt;
+    hud.tick(dt);
     g.time += dt; g.dt = dt;
     if (!g.physicsPaused) g.physicsTime += dt;
     // clocks: the ship's own and a relay far away (runs faster by 1/√(1 − 2M/r))
@@ -183,8 +231,13 @@ export function mountGame(root, { checkpoint } = {}) {
     }
     for (const t of g.ticks) t(dt);
     const inp = controls.read(dt);
-    if (g.mode === 'walk') {
-      g.me.yaw -= inp.lookDX; g.me.pitch = Math.max(-1.45, Math.min(1.45, g.me.pitch - inp.lookDY));
+    hud.lookHint(g.mode === 'walk' && !g.paused && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1);
+    if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
+    if (g.mode === 'walk' && g.paused) {
+      camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
+      hud.prompt(null); controls.showUse(null);
+    } else if (g.mode === 'walk') {
+      g.me.yaw -= inp.lookDX; g.me.pitch = Math.max(-1.45, Math.min(1.45, g.me.pitch - inp.lookDY * (settings.invertY ? -1 : 1)));
       const px = g.me.x, pz = g.me.z;
       g.me = step(g.me, inp, dt, ship.colliders);
       stepDist += Math.hypot(g.me.x - px, g.me.z - pz);
@@ -192,6 +245,11 @@ export function mountGame(root, { checkpoint } = {}) {
       camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
       focusIt = findInteractable();
       const label = focusIt?.label;
+      if (focusIt) {
+        const v = focusIt.pos.clone().project(camera);
+        focusBox.hidden = v.z > 1;
+        focusBox.style.transform = `translate(${((v.x + 1) / 2) * el.clientWidth}px, ${((1 - v.y) / 2) * el.clientHeight}px)`;
+      } else focusBox.hidden = true;
       hud.prompt(label && !controls.isTouch() ? `<kbd>E</kbd> ${label}` : null);
       controls.showUse(label || null);
       if (inp.interact) interact();
@@ -289,8 +347,9 @@ export function mountGame(root, { checkpoint } = {}) {
         }
         sky.render();
         // adapt the sky's resolution to the whole frame's time (no GPU stalls to measure it)
-        skyAvg = skyAvg * 0.85 + (dt / TIME_SCALE) * 1000 * 0.15; skyFrames += dt / TIME_SCALE;
-        if (skyFrames > 0.5) { skyFrames = 0; const s = sky.state.scale; if (skyAvg > 36 && s > 0.2) sky.set({ scale: Math.max(0.2, s * 0.8) }); else if (skyAvg < 22 && s < 0.85) sky.set({ scale: Math.min(0.85, s * 1.07) }); }
+        skyAvg = skyAvg * 0.85 + (realDt / TIME_SCALE) * 1000 * 0.15; skyFrames += realDt / TIME_SCALE;
+        const [lo, hi] = settings.quality === 'low' ? [0.2, 0.3] : settings.quality === 'high' ? [0.5, 1] : [0.2, 0.85];
+        if (skyFrames > 0.5) { skyFrames = 0; const s = sky.state.scale; const next = skyAvg > 36 ? s * 0.8 : skyAvg < 22 ? s * 1.07 : s; sky.set({ scale: Math.min(hi, Math.max(lo, next)) }); }
       }
     }
     threeCanvas.style.visibility = g.skyOverride && g.hideShip ? 'hidden' : 'visible';
@@ -299,7 +358,7 @@ export function mountGame(root, { checkpoint } = {}) {
     if (frameN <= 3) mark('rendered');
     audio.setHum(g.hideShip ? 0.08 : g.inRoom('bridge') ? 1 : 0.7, 1 + 0.08 * Math.max(0, Math.log10(hoverAccel(g.shipR, 1.2e5) / hoverAccel(R_STATION, 1.2e5))));
     // adaptive resolution for the ship view: aim for 30+ fps
-    frameAvg = frameAvg * 0.95 + (dt / TIME_SCALE) * 1000 * 0.05; dprTimer += dt / TIME_SCALE;
+    frameAvg = frameAvg * 0.95 + (realDt / TIME_SCALE) * 1000 * 0.05; dprTimer += realDt / TIME_SCALE;
     if (dprTimer > 2) {
       dprTimer = 0;
       const max = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
@@ -321,7 +380,7 @@ export function mountGame(root, { checkpoint } = {}) {
   runStory(g, start).catch((e) => { if (!g.aborted) console.error(e); });
 
   return () => {
-    alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect();
+    alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); document.removeEventListener('pointerlockchange', onLockChange);
     for (const w of waiters) w.rej(new Error('aborted'));
     appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
     document.body.classList.remove('fp-active');

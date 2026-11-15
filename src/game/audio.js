@@ -7,7 +7,7 @@
 const KEY = 'frozen-star.muted';
 
 export function createAudio() {
-  let ctx = null, master = null, muted = false, hum = null, alarm = null, statics = null;
+  let ctx = null, master = null, muted = false, hum = null, alarm = null, statics = null, volume = 0.8, ducked = false;
   const carriers = new Map();
   try { muted = localStorage.getItem(KEY) === '1'; } catch { /* storage off */ }
 
@@ -16,7 +16,7 @@ export function createAudio() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;
     ctx = new AC();
-    master = ctx.createGain(); master.gain.value = muted ? 0 : 0.8; master.connect(ctx.destination);
+    master = ctx.createGain(); master.gain.value = level(); master.connect(ctx.destination);
     startHum();
     return true;
   }
@@ -24,6 +24,9 @@ export function createAudio() {
   addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
   // The click on "Wake up" already counts as a user gesture in most browsers: start now if allowed.
   try { ensure(); } catch { /* wait for a gesture */ }
+
+  function level() { return muted ? 0 : volume * (ducked ? 0.3 : 1); }
+  const applyLevel = () => { if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.1); };
 
   function noiseBuffer(sec = 2) {
     const b = ctx.createBuffer(1, ctx.sampleRate * sec, ctx.sampleRate), d = b.getChannelData(0);
@@ -73,7 +76,9 @@ export function createAudio() {
   return {
     get ready() { return !!ctx; },
     get muted() { return muted; },
-    setMuted(m) { muted = m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } if (master) master.gain.setTargetAtTime(m ? 0 : 0.8, ctx.currentTime, 0.1); },
+    setMuted(m) { muted = m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
+    setVolume(v) { volume = v; applyLevel(); },
+    duck(on) { ducked = on; applyLevel(); },
 
     /** Hum level and pitch: louder on the bridge, higher when the field works harder. */
     setHum(level, pitch = 1) { if (!hum) return; hum.g.gain.setTargetAtTime(0.06 * level, ctx.currentTime, 0.4); hum.o1.frequency.setTargetAtTime(48 * pitch, ctx.currentTime, 0.6); hum.o2.frequency.setTargetAtTime(72.3 * pitch, ctx.currentTime, 0.6); },
