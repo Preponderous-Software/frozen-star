@@ -121,7 +121,7 @@ void main() {
     float r = length(x);
     vec3 k1x, k1p, k2x, k2p, k3x, k3p, k4x, k4p;
     derivs(x, p, E, k1x, k1p);
-    float h = -(0.02 * min(r, 8.0) + 0.05 * max(0.0, r - 8.0)) / length(k1x);
+    float h = -(0.02 * min(r, 8.0) + 0.09 * max(0.0, r - 8.0)) / length(k1x);
     derivs(x + 0.5 * h * k1x, p + 0.5 * h * k1p, E, k2x, k2p);
     derivs(x + 0.5 * h * k2x, p + 0.5 * h * k2p, E, k3x, k3p);
     derivs(x + h * k3x, p + h * k3p, E, k4x, k4p);

@@ -39,7 +39,7 @@ python3 tools/serve.py . 8000      # or any static file server
 # then open http://localhost:8000/
 ```
 
-The game needs WebGL 2. Add `?lowgpu` to the URL on slow machines. Controls: WASD and mouse (click to capture), E to use, Space to skip a line; on touch, left thumb walks and dragging looks; gamepads work too. On Windows, `tools/play-frozen-star.bat` copies the WSL clone and opens the game.
+The game needs WebGL 2. Add `?lowgpu` to the URL on slow machines. Controls: WASD and mouse (click to capture), E to use, Space to skip a line; on touch, left thumb walks and dragging looks; gamepads work too. On Windows, `tools/play-frozen-star.bat` opens it as a desktop app: the first run downloads a checksum-pinned Electron runtime (45.2.0, about 160 MB), then every launch copies the latest files from the WSL clone into it. `play-frozen-star.bat browser` plays in the browser instead. The Electron shell lives in `desktop/` (F11 fullscreen, F5 reload).
 
 three.js r170 is vendored in `vendor/three` (MIT).
 

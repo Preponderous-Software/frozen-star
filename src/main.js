@@ -51,9 +51,9 @@ function titleScreen() {
     t += reduce ? 0 : Math.min(0.1, (now - last) / 1000); last = now;
     const a = -0.35 + t * 0.05, r = 32, pos = [Math.sin(a) * r, 2.6 + Math.sin(t * 0.07) * 0.8, -Math.cos(a) * r];
     view.set({ cam: pos, basis: lookBasis(pos, [Math.cos(a) * 6.5, -1.2, Math.sin(a) * 6.5]), V: hoverVelocity(pos), time: t, disk: true });
-    const t0 = performance.now(); view.render(); view.gl.finish?.();
-    const ms = performance.now() - t0; avg = avg * 0.9 + ms * 0.1;
-    if (++frames % 15 === 0) { const sc = view.state.scale; if (avg > 34 && sc > 0.2) view.set({ scale: sc * 0.8 }); else if (avg < 12 && sc < 0.75) view.set({ scale: sc * 1.1 }); }
+    const dtMs = (now - (tick.prev || now)); tick.prev = now; view.render();
+    avg = avg * 0.85 + dtMs * 0.15;
+    if (++frames % 15 === 0) { const sc = view.state.scale; if (avg > 36 && sc > 0.2) view.set({ scale: Math.max(0.2, sc * 0.8) }); else if (avg < 22 && sc < 0.75) view.set({ scale: sc * 1.07 }); }
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);

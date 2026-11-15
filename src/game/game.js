@@ -42,7 +42,7 @@ export function mountGame(root, { checkpoint } = {}) {
   mark('renderer'); const ship = buildShip(); mark('ship built');
   scene.add(ship.group);
   let sky = null;
-  try { sky = new BlackHoleView(skyCanvas, { scale: LOW_GPU ? 0.2 : 0.6 }); sky.set({ diskOuter: DISK_OUTER, steps: 520, exposure: 1.6 }); }
+  try { sky = new BlackHoleView(skyCanvas, { scale: LOW_GPU ? 0.2 : 0.45 }); sky.set({ diskOuter: DISK_OUTER, steps: 520, exposure: 1.6 }); }
   catch (e) { skyCanvas.replaceWith(h('div.fp-nosky', 'The view outside needs WebGL 2.')); }
 
   // ---- markers: points of light seen through the windows (a falling probe, a capsule) ----
@@ -287,9 +287,10 @@ export function mountGame(root, { checkpoint } = {}) {
           const pos = shipPosition(g.shipR);
           sky.set({ cam: pos, basis: [r, u, f], V: hoverVelocity(pos), fov: THREE.MathUtils.degToRad(camera.fov), time: g.time, disk: true });
         }
-        const t0 = performance.now(); sky.render(); sky.gl.finish?.();
-        skyAvg = skyAvg * 0.9 + (performance.now() - t0) * 0.1;
-        if (++skyFrames % 20 === 0) { const s = sky.state.scale; if (skyAvg > 22 && s > 0.25) sky.set({ scale: s * 0.85 }); else if (skyAvg < 9 && s < 0.9) sky.set({ scale: s * 1.1 }); }
+        sky.render();
+        // adapt the sky's resolution to the whole frame's time (no GPU stalls to measure it)
+        skyAvg = skyAvg * 0.85 + (dt / TIME_SCALE) * 1000 * 0.15; skyFrames += dt / TIME_SCALE;
+        if (skyFrames > 0.5) { skyFrames = 0; const s = sky.state.scale; if (skyAvg > 36 && s > 0.2) sky.set({ scale: Math.max(0.2, s * 0.8) }); else if (skyAvg < 22 && s < 0.85) sky.set({ scale: Math.min(0.85, s * 1.07) }); }
       }
     }
     threeCanvas.style.visibility = g.skyOverride && g.hideShip ? 'hidden' : 'visible';

@@ -12,15 +12,13 @@ export function viewport({ label = 'Ray-traced view of the black hole', classNam
   let avg = 16, frames = 0;
   function render(dt) {
     if (!view) return;
-    const t0 = performance.now();
     view.render();
-    view.gl.finish?.();
-    const ms = performance.now() - t0;
-    avg = avg * 0.9 + ms * 0.1; frames++;
+    const now = performance.now(), ms = now - (render.prev || now); render.prev = now;
+    avg = avg * 0.85 + ms * 0.15; frames++;
     if (frames > 10 && frames % 15 === 0) {
       const s = view.state.scale;
-      if (avg > 34 && s > 0.3) view.set({ scale: Math.max(0.3, s * 0.82) });
-      else if (avg < 14 && s < 1) view.set({ scale: Math.min(1, s * 1.12) });
+      if (avg > 36 && s > 0.2) view.set({ scale: Math.max(0.2, s * 0.8) });
+      else if (avg < 22 && s < 1) view.set({ scale: Math.min(1, s * 1.07) });
     }
   }
   return { el, canvas, view, look: look.st, render, error, dispose() { look.dispose(); view?.dispose(); } };
