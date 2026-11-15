@@ -39,7 +39,10 @@ rem Already running? The files above are fresh and the server never caches, so j
 curl.exe -s -o NUL "http://127.0.0.1:%FS_PORT%/index.html" && (start "" "%URL%" & exit /b 0)
 
 title Frozen Star
-rem Windows Python can map .js to text/plain from the registry, which browsers refuse for modules.
-rem no-store: the browser always fetches the current files, so an update shows on the next load.
-py -3 -c "import functools,http.server,os,sys,webbrowser; B=http.server.SimpleHTTPRequestHandler; B.extensions_map.update({'.js':'text/javascript','.css':'text/css','.html':'text/html'}); H=type('H',(B,),{'end_headers':lambda self:(self.send_header('Cache-Control','no-store'),B.end_headers(self))[1]}); s=http.server.ThreadingHTTPServer(('127.0.0.1',int(sys.argv[2])),functools.partial(H,directory=sys.argv[1])); print('Frozen Star is running at',sys.argv[3]); print('Close this window to stop it.'); os.environ.get('FS_NO_BROWSER') or webbrowser.open(sys.argv[3]); s.serve_forever()" "%FS_DIR%" "%FS_PORT%" "%URL%"
+rem tools\serve.py serves this PC only, with fresh URLs on every launch so the browser never runs an old copy.
+if defined FS_NO_BROWSER (
+    py -3 "%FS_DIR%\tools\serve.py" "%FS_DIR%" %FS_PORT%
+) else (
+    py -3 "%FS_DIR%\tools\serve.py" "%FS_DIR%" %FS_PORT% --open "%URL%"
+)
 if errorlevel 1 pause
