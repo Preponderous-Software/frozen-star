@@ -1,0 +1,17 @@
+{"type": "screen", "tick": 30, "wallTimeMs": 1794773668861, "from": null, "to": "TITLE"}
+{"type": "world", "tick": 0, "wallTimeMs": 1794774063138, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794774063139, "from": "TITLE", "to": "DREAM"}
+{"type": "dialogue", "tick": 140, "wallTimeMs": 1794774164296, "who": "YOU", "text": "(Falling. No wind, no sound.)"}
+{"type": "dialogue", "tick": 200, "wallTimeMs": 1794774181137, "who": "YOU", "text": "(The black is spreading. The light is all overhead now.)"}
+{"type": "screen", "tick": 212, "wallTimeMs": 1794774185361, "from": "DREAM", "to": "CUTSCENE"}
+{"type": "card", "tick": 249, "wallTimeMs": 1794774196454, "title": "Frozen Star", "subtitle": "Research vessel Tern \u00b7 10 Schwarzschild radii above Erebus"}
+{"type": "dialogue", "tick": 258, "wallTimeMs": 1794774199860, "who": "WREN", "text": "Good morning, Doctor. It is 06:40, ship time."}
+{"type": "dialogue", "tick": 724, "wallTimeMs": 1794774306165, "who": "WREN", "text": "We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady."}
+{"type": "screen", "tick": 724, "wallTimeMs": 1794774306362, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "objective_started", "tick": 724, "wallTimeMs": 1794774306363, "number": 1, "title": "Go to the bridge"}
+{"type": "dialogue", "tick": 874, "wallTimeMs": 1794774354292, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 946, "wallTimeMs": 1794774377471, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 1000, "wallTimeMs": 1794774394543, "who": "INES", "text": "Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous."}
+{"type": "dialogue", "tick": 1294, "wallTimeMs": 1794774494726, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "dialogue", "tick": 1366, "wallTimeMs": 1794774516898, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "screen", "tick": 1808, "wallTimeMs": 1794774706915, "from": "WORLD", "to": "PAUSE"}

@@ -1,0 +1,21 @@
+{"type": "screen", "tick": 30, "wallTimeMs": 1794773668573, "from": null, "to": "TITLE"}
+{"type": "world", "tick": 0, "wallTimeMs": 1794773693179, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794773693189, "from": "TITLE", "to": "DREAM"}
+{"type": "dialogue", "tick": 143, "wallTimeMs": 1794773884422, "who": "YOU", "text": "(Falling. No wind, no sound.)"}
+{"type": "dialogue", "tick": 150, "wallTimeMs": 1794773886588, "who": "YOU", "text": "(The black is spreading. The light is all overhead now.)"}
+{"type": "screen", "tick": 162, "wallTimeMs": 1794773891070, "from": "DREAM", "to": "CUTSCENE"}
+{"type": "card", "tick": 201, "wallTimeMs": 1794773904072, "title": "Frozen Star", "subtitle": "Research vessel Tern \u00b7 10 Schwarzschild radii above Erebus"}
+{"type": "dialogue", "tick": 232, "wallTimeMs": 1794773907326, "who": "WREN", "text": "Good morning, Doctor. It is 06:40, ship time."}
+{"type": "dialogue", "tick": 697, "wallTimeMs": 1794773994925, "who": "WREN", "text": "We reached station above Erebus at 04:12. Ten Schwarzschild radii out, holding steady."}
+{"type": "screen", "tick": 697, "wallTimeMs": 1794773995070, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "objective_started", "tick": 697, "wallTimeMs": 1794773995071, "number": 1, "title": "Go to the bridge"}
+{"type": "dialogue", "tick": 817, "wallTimeMs": 1794774035040, "who": "WREN", "text": "The black disk is Erebus's shadow. It is about two and a half times wider than the horizon itself."}
+{"type": "dialogue", "tick": 973, "wallTimeMs": 1794774085636, "who": "INES", "text": "Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous."}
+{"type": "dialogue", "tick": 1237, "wallTimeMs": 1794774180372, "who": "WREN", "text": "The bright ring around it is starlight from behind the hole, bent all the way around."}
+{"type": "dialogue", "tick": 2487, "wallTimeMs": 1794774535191, "who": "INES", "text": "Morning, doc. Checklist first, then coffee. The view's on the bridge, not in here."}
+{"type": "dialogue", "tick": 3099, "wallTimeMs": 1794774767363, "who": "WREN", "text": "The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor."}
+{"type": "checkpoint", "tick": 3118, "wallTimeMs": 1794774772221, "checkpoint": "bridge"}
+{"type": "card", "tick": 3118, "wallTimeMs": 1794774772281, "title": "I \u00b7 Beacon K-1", "subtitle": "Drop a probe. Watch it fall."}
+{"type": "dialogue", "tick": 3118, "wallTimeMs": 1794774772343, "who": "INES", "text": "Isn't it something? That black circle is Erebus. Well, its shadow. I'm out in the capsule bay doing pre-flight."}
+{"type": "objective_completed", "tick": 3124, "wallTimeMs": 1794774775287, "number": 1, "title": "Go to the bridge"}
+{"type": "objective_started", "tick": 3124, "wallTimeMs": 1794774775290, "number": 2, "title": "Drop the beacon probe (probe console, left)"}

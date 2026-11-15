@@ -1,0 +1,87 @@
+{
+  "session": "s02",
+  "goal": "The rescue and the descent: watch Ines leave in the capsule (where does she leave from, can you see it?), save her with the recall beam using the deadline clock, check that she comes back to the capsule bay, then take the ship down at the helm, hold, and return. Judge whether her departure and return are clear and whether anything looks broken.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "b396722"
+  },
+  "seed": null,
+  "durationSec": 1700,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "ux",
+      "title": "probe-done checkpoint: Ines's capsule departs ~6 s in with no lead-up and no visible launch",
+      "detail": "Right after spawning on the bridge facing the helm, WREN says 'Capsule away. She is holding position beside us.' at tick 382 (6.4 game s). No earlier line, prompt or objective prepares for it, and the bay door is locked, so the player cannot go and watch her leave from the bay. I was still turning around and saw no launch. I expected a warning line, or a moment where the capsule is visibly pushed out of the bay before 'Capsule away'.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir . --checkpoint probe-done; pt face 180; watch subtitles",
+      "screenshot": "shots/capsule_away_noseen.png",
+      "tick": 382
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Capsule is almost invisible: a few-pixel box through the port window, empty target brackets on the comms monitor",
+      "detail": "The only sign of the capsule I found was a tiny dark box with a red light just above the port bridge window sill (tick ~1000), and it could easily be a fixture. Later the in-world 'Capsule \u00b7 Ines' marker and the comms monitor's orange target brackets frame nothing visible (tick ~3100, monitor reads 'engine burn seen, climbing home'). I expected a recognisable capsule shape or light inside the brackets so the player can watch the rescue happen.",
+      "repro": "probe-done checkpoint; after the mayday, face the comms console from beside it and look at the monitor and the starboard window",
+      "screenshot": "shots/capsule_empty_brackets.png",
+      "tick": 3181
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms camera locked on the window after the first E press; mouse look ignored until a second click",
+      "detail": "Pressing E next to the comms console (tick ~1427) did not open the panel. The view instead stayed fixed on the starboard window and the capsule marker, and two `pt look` moves did nothing until I clicked the game again. A second E opened the panel only after I re-aimed. This may be pointer-lock loss combined with very low tps, but to a player it feels like the controls froze.",
+      "repro": "probe-done; walk to the comms console; press e; pt look 0 250; pt shot",
+      "screenshot": "shots/comms3.png",
+      "tick": 1637
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Deadline arithmetic drifts: WREN says 49 s, the post-fire summary adds up to 50 s",
+      "detail": "WREN: 'the beam must leave within 49 seconds of her mayday'. The panel said '19 s ... within 30 s' (= 49). After firing it says 'Beam fired 26 s after her mayday, 24 s before the deadline' (= 50). Probably rounding. Also 'must leave within 30 s' reads as a remaining time, which is right, but it sits next to WREN's 'within 49 seconds' measured from the mayday, so the same phrase means two different things.",
+      "repro": "probe-done; open comms; click Fire recall beam at ~26 s",
+      "screenshot": "shots/beam_fired.png",
+      "tick": 2507
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Host overload (load avg 95-150) cut the game to ~1.5-7 tps, so I could not reach the return or the descent",
+      "detail": "Game time ran 10-40x slower than real time. Key holds and arrow turns were mostly dropped (pt face overshot or went the wrong way; hold Right 0.5 gave no turn). I fired the beam at 26 s rather than waiting near 49 s. After 28 real minutes I had only reached tick 3394 (~57 game s): Ines says 'Engine's lit... I'm coming home!' but has not docked yet. This is environmental, not necessarily a game bug.",
+      "repro": "run alongside many parallel sessions; pt status / uptime",
+      "screenshot": "shots/perf_slow.png",
+      "tick": 2489
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 43.2
+    },
+    "beamFiredSecondsAfterMayday": 26,
+    "secondsLeftBeforeDeadline": 24,
+    "capsuleDepartureTick": 382,
+    "lastTickReached": 3394,
+    "returnToBaySeen": 0,
+    "descentReached": 0
+  },
+  "fun": 3,
+  "verdict": "The rescue's core idea lands: the comms panel's mayday-to-deadline bar, 'INES, AS RECEIVED' messages arriving out of order, and WREN's 'that is old light: she is already climbing' make the delay of light feel real and tense. Her departure is the weak point: on the probe-done checkpoint the capsule leaves ~6 s in with no lead-up and nothing to see, and the capsule itself is barely drawn. I ran out of time under heavy host load before her return and the helm descent, so those are untested.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That near a black hole, light from a falling object arrives late and stretched (redshift 1+z), so what you see of her is old: her picture keeps falling and her messages arrive out of order even after she is saved. You must act on the computed clock, not on her image. The panel also defined r_s, M as a unit of time, and 1+z."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The very start: WREN said 'Capsule away' about 6 seconds after I spawned, with no warning and nothing visible, so I never saw where or how Ines left. Second: pressing E at the comms console left the camera fixed on the window instead of opening the panel."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "On the bridge beside the comms console, facing the starboard window and comms monitor: the 'Capsule \u00b7 Ines' marker and the monitor's orange target brackets framed nothing visible. In one shot (t2, bridge centre facing forward), a black rectangle covered the top-centre of the view just under the browser bar (x 370-910). It did not reappear, so it may have been a capture artefact. Otherwise the black hole view through the windows looked right apart from expected blur."
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "session": "s03",
+  "goal": "After the story: free roam the ship, talk to Ines (comms console or the capsule bay intercom), then accept and play the optional Postscript mission about the photon sphere (fire the ranging laser and watch light circle the hole). Also try photo mode (P) and save a picture, and open the Discoveries list. Judge whether the Postscript teaches its idea clearly and whether photo mode is easy to use.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "b396722"
+  },
+  "seed": null,
+  "durationSec": 1582,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "perf",
+      "title": "Game ran at ~5-10 ticks/s and Chrome showed 'Page Unresponsive' while walking on the bridge",
+      "detail": "With the host at load ~100+, the game ran far below 60 tps (about 3000 ticks in 26 wall minutes); holding Shift+W for 20 s moved ~3 m. At tick ~2600, walking aft from the comms console, Chrome raised a 'Page Unresponsive - Frozen Star' dialog and all input stopped until I clicked Wait. Likely mostly host contention, but it cost the whole Postscript. Screenshots also lagged the probe by several seconds throughout.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; walk to comms, E; then face aft and pt hold Shift_L+w 15",
+      "screenshot": "shots/page-unresponsive.png",
+      "tick": 2740
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Postscript offer (card + WREN line) fires on a timer and can be missed entirely",
+      "detail": "The Postscript card 'Postscript - The photon sphere' and WREN's offer ('one item is left on the survey plan... A ranging-laser test at the photon sphere') fired at tick 2722 with no player action, exactly while the page was stalled, so I never saw the card or the line; I only noticed later that the objective panel had changed to 'Optional: take the Tern down to the photon sphere, 1.5 rs (helm)' with a 'Helm 6 m' marker. Before it fired, nothing on screen hinted that a Postscript existed: the free-roam hint only says 'talk to Ines at the comms console, take the helm, or drop another beacon'. A way to re-hear the offer (e.g. at comms or the helm) would help.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; free roam ~40 game seconds; check events for card at tick 2722",
+      "screenshot": "shots/no-postscript.png",
+      "tick": 2722
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms console goes silent after Ines's tide line, with the E prompt still shown",
+      "detail": "First E at comms plays Ines (0.15 g tide at the horizon) and WREN's follow-up (2.1x10^7 g for a ten-sun hole). Pressing E again (three times, ticks ~1600-1900) did nothing at all: no panel, no line, no 'nothing more to say'; the 'E Use the comms console' prompt stays up so it looks broken. Expected either a panel, a repeat, or a closing line.",
+      "repro": "pt start --checkpoint epilogue; Keep exploring; walk to comms; pt key e; wait for both lines; pt key e (x3)",
+      "screenshot": "shots/comms-dead.png",
+      "tick": 1900
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Expedition log does not scroll with the mouse wheel; 'Keep exploring' is below the fold",
+      "detail": "The epilogue logbook is taller than 720 px. Mouse wheel over the panel did nothing; I had to drag the thin scrollbar to reach 'Keep exploring' / 'Main menu'. Same in the Discoveries list (I used the scrollbar). Expected wheel scrolling, or the buttons pinned visible.",
+      "repro": "pt start --checkpoint epilogue; pt move 640 400; pt scroll 10; pt shot",
+      "screenshot": "shots/logbook-bottom.png",
+      "tick": 360
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "'Discovery - Frozen star' toast is partly covered by the expedition log panel",
+      "detail": "On the epilogue logbook screen the discovery toast at top right sits behind the log panel; its first letters ('Di', 'Be', 'ca') are hidden.",
+      "repro": "pt start --checkpoint epilogue; pt shot",
+      "screenshot": "shots/logbook-toast-overlap.png",
+      "tick": 42
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Photo mode saves silently: 'Developing...' then no confirmation or file name",
+      "detail": "Photo mode itself is easy: the panel lists drag/WASD/R F/C/H/P, FOV and exposure sliders, Sky only (hides the ship; gives a gorgeous clean shot of the lensed disk) and Vignette. Clicking Save picture showed 'Developing...' and then the toast vanished with nothing saying it was saved or where. The PNG did land in ~/Downloads as frozen-star-2026-11-15-20-26-26.png, named in UTC (local time was 13:26), which may confuse players. Also the probe logs photo mode as screen DREAM.",
+      "repro": "in WORLD: pt key p; click Sky only (380,677); click Save picture (807,677); pt shot after a few seconds; ls ~/Downloads",
+      "screenshot": "shots/photo-saved.png",
+      "tick": 2124
+    },
+    {
+      "severity": "polish",
+      "category": "bug",
+      "title": "Camera clips into the potted plant by the survey stores cabinet",
+      "detail": "After running aft from comms into the corner by the Survey Stores / O2 Masks cabinet, the view sat inside the plant's leaves and against the wall; the player also seemed to stop dead there, which made Shift+W look like it did nothing.",
+      "repro": "from comms, face aft-starboard toward the stores cabinet and pt hold Shift_L+w 15",
+      "screenshot": "shots/no-postscript.png",
+      "tick": 3079
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Explore the Tern. The lab archive has more.": 45.4
+    },
+    "postscriptOfferTick": 2722,
+    "postscriptCompleted": 0,
+    "photosSaved": 1,
+    "discoveriesFound": 2,
+    "discoveriesTotal": 20
+  },
+  "fun": 3,
+  "verdict": "Photo mode and the Discoveries list are polished and easy: Sky only gives a stunning lensed-disk shot in two clicks, and the Discoveries hints ('Predict when the ninth ping will arrive') are nicely evocative. I could not judge the Postscript: the host was so loaded (5-10 tps, a Chrome 'Page Unresponsive' stall) that its timer-driven offer fired during the stall and I ran out of time before reaching the helm. The offer should be discoverable before it fires and replayable after, and the comms console should not go silently dead after Ines's line.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That what a distant observer sees of something falling into a black hole is not what happens to it: the beacon's pings and the camera feed slow, redden and freeze at the edge of the shadow, yet by its own clock the probe crosses the horizon in under a minute; hovering clocks run slow relative to the far relay; and for a big hole like Erebus the tide at the horizon is gentle (0.15 g) while a ten-sun hole would shred you. 'From far away, nothing is ever seen to fall in. That is a fact about light, not about the things that fall.' The Postscript was set up to be about the photon sphere at 1.5 rs, where light orbits, but I did not get to play it."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "After talking to Ines at comms: the console kept showing 'E Use the comms console' but further presses did nothing, and nothing told me where the Postscript was. Then the Postscript offer arrived on its own while the page had frozen, so the first I knew of it was the objective panel quietly changing to 'Optional: take the Tern down to the photon sphere, 1.5 rs (helm)'."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "(1) Epilogue logbook screen, start of play, facing forward on the bridge: the 'Discovery - Frozen star' toast is partly hidden behind the log panel. (2) Aft of the bridge near the Survey Stores / O2 Masks cabinet, facing the corner: the camera sat inside the potted plant and against the wall. (3) A Chrome 'Page Unresponsive' dialog covered the game while walking aft from comms. The ray-traced black hole through the bridge windows and in photo mode looked right (blurry from software rendering, but no flicker, holes or wrong colours)."
+    }
+  ]
+}

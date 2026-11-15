@@ -1,0 +1,83 @@
+{
+  "session": "s01",
+  "goal": "Play from the very beginning as a brand-new player: the title menu, the dream, waking up, finding the bridge and dropping the beacon probe. Pay special attention to Ines: can you tell where she is, where the capsule bay is, and what she is doing? Note every moment of confusion and screenshot anything broken.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "b396722"
+  },
+  "seed": null,
+  "durationSec": 1538,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "perf",
+      "title": "Dream screen is solid black for ~3 minutes with tick stuck at 0; Skip button unresponsive at first",
+      "detail": "After Wake up, DREAM showed only a black screen, the menu icon and 'Skip the dream' for about 3 minutes of wall time. state tick stayed at 0, no subtitles. Two clicks on Skip did nothing; after Space + Return the button took focus and some seconds later the dream's lines ('Falling. No wind, no sound.') fired at ticks 143-150 and it moved on to the wake cutscene. I never saw any dream visuals. Host load average was 90-140 (many parallel sessions), so this is likely starvation, but a black screen with no loading indicator reads as a hang to a player. Expected: dream visuals or at least a loading/progress cue.",
+      "repro": "pt start --profile tools/playtest/frozen-star.json --game-dir .; pt key Return; pt await DREAM 20; pt wait 45; pt shot x; pt click 1186 684",
+      "screenshot": "shots/dream-stuck.png",
+      "tick": 0
+    },
+    {
+      "severity": "major",
+      "category": "perf",
+      "title": "Game ran at ~3-10 ticks/s and finally froze (tick 3359) at the probe console; beacon probe never dropped",
+      "detail": "Throughout WORLD the game ran far below 60 tps: holding Left 6 s turned ~10 degrees, Shift+W for 30 s moved ~4 m. Mouse look worked better than arrow keys. At the probe console (2.2 m, bearing -5, crosshair on the PROBE screen) no 'E' use prompt appeared, then the tick stopped at 3359 and state.json went unwritten for 3+ minutes; inputs had no effect. Probably host starvation (load avg 100-140), but it blocked the second objective within my time budget.",
+      "repro": "pt start ...; play to the bridge; walk to the probe console; pt state (tick does not advance, stateAgeSec grows)",
+      "screenshot": "shots/frozen.png",
+      "tick": 3359
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Stale WREN directions to the bridge shown after arriving on the bridge",
+      "detail": "On entering the bridge, WREN's 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' appeared together with Ines's arrival line. Directions to a place I am already standing in are confusing; the hint should be cancelled when the objective completes. WREN's line also rendered without its dark backing panel, floating over the console.",
+      "repro": "pt start ...; skip dream; walk from quarters to the bridge slowly (took ~40 game s); pt shot on arrival",
+      "screenshot": "shots/stale-directions.png",
+      "tick": 3142
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "'E Talk to Ines (bay intercom)' prompt covers the capsule bay status screen",
+      "detail": "At the bay intercom in the corridor the use prompt sits over the CAPSULE BAY / PRE-FLIGHT / INES OKAFOR status screen, hiding part of its text. Otherwise this spot is excellent: Ines is visible through the bay window and the subtitle tags her as 'INES - CAPSULE BAY'.",
+      "repro": "pt start ...; skip dream; walk out of quarters, face the bay window (bay item bearing ~0, 1.7 m)",
+      "screenshot": "shots/ines-intercom.png",
+      "tick": 2553
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Early WREN/Ines subtitles fired but were never on screen in my screenshots",
+      "detail": "Events show WREN's porthole lines (ticks 817, 1237) and Ines's 'Morning, doc! ... Come up to the bridge' (tick 973), but none of my screenshots around those times showed them; the porthole shot taken right after pressing E had the line in state.subtitles but not on screen. At low frame rate a player could miss Ines's first call entirely.",
+      "repro": "pt start ...; skip dream; on WORLD, pt key e at the porthole; pt shot",
+      "screenshot": "shots/porthole.png",
+      "tick": 817
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 1,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 52.1
+    },
+    "dreamWallSecondsBlack": 180,
+    "peakHostLoadAvg": 141
+  },
+  "fun": 3,
+  "verdict": "The opening spaces are well signposted and Ines is placed beautifully: you see her through the capsule bay window the moment you leave quarters, the bay status screen names her and says PRE-FLIGHT, and her subtitles say where she is and what she is doing. The run was crippled by host load (3-10 tps, a 3-minute black dream, a final freeze at the probe console), so the probe drop went untested; the one design bug seen is WREN's stale 'bridge is forward' hint firing after arrival.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That a black hole looks like a black disk (its shadow) about two and a half times wider than the horizon, with a bright ring of starlight from behind it bent all the way around; the setup suggests you will next watch a probe fall and see time dilation (ship clock vs relay clock on the bridge). I did not get far enough to see the probe lesson itself."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The dream: after Wake up the screen was pure black for minutes with only a Skip button, no image, no text, and my first clicks on Skip did nothing, so it looked frozen. Second: on reaching the bridge WREN told me how to get to the bridge."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "1) Dream screen fully black (start of game, no facing). 2) On the bridge just inside the door, facing forward toward the main windows, WREN's stale directions subtitle showed without its dark backing panel, floating over the console above Ines's line. 3) In the corridor facing the capsule bay window, the 'E Talk to Ines' prompt covered the bay status screen. 4) At the probe console facing the forward-left window, the picture froze for 3+ minutes (no E prompt appeared). The ray-traced black hole through windows was blurry but looked correct (shadow plus lensed ring, no holes or flicker)."
+    }
+  ]
+}
