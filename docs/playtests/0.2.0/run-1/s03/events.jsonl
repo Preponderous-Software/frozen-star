@@ -1,0 +1,19 @@
+{"type": "world", "tick": 0, "wallTimeMs": 1794773682211, "how": "created", "seed": 0}
+{"type": "screen", "tick": 0, "wallTimeMs": 1794773682212, "from": null, "to": "LOGBOOK"}
+{"type": "screen", "tick": 372, "wallTimeMs": 1794773779211, "from": "LOGBOOK", "to": "WORLD"}
+{"type": "objective_started", "tick": 372, "wallTimeMs": 1794773779212, "number": 1, "title": "Explore the Tern. The lab archive has more."}
+{"type": "dialogue", "tick": 1470, "wallTimeMs": 1794774044149, "who": "INES", "text": "WREN worked it out for me. At the horizon, the tide from head to toe would have been 0.15 g. A gentle stretch, nothing more."}
+{"type": "dialogue", "tick": 1980, "wallTimeMs": 1794774201687, "who": "WREN", "text": "Erebus is big, and tides weaken with size. At the horizon of a black hole of ten suns, the same stretch would be 2.1\u00d710\u2077 g."}
+{"type": "screen", "tick": 2124, "wallTimeMs": 1794774313710, "from": "WORLD", "to": "DREAM"}
+{"type": "screen", "tick": 2130, "wallTimeMs": 1794774554217, "from": "DREAM", "to": "WORLD"}
+{"type": "screen", "tick": 2154, "wallTimeMs": 1794774566210, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 2160, "wallTimeMs": 1794774738710, "from": "PAUSE", "to": "WORLD"}
+{"type": "screen", "tick": 2172, "wallTimeMs": 1794774742710, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 2172, "wallTimeMs": 1794774780711, "from": "PAUSE", "to": "WORLD"}
+{"type": "screen", "tick": 2220, "wallTimeMs": 1794774802715, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 2226, "wallTimeMs": 1794774883713, "from": "PAUSE", "to": "WORLD"}
+{"type": "card", "tick": 2722, "wallTimeMs": 1794775111667, "title": "Postscript \u00b7 The photon sphere", "subtitle": "Where light goes in circles."}
+{"type": "checkpoint", "tick": 2722, "wallTimeMs": 1794775111682, "checkpoint": "halo"}
+{"type": "dialogue", "tick": 2722, "wallTimeMs": 1794775111742, "who": "WREN", "text": "Doctor, one item is left on the survey plan, if you want it. It is optional. A ranging-laser test at the photon sphere."}
+{"type": "objective_completed", "tick": 2722, "wallTimeMs": 1794775111776, "number": 1, "title": "Explore the Tern. The lab archive has more."}
+{"type": "objective_started", "tick": 2722, "wallTimeMs": 1794775111776, "number": 2, "title": "Optional: take the Tern down to the photon sphere, 1.5 r\u209b (helm)"}

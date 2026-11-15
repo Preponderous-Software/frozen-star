@@ -1,0 +1,86 @@
+{
+  "session": "s03",
+  "goal": "After the story: start the optional Postscript from the helm or logbook, fire the ranging laser and follow the photon-sphere mission as far as you can. Also save a photo in photo mode and check the confirmation, and scroll the logbook and Discoveries lists. Note whether the Postscript is easy to find and understand.",
+  "build": {"version": "0.1.0", "commit": "3975b28"},
+  "seed": null,
+  "durationSec": 1440,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Postscript: WREN tells you to lower the altitude to 1.500 rs after the field is already locked there",
+      "detail": "I set Hold station to 1.5 rs; at tick 3458 WREN says 'Photon sphere. I have locked the field to it', and the panel says 'Field locked to the photon sphere, 1.500 rs'. Then at tick 3962 the console is taken away for a short CUTSCENE and at tick 3998 WREN says 'The helm is the low desk in the middle of the bridge. Lower the altitude to 1.500 rs and the field will lock there.' That instruction is for a step already done and made me think the descent had not counted. The objective 'take the Tern down to the photon sphere' stayed not completed until the prediction question was answered at tick 5114, about 27 game seconds after arrival.",
+      "repro": "pt start ... --checkpoint epilogue; click 'Postscript: the photon sphere' (631,665); walk to helm, press e; scroll the panel, set Hold station to 1.5 rs; wait; read subtitles (pt events)",
+      "screenshot": "shots/shadow_half.png",
+      "tick": 3998
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm: 'Fire the ranging laser' button looks active but silently does nothing until the script is ready",
+      "detail": "At 10 rs, and again at 1.500 rs after the field locked (ticks 2644-4700), the orange 'Fire the ranging laser along the hull' button looks clickable, but clicking does nothing: no message, no sound line, no event. At 10 rs the grey line below explains 1.5 rs is needed, but at 1.5 rs there is no hint that I must wait for WREN. The button only worked after the prediction question appeared (tick 4718) and was answered. Expected: a disabled look, or a short 'wait for WREN' / 'needs 1.5 rs' message on click. Also the Tern is not drawn on the top-down diagram while it is at 10 rs (off the chart), so you cannot see where you are relative to the photon sphere.",
+      "repro": "pt start ... --checkpoint epilogue; Postscript; at helm click (911,223) before descending and again right after 'Field locked'",
+      "screenshot": "shots/fire_disabled_look.png",
+      "tick": 2822
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Helm altitude slider is hard to set to exactly 1.5 rs: drag overshoots toward the horizon, keys move 0.001 rs a press",
+      "detail": "The Hold station slider is non-linear. A drag from 10 rs to about a third of the way along set 1.062 rs (just above the horizon) before I could react. Clicking mid-track gave 1.552; each Left arrow press then moved it only about 0.0013 rs, so about 40 presses were needed to reach 1.500. There is no snap or 'photon sphere' detent even though the mission asks for exactly 1.5 rs. Suggest a snap point / button at 1.5 rs during the Postscript.",
+      "repro": "At helm panel: pt drag 1230 651 820 651 1.5 1 (read value); pt click 1000 651; pt key Left x40",
+      "screenshot": "shots/slide1.png",
+      "tick": 3000
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Objective 'Fire the ranging laser along the hull' stays open for about 66 game seconds after the laser is fired and caught",
+      "detail": "I fired at tick 5276; WREN reported the pulse caught at the stern at tick 5948, but the objective did not complete until tick 9265, after five more dialogue lines. During that time the HUD keeps saying 'Fire the ranging laser along the hull (helm)', which reads as if the shot did not count; I clicked Fire again. Expected: objective ticks when the pulse is caught, or the HUD changes to 'Listen to WREN' / 'Watch the hull camera'.",
+      "repro": "Continue from finding above; click Fire after the prediction; watch objective in pt state",
+      "screenshot": "shots/pulse3.png",
+      "tick": 5948
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Photo mode: 'Save picture' gives no saved confirmation, and photo mode is not in the pause menu",
+      "detail": "Clicking 'Save picture' showed 'Developing...' for about a second and then nothing: no 'Saved' toast, no file name or place. A PNG did land in the browser's Downloads folder (frozen-star-2026-11-15-16-42-21.png; moved into photo/ of this session), but the player is not told. Also the pause menu (Resume, Discoveries, Settings, Controls, Main menu) has no Photo mode entry; the only mention is one sentence deep in Controls: 'P is photo mode'. The photo mode bar itself is clear (C save, H hide, P done, FOV, exposure).",
+      "repro": "From walk mode press p; click 'Save picture' (807,677); screenshot at 1 s and 3 s",
+      "screenshot": "shots/photo_saved.png",
+      "tick": 10773
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "After the story the spacetime map says 'Nothing plotted yet' and Discoveries show 2 of 20 (epilogue checkpoint)",
+      "detail": "Started from the epilogue checkpoint, with the logbook listing Beacon K-1 and Orpheus as done. The spacetime map console says 'Nothing plotted yet ... It fills in once the first probe is away', and Discoveries shows only 2 of 20 found. This may be an artefact of starting at a checkpoint rather than a real play-through, but a player loading an end-of-story save would see a map that contradicts the logbook.",
+      "repro": "pt start ... --checkpoint epilogue; Postscript; walk to map console, press e; pause > Discoveries",
+      "screenshot": "shots/map_empty.png",
+      "tick": 1954
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Optional: take the Tern down to the photon sphere, 1.5 rs (helm)": 85.2,
+      "Fire the ranging laser along the hull (helm)": 154.4
+    },
+    "postscriptStartTick": 1313,
+    "gameTicksPerSecondObserved": 10,
+    "pulseLapShipSeconds": 11.1,
+    "discoveriesFound": 2,
+    "discoveriesTotal": 20,
+    "photoSaved": 1
+  },
+  "fun": 4,
+  "verdict": "The Postscript is easy to find (a clear button on the end-of-story logbook, plus a WREN prompt and an 'Optional' objective) and the photon-sphere demo is the best physics moment I saw: the pulse visibly circling the diagram, 'caught at the stern, 11.1 s', the hull camera showing 'our own light, 11.1 s old', and the mast pulse missing by 268 m. The friction is all in pacing and feedback: a Fire button that silently does nothing until the script is ready, a stale 'lower the altitude' reminder after arrival, a fiddly altitude slider, and objectives that lag the action. I reached the third objective (mast pulse fired, lap one reported) before the time budget ran out; the game ran at about 10 ticks a second here, so everything took about six times longer than designed."
+,
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That near a black hole gravity bends light and slows clocks. In the Postscript: at 1.5 horizon radii (the photon sphere) light can go round the hole in a circle, so a laser fired sideways along the hull comes back to the stern after one lap (11.1 s by the ship's clock, the circumference divided by light speed), you could see the back of your own head at the edge of the shadow, and the orbit is unstable: a pulse from the mast one metre higher misses by hundreds of metres. The helm also shows that far-away clocks run 1.73 times faster than yours there, and the logbook sums up the main story: from far away nothing is ever seen to fall in."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "Arriving at 1.500 rs: WREN said the field was locked, but the objective did not tick, the Fire button did nothing when clicked, and then WREN told me to 'lower the altitude to 1.500 rs' as if I had not done it. I thought my descent had not counted, until a prediction question appeared much later and only then did firing work. Later, the 'Fire the ranging laser' objective also stayed up long after the pulse came back."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "Nothing rendered badly beyond the expected blur. At 1.5 rs the bridge's front windows (helm, facing forward/left) are almost entirely black, which matches WREN's line that the shadow covers half the sky, so I take it as correct. The spacetime map screen (bridge, left side) read 'Nothing plotted yet' after the whole story, which looks wrong next to the logbook. The 'Save picture' button only showed 'Developing...' and no result."}
+  ]
+}

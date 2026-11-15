@@ -1,0 +1,101 @@
+{
+  "session": "s04",
+  "goal": "Settings and accessibility: rebind a few keys (for example walking and use) and check they work in game, try reduce flashing, subtitle background, console text size, hold/toggle run and colour-safe redshift. Check the Chapters menu (including the Postscript), the Discoveries screen and About. Note anything confusing, broken or unreadable.",
+  "build": {
+    "version": "0.1.0",
+    "commit": "b396722"
+  },
+  "seed": null,
+  "durationSec": 1134,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Run set to 'Press to toggle' gives no on-screen sign whether run is on",
+      "detail": "Settings > Options > Run key = Press to toggle. In game, tapping Shift shows nothing: no run icon, no toast, and the controls hint ('I A ↓ D to walk, mouse or ← → to look, F to use things, Esc to pause') never mentions Shift or running. state.player.speed stayed 2.2. With toggle mode a player can easily forget which state they are in. Expected a small 'Running' indicator or hint text. (At ~10 tps I could not measure whether speed actually changed.)",
+      "repro": "pt start ...; Settings > Options > Press to toggle; Wake up; skip dream; pt key Shift_L; pt hold i 3; pt shot",
+      "screenshot": "shots/run-toggle-no-indicator.png",
+      "tick": 1478
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Dream opens on a fully black screen for ~15 s with no loading indicator",
+      "detail": "After Wake up the DREAM screen was solid black (only the menu button and 'Skip the dream') for about 15 s real time; tick went 0 -> 24. On a loaded machine, but a player would think the game hung. Expected a loading hint or an immediate first frame/subtitle.",
+      "repro": "pt start ...; click Wake up; pt await DREAM 20; pt wait 8; pt shot",
+      "screenshot": "shots/dream-black.png",
+      "tick": 182
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Discoveries hints spoil the story before the player starts",
+      "detail": "From the title screen, Discoveries (0 of 20) lists hint text for every locked entry, including 'Save Ines with almost no time to spare', 'Tell Ines the truth about Orpheus' and 'Take the Tern lower than you were asked to'. These reveal plot beats (a rescue, a secret about Orpheus) to a fresh player. Chapter titles (The rescue, Orpheus, The photon sphere) do the same, more mildly. Consider hiding hints for story discoveries until the relevant chapter is reached.",
+      "repro": "pt start ...; click Discoveries; scroll the panel",
+      "screenshot": "shots/disc2.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Controls list jumps up after a rebind because the help box shrinks",
+      "detail": "Settings > Controls: the help box above the list is two lines ('Choose a key to change it...'); after a rebind it becomes one line ('Walk forward: I or ↑.'), so the whole key list shifts up ~18 px, moving the button you just used away from the pointer. Expected a fixed-height help box.",
+      "repro": "Settings > Controls; click the W cell for Walk forward; pt key i; compare shots",
+      "screenshot": "shots/rebind2.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Chapters list labels the first entry 'PROLOGUE' over 'Prologue'",
+      "detail": "Every other chapter has a kicker (CHAPTER I) and a title (Beacon K-1); the first shows PROLOGUE then Prologue, which reads as a duplicate. Expected a title such as 'Waking up'.",
+      "repro": "pt start ...; click Chapters",
+      "screenshot": "shots/chapters1.png",
+      "tick": null
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Controls hint stays on screen permanently, even under the pause menu",
+      "detail": "The 'I A ↓ D to walk ... Esc to pause' hint stayed in the middle-lower screen the whole time I was in the world (~1000 ticks, after walking, turning and using the porthole) and remained visible behind the PAUSED panel. Expected it to fade once the player has moved/used something.",
+      "repro": "Wake up; skip dream; walk and press F; pt key Escape; pt shot",
+      "screenshot": "shots/pause2.png",
+      "tick": 1808
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "About screen shows no version number",
+      "detail": "About lists credits, further reading and the licence but not the game version (state says 0.1.0). Useful for bug reports.",
+      "repro": "pt start ...; click About; scroll to bottom",
+      "screenshot": "shots/about2.png",
+      "tick": null
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 0,
+    "deaths": 0,
+    "secondsToObjective": {},
+    "keysRebound": 3,
+    "rebindsVerifiedInGame": 2,
+    "settingsChanged": 6,
+    "approxGameTicksPerSecond": 8
+  },
+  "fun": 3,
+  "verdict": "The settings and menus are genuinely strong: rebinding is clear (Esc cancels, Backspace clears, conflicts are resolved with a plain message like 'S was on Walk back, which now uses ↓'), rebinds work in game, and the on-screen hint immediately reflects the new keys (I/F). Subtitle background at 100% gives a solid readable box and every toggle has a one-line explanation. Main gaps: toggle-run has no visible state, Discoveries/Chapters hints spoil the plot, and on this overloaded machine (~8 tps) I could not reach a console to check console text size or see the alarm/redshift effects of reduce flashing and colour-safe redshift.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "General relativity around a non-spinning black hole: the About screen and WREN's lines explain that the black disk is the hole's shadow (about 2.5x wider than the horizon), the bright ring is starlight bent all the way around, and that fall times, redshift, tides and slowed clocks all come from Schwarzschild's solution. I only got as far as the first room, so beyond those ideas I could not tell."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Starting a new game: the dream was a fully black screen for about 15 seconds with no loading sign, so it looked hung. Second: after switching run to press-to-toggle, tapping Shift gave no feedback, so I could not tell whether I was running."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Nothing clearly broken. In the dream (start of a new game) the screen was black for ~15 s. In the quarters, facing the porthole (yaw about -6) and later the corridor door (yaw about 66), the controls hint stayed on screen permanently, including behind the pause menu; the pause menu itself appeared a couple of seconds after the game state already said PAUSE (likely the slow machine). The sky through the porthole was blurry but otherwise correct."
+    }
+  ]
+}

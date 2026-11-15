@@ -1,0 +1,177 @@
+# Playtest summary: 20261115-1622
+
+3 sessions, build frozen-star 0.1.0 (3975b28), generated 2026-11-15 16:49.
+
+**Findings:** 18 reports in 18 groups -- 0 blocker, 0 major, 16 minor, 2 polish.
+
+## Outcomes
+
+| Session | Goal | Outcome | Fun | Minutes | Objectives | Deaths | Findings | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| s01 | A brand-new player, from the title menu: the dream (does it start promptly, with a cue?), waking up (does WREN introduce itself as the ship's AI?), finding Ines in the capsule bay, the bridge, and dropping the beacon probe. Note any confusion, stale hints or anything broken. | achieved | 4 | 14.8 | 2 | 0 | 7 | The opening works: the dream starts at once with a subtitle and a visible Skip button, WREN introduces itself plainly ('WREN here, the Tern's ship intelligence'), Ines is easy to find at the bay intercom, and the probe console after launch (two clocks, redshift factor, ping gaps) is excellent. The rough edges are about timing: a WREN direction hint that ignores where you are, the 'first item on today's plan' briefing arriving after you have already launched, a 16 s silent stretch in the dream, and the unit 'M' going unexplained on the first console. |
+| s02 | Watch Ines launch from the capsule bay (is there a build-up, can you see the capsule leave and track it?), save her with the recall beam using the deadline clock, and check the deadline numbers agree everywhere (WREN, the comms panel, after firing). Then start the descent. Note anything unclear or broken. | achieved | 4 | 21.7 | 2 | 0 | 5 | The launch and rescue work well. 'Bay doors opening, watch the port side' leads into the capsule sliding past the port window with a tracker label (9 m, then '18 m, holding station'). The deadline numbers agree everywhere: WREN says 49 s, the comms bar always adds to 49 (16+33, 25+24, 37+12), it reads 'fired 39 s after, 10 s before the deadline' after firing, and WREN's debrief repeats '10 seconds' and '7.6 rs'. Ines's 'Still okay. Don't fire yet.' at 37 s creates real tension. Weak spots: the capsule readouts freeze once she starts climbing, there is a long gap with no objective before the descent, and the helm slider has no x2 mark. Note: the harness warned that the launcher was built before HEAD (3975b28), so this may be slightly old code. |
+| s03 | After the story: start the optional Postscript from the helm or logbook, fire the ranging laser and follow the photon-sphere mission as far as you can. Also save a photo in photo mode and check the confirmation, and scroll the logbook and Discoveries lists. Note whether the Postscript is easy to find and understand. | partial | 4 | 24 | 2 | 0 | 6 | The Postscript is easy to find (a clear button on the end-of-story logbook, plus a WREN prompt and an 'Optional' objective) and the photon-sphere demo is the best physics moment I saw: the pulse visibly circling the diagram, 'caught at the stern, 11.1 s', the hull camera showing 'our own light, 11.1 s old', and the mast pulse missing by 268 m. The friction is all in pacing and feedback: a Fire button that silently does nothing until the script is ready, a stale 'lower the altitude' reminder after arrival, a fiddly altitude slider, and objectives that lag the action. I reached the third objective (mast pulse fired, lap one reported) before the time budget ran out; the game ran at about 10 ticks a second here, so everything took about six times longer than designed. |
+
+## Answers
+
+Each agent's own words, verbatim from its report; a missing answer is listed under problems.
+
+### Q1. In your own words, what was the game teaching?
+
+- **s01:** That near a black hole, what you see of a falling object is delayed and stretched. The black disk out the window is the hole's shadow, about 2.5 times wider than the horizon, and the bright ring is starlight bent around it. When you drop the beacon probe, the console shows its own clock beside its clock as you see it. The picture starts falling behind, its light stretches redder (x1.00 to x1.07 while I watched), and the gaps between its pings grow longer than the interval it sends them at. I stopped before it reached the horizon.
+- **s02:** That near a black hole what you see is old, stretched light. Ines's picture looked almost normal (7.6 rs, redshift about 1.2) right up to the point where it was nearly too late to save her, so you have to trust a computed deadline clock, not the picture. Then, with the helm, it teaches gravitational time dilation: the lower the ship holds station, the faster far-away clocks run compared with yours (x2 at 1.33 rs), and the field holding you up can't be felt (the equivalence principle).
+- **s03:** That near a black hole gravity bends light and slows clocks. In the Postscript: at 1.5 horizon radii (the photon sphere) light can go round the hole in a circle, so a laser fired sideways along the hull comes back to the stern after one lap (11.1 s by the ship's clock, the circumference divided by light speed), you could see the back of your own head at the edge of the shadow, and the orbit is unstable: a pulse from the mast one metre higher misses by hundreds of metres. The helm also shows that far-away clocks run 1.73 times faster than yours there, and the logbook sums up the main story: from far away nothing is ever seen to fall in.
+
+### Q2. Which moment was the most confusing, and why?
+
+- **s01:** Arriving on the bridge and launching the probe. WREN then said 'First item on today's plan: drop beacon probe K-1' as if I had not done it yet, and the objective did not tick for several seconds. On the same console, the '10 M' unit was not explained. A smaller one: Ines saying 'Come up to the bridge' made me think she was there, until the label and later lines put her in the capsule bay.
+- **s02:** The stretch after the rescue. The objective box vanished, the comms readouts froze while the text said the picture shows her coming home, and nothing on screen said what to do next until the descent objective appeared about 46 game seconds later. Second: at first I didn't know which window 'the port side of the bridge window' meant (the forward window or the left side windows). The capsule actually first shows up in the left side window.
+- **s03:** Arriving at 1.500 rs: WREN said the field was locked, but the objective did not tick, the Fire button did nothing when clicked, and then WREN told me to 'lower the altitude to 1.500 rs' as if I had not done it. I thought my descent had not counted, until a prediction question appeared much later and only then did firing work. Later, the 'Fire the ranging laser' objective also stayed up long after the pulse came back.
+
+### Q3. Did anything look broken on screen? Describe each problem, where you were and which way you were facing.
+
+- **s01:** Nothing truly broken. In the quarters, facing the exit door (west, toward the corridor), the 'Door 1 m' marker sat on top of the controls hint text. At the probe console, facing forward-left toward the windows, the 'Probe 2 m' marker overlapped the 'Click to look around' pill. Once, in the corridor facing back toward engineering, a flat dark/grey slab filled the right edge of the screen; it looked like a nearby wall seen edge-on (shots/ines1.png), possibly near-plane clipping. The black hole through the windows was blurry as expected, with no flicker or holes. Twice the first screenshot after a state change (waking up, opening the console) showed the scene without the HUD or panel that state.json already reported; one frame later it matched, so it is likely render lag at 10 fps.
+- **s02:** Nothing clearly broken. The black hole view was blurry, as expected in software rendering, with no holes or flicker. The bridge turned pinkish-red during the emergency, which looked intentional. On the bridge, facing the comms console (bow-starboard), the capsule panel numbers stopped updating after the engine burn, which looks frozen. At the helm, panels opened one or two seconds after pressing E (the first screenshot showed no panel), which I put down to low fps.
+- **s03:** Nothing rendered badly beyond the expected blur. At 1.5 rs the bridge's front windows (helm, facing forward/left) are almost entirely black, which matches WREN's line that the shadow covers half the sky, so I take it as correct. The spacetime map screen (bridge, left side) read 'Nothing plotted yet' after the whole story, which looks wrong next to the logbook. The 'Save picture' button only showed 'Developing...' and no result.
+
+## Findings
+
+### 1. [minor] About 46 game seconds with no objective on screen between the rescue and the descent
+
+- **Category:** ux; **reported by** 1 agent(s): s02
+- **Detail:** Objective 2 completed at tick 4204 and the objective box disappeared. Objective 3 ('Take the Tern down...') appeared only at tick 6962. In between there are a short cutscene, a 'Twenty minutes later' card, and some lines from Ines and WREN with long silences. On this slow machine that was several real minutes of standing around wondering whether I was supposed to do something.
+- **Repro:** probe-done checkpoint; fire the beam; Esc out of comms; wait; watch the objective box (top left)
+- **Screenshots:** [idle1.png](s02/shots/idle1.png)
+
+### 2. [minor] After the story the spacetime map says 'Nothing plotted yet' and Discoveries show 2 of 20 (epilogue checkpoint)
+
+- **Category:** bug; **reported by** 1 agent(s): s03
+- **Detail:** Started from the epilogue checkpoint, with the logbook listing Beacon K-1 and Orpheus as done. The spacetime map console says 'Nothing plotted yet ... It fills in once the first probe is away', and Discoveries shows only 2 of 20 found. This may be an artefact of starting at a checkpoint rather than a real play-through, but a player loading an end-of-story save would see a map that contradicts the logbook.
+- **Repro:** pt start ... --checkpoint epilogue; Postscript; walk to map console, press e; pause > Discoveries
+- **Screenshots:** [map_empty.png](s03/shots/map_empty.png)
+
+### 3. [minor] Comms capsule readouts freeze at engine burn while the caption says the picture shows her coming home
+
+- **Category:** ux; **reported by** 1 agent(s): s02
+- **Detail:** After 'Engine's lit!' the comms panel shows '82.1 M / 48.5 s for this hole', her clock 72.561 M, 1+z 1.351, brightness 30.0% and appears at 6.22 rs, and none of these change for the rest of the scene (checked at ticks 5110 and 5230). The caption says 'from here on the picture shows her coming home', and the console header says 'engine burn seen, climbing home', but the dot stays red and still. I expected the redshift to fall and the dot to move back toward the station, which would pay off the lesson visually.
+- **Repro:** probe-done; fire the beam about 39 s after the mayday; stay at comms until Ines says 'Engine's lit!'; take shots a few seconds apart
+- **Screenshots:** [wait2.png](s02/shots/wait2.png)
+
+### 4. [minor] Dream has a 16-second silent gap after its first line
+
+- **Category:** text; **reported by** 1 agent(s): s01
+- **Detail:** The dream starts promptly: the first subtitle '(Falling. No wind, no sound.)' shows at tick 137 (2.3 s) and the Skip button is visible. Then nothing is said until tick 1105 (16 game seconds later). The black hole picture barely changes in that time, so it feels stalled. The dream ends at tick 1699 (28 s), which is fine overall.
+- **Repro:** pt start ...; pt key Return; pt await DREAM 20; pt events (dialogue at 137, then 1105, 1501, 1639)
+- **Screenshots:** [dream6.png](s01/shots/dream6.png)
+
+### 5. [minor] First probe console uses the unit 'M' without explaining it
+
+- **Category:** ux; **reported by** 1 agent(s): s01
+- **Detail:** The probe console's stat card says 'every 10 M' with 'a ping on its own clock, about 6 s'. 'r_s' is explained ('ten horizon radii') but 'M' is never explained, and the big '10 M' reads like '10 million'. After launch, both clocks are shown in M too. A new player has to guess that M is a unit of time.
+- **Repro:** play to the bridge; walk to probe console; press E
+- **Screenshots:** [probe_units.png](s01/shots/probe_units.png)
+
+### 6. [minor] Game ran at roughly 4-15 ticks/s; key holds for turning were dropped and the 49 s rescue took about 4 real minutes
+
+- **Category:** perf; **reported by** 1 agent(s): s02
+- **Detail:** With the machine heavily loaded (load average about 61), the game advanced only 30-60 ticks per 8 s wait for long stretches. 'pt hold Left 0.5' twice produced no turn at all (ticks 7173-7209); 'pt face' overshot or undershot by 8-24 degrees. Walking 5 m to the comms console took about 15 s of real holds. Game time stayed consistent, so the deadline was still fair, but the low frame rate (fps 10) makes short key presses unreliable. Partly an environment problem; reported so the frame-time dependence of input can be checked.
+- **Repro:** pt start --profile /root/frozen-star/tools/playtest/frozen-star.json --game-dir /root/frozen-star --checkpoint probe-done; (under load) pt hold Left 0.5; pt state (yaw unchanged)
+- **Screenshots:** [helm0.png](s02/shots/helm0.png)
+
+### 7. [minor] Game ran at ~4-20 ticks/s in the headless harness (host load ~55)
+
+- **Category:** perf; **reported by** 1 agent(s): s01
+- **Detail:** fps stayed at 10 and ticks/s fell to ~4 late in the session. The 28 s dream took ~110 s real time, and the probe's fall could not be watched to the end within the budget. The machine's load average was 55-58, so this is most likely host contention rather than the game. pt start also warned that playtest-launch.sh was built before HEAD (3975b28), so the build may be slightly stale.
+- **Repro:** pt start ...; pt status; uptime
+- **Screenshots:** [slow_tps.png](s01/shots/slow_tps.png)
+
+### 8. [minor] Helm altitude slider is hard to set to exactly 1.5 rs: drag overshoots toward the horizon, keys move 0.001 rs a press
+
+- **Category:** ux; **reported by** 1 agent(s): s03
+- **Detail:** The Hold station slider is non-linear. A drag from 10 rs to about a third of the way along set 1.062 rs (just above the horizon) before I could react. Clicking mid-track gave 1.552; each Left arrow press then moved it only about 0.0013 rs, so about 40 presses were needed to reach 1.500. There is no snap or 'photon sphere' detent even though the mission asks for exactly 1.5 rs. Suggest a snap point / button at 1.5 rs during the Postscript.
+- **Repro:** At helm panel: pt drag 1230 651 820 651 1.5 1 (read value); pt click 1000 651; pt key Left x40
+- **Screenshots:** [slide1.png](s03/shots/slide1.png)
+
+### 9. [minor] Helm: 'Fire the ranging laser' button looks active but silently does nothing until the script is ready
+
+- **Category:** ux; **reported by** 1 agent(s): s03
+- **Detail:** At 10 rs, and again at 1.500 rs after the field locked (ticks 2644-4700), the orange 'Fire the ranging laser along the hull' button looks clickable, but clicking does nothing: no message, no sound line, no event. At 10 rs the grey line below explains 1.5 rs is needed, but at 1.5 rs there is no hint that I must wait for WREN. The button only worked after the prediction question appeared (tick 4718) and was answered. Expected: a disabled look, or a short 'wait for WREN' / 'needs 1.5 rs' message on click. Also the Tern is not drawn on the top-down diagram while it is at 10 rs (off the chart), so you cannot see where you are relative to the photon sphere.
+- **Repro:** pt start ... --checkpoint epilogue; Postscript; at helm click (911,223) before descending and again right after 'Field locked'
+- **Screenshots:** [fire_disabled_look.png](s03/shots/fire_disabled_look.png)
+
+### 10. [minor] Ines greets twice and 'Come up to the bridge' makes it unclear where she is
+
+- **Category:** text; **reported by** 1 agent(s): s01
+- **Detail:** Ines (labelled capsule bay) says unprompted 'Morning, doc! You slept through the arrival. Come up to the bridge, the view is ridiculous.' (tick 2686), which reads as if she is on the bridge. On the bay intercom she greets again 'Morning, doc. Checklist first, then coffee. The view's on the bridge, not in here.' (tick 4008), and on the bridge 'I'm out in the capsule bay doing pre-flight.' (tick 5182). Two 'Morning, doc' greetings and the 'come up' wording muddle where she is; the speaker label does help.
+- **Repro:** pt start ...; pt key Return; pt await WORLD 150; walk out of quarters (first line plays); face the bay window and press E at 'Talk to Ines (bay intercom)'
+- **Screenshots:** [ines_greeting_repeat.png](s01/shots/ines_greeting_repeat.png)
+
+### 11. [minor] No 'Use the helm' prompt while standing 0.9 m from the helm and facing it
+
+- **Category:** ux; **reported by** 1 agent(s): s02
+- **Detail:** After walking from comms, the state said helm 0.9 m at bearing -2 but no use prompt appeared (the crosshair passes over the helm). I had to step back to 1.0 m before 'E Use the helm console' appeared. Standing too close to a console should still let you use it.
+- **Repro:** after objective 3 starts, walk right up against the helm console, face it (pt face to bearing ~0), check pt state prompt; then pt hold s 1.5
+- **Screenshots:** [helm0.png](s02/shots/helm0.png)
+
+### 12. [minor] Objective 'Fire the ranging laser along the hull' stays open for about 66 game seconds after the laser is fired and caught
+
+- **Category:** ux; **reported by** 1 agent(s): s03
+- **Detail:** I fired at tick 5276; WREN reported the pulse caught at the stern at tick 5948, but the objective did not complete until tick 9265, after five more dialogue lines. During that time the HUD keeps saying 'Fire the ranging laser along the hull (helm)', which reads as if the shot did not count; I clicked Fire again. Expected: objective ticks when the pulse is caught, or the HUD changes to 'Listen to WREN' / 'Watch the hull camera'.
+- **Repro:** Continue from finding above; click Fire after the prediction; watch objective in pt state
+- **Screenshots:** [pulse3.png](s03/shots/pulse3.png)
+
+### 13. [minor] Photo mode: 'Save picture' gives no saved confirmation, and photo mode is not in the pause menu
+
+- **Category:** ux; **reported by** 1 agent(s): s03
+- **Detail:** Clicking 'Save picture' showed 'Developing...' for about a second and then nothing: no 'Saved' toast, no file name or place. A PNG did land in the browser's Downloads folder (frozen-star-2026-11-15-16-42-21.png; moved into photo/ of this session), but the player is not told. Also the pause menu (Resume, Discoveries, Settings, Controls, Main menu) has no Photo mode entry; the only mention is one sentence deep in Controls: 'P is photo mode'. The photo mode bar itself is clear (C save, H hide, P done, FOV, exposure).
+- **Repro:** From walk mode press p; click 'Save picture' (807,677); screenshot at 1 s and 3 s
+- **Screenshots:** [photo_saved.png](s03/shots/photo_saved.png)
+
+### 14. [minor] Postscript: WREN tells you to lower the altitude to 1.500 rs after the field is already locked there
+
+- **Category:** bug; **reported by** 1 agent(s): s03
+- **Detail:** I set Hold station to 1.5 rs; at tick 3458 WREN says 'Photon sphere. I have locked the field to it', and the panel says 'Field locked to the photon sphere, 1.500 rs'. Then at tick 3962 the console is taken away for a short CUTSCENE and at tick 3998 WREN says 'The helm is the low desk in the middle of the bridge. Lower the altitude to 1.500 rs and the field will lock there.' That instruction is for a step already done and made me think the descent had not counted. The objective 'take the Tern down to the photon sphere' stayed not completed until the prediction question was answered at tick 5114, about 27 game seconds after arrival.
+- **Repro:** pt start ... --checkpoint epilogue; click 'Postscript: the photon sphere' (631,665); walk to helm, press e; scroll the panel, set Hold station to 1.5 rs; wait; read subtitles (pt events)
+- **Screenshots:** [shadow_half.png](s03/shots/shadow_half.png)
+
+### 15. [minor] WREN's 'First item on today's plan: drop beacon probe K-1' plays after the probe is already launched
+
+- **Category:** text; **reported by** 1 agent(s): s01
+- **Detail:** On the bridge I went straight to the probe console and pressed 'Launch Beacon K-1' (~tick 5610). WREN's briefing line arrived at tick 5646, after the launch, as if I had not done it yet. The 'Drop the beacon probe' objective only ticked at tick 6000 (~6.5 game s after the launch, with the first ping), so for a few seconds the HUD still told me to do what I had just done. Expected: the briefing line plays on entering the bridge or is skipped if already launched; the objective completes on launch.
+- **Repro:** pt start ...; play to the bridge; walk to probe console promptly; E; click 'Launch Beacon K-1' (992,360); pt events
+- **Screenshots:** [late_plan_line.png](s01/shots/late_plan_line.png)
+
+### 16. [minor] WREN's direction nudge is stale: 'Out of your door, turn right' plays when the player is already at the bridge doorway
+
+- **Category:** text; **reported by** 1 agent(s): s01
+- **Detail:** At tick 4818 WREN says 'The bridge is forward, Doctor. Out of your door, turn right, and follow the corridor.' I had left the quarters ~2000 ticks earlier, visited the bay intercom, and was standing 2.4 m from the bridge door. The hint seems timer-based and ignores where the player is. Expected: suppress it once the player is in the corridor, or phrase it relative to the current room.
+- **Repro:** pt start ...; pt key Return; pt await WORLD 150; leave quarters, talk to Ines at bay intercom (E), walk forward along corridor toward bridge; hint plays around tick 4800
+- **Screenshots:** [stale_directions.png](s01/shots/stale_directions.png)
+
+### 17. [polish] Door distance marker overlaps the controls hint text at the quarters exit
+
+- **Category:** ux; **reported by** 1 agent(s): s01
+- **Detail:** Standing at the quarters door, the 'Door 1 m' marker is drawn on top of the line 'to pause.' in the controls hint. The controls hint, the 'Click to look around' pill, the use prompt and the subtitle all stack in the middle of the screen, covering the porthole and doorways. The controls hint stays up a long time after the player starts walking. At the probe console the 'Probe 2 m' marker likewise overlaps 'Click to look around'.
+- **Repro:** pt start ...; reach WORLD; pt walkto door; pt shot
+- **Screenshots:** [door_marker_overlap.png](s01/shots/door_marker_overlap.png)
+
+### 18. [polish] Helm 'Hold station at' slider is hard to set to the x2 mark
+
+- **Category:** ux; **reported by** 1 agent(s): s02
+- **Detail:** The objective asks for the relay clock to run twice as fast. The far-away-clock bar marks x2 at 1.33 rs, but the slider you actually drag is in rs and has no x2 tick. A drag to about a third of the way set 1.164 rs (beyond x2) without my meaning to. A snap point or tick at 1.33 rs on the hold slider would help.
+- **Repro:** at helm, pt drag 1230 384 900 384 1.5 1
+- **Screenshots:** [descent1.png](s02/shots/descent1.png)
+
+## Objective timings
+
+Game seconds from the start of the world to each objective (event tick / the game's ticks per second, from events.jsonl). Game time, not wall time: with many sessions on one machine a world can run slower than real time, and wall-clock timings would mostly measure the machine.
+
+| # | Objective | s01 | s02 | s03 | min | median | max |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Go to the bridge | 86.5 | - | - | 86.5 | 86.5 | 86.5 |
+| 1 | Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm) | - | - | 85.2 | 85.2 | 85.2 | 85.2 |
+| 1 | Watch Ines launch: the port side of the bridge window | - | 18.5 | - | 18.5 | 18.5 | 18.5 |
+| 2 | Drop the beacon probe (probe console, left) | 100 | - | - | 100 | 100 | 100 |
+| 2 | Fire the ranging laser along the hull (helm) | - | - | 154.4 | 154.4 | 154.4 | 154.4 |
+| 2 | Save Ines: fire the recall beam from the comms console. Wait as long as you dare. | - | 70.1 | - | 70.1 | 70.1 | 70.1 |
+

@@ -16,7 +16,7 @@ is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `ver
 2. **Set the version.** On a branch, set the same version in three places and open a pull request:
    - `package.json` (`version`): the web build, and the `<version>` in `version.txt`;
    - `desktop/package.json` (`version`): the desktop app;
-   - `src/game/probe.js` (`const VERSION`): the version the game reports to the playtest probe.
+   - `src/version.js` (`export const VERSION`): the version shown on the About panel and reported to the playtest probe.
 
    Add the release's entry to [`CHANGELOG.md`](../CHANGELOG.md) in the same pull request. The
    workflow fails if the three versions differ, or if the tag does not match them.
@@ -52,7 +52,7 @@ is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `ver
 
 ## What the workflow checks
 
-- The tag is a bare version, and `package.json`, `desktop/package.json` and `src/game/probe.js`
+- The tag is a bare version, and `package.json`, `desktop/package.json` and `src/version.js`
   all say it.
 - `docs/playtests/<version>/` exists and is not empty.
 - `npm test` passes.

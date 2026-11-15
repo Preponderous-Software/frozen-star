@@ -79,7 +79,7 @@ jobs:
           node-version: "22"
 
       # The web package, the desktop package and the version the game reports (the playtest
-      # probe's "version" in src/game/probe.js) must all be the version it is released as.
+      # game's VERSION in src/version.js, which the probe reports) must all be the version it is released as.
       - name: Check the version against the tag
         id: version
         env:
@@ -87,14 +87,14 @@ jobs:
         run: |
           version=$(node -p "require('./package.json').version")
           desktop=$(node -p "require('./desktop/package.json').version")
-          probe=$(sed -n "s/^const VERSION = '\([^']*\)';.*/\1/p" src/game/probe.js)
-          echo "package.json $version, desktop/package.json $desktop, probe.js $probe, tag ${TAG:-none (dry run)}"
+          probe=$(sed -n "s/^export const VERSION = '\([^']*\)';.*/\1/p" src/version.js)
+          echo "package.json $version, desktop/package.json $desktop, version.js $probe, tag ${TAG:-none (dry run)}"
           bad=0
           if [ "$desktop" != "$version" ]; then
             echo "::error::desktop/package.json says $desktop but package.json says $version."; bad=1
           fi
           if [ "$probe" != "$version" ]; then
-            echo "::error::src/game/probe.js reports '$probe' but package.json says $version."; bad=1
+            echo "::error::src/version.js says '$probe' but package.json says $version."; bad=1
           fi
           if [ -n "$TAG" ] && [ "$version" != "$TAG" ]; then
             echo "::error::package.json says $version but the tag is $TAG. Set the version first (docs/RELEASING.md)."; bad=1
