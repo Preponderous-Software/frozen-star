@@ -28,6 +28,7 @@ export function stationPanel(f, { title = 'Station · what you see', clockNote =
     seenR.set(`${(s.r / 2).toFixed(s.r < 2.01 ? 6 : 2)} r<sub>s</sub>`);
     if (S <= 0) st.set('The probe hangs beside the station, ready to drop.');
     else if (s.lnz > 9) st.set('Gone. The light is stretched more than e⁹ times and too faint for any telescope. What you last saw was old light.', 'done');
+    else if (nm > 780 && s.r > 2.3) st.set('Too red to see by eye now: its light has slid into the infrared. It is still falling, but from here it seems to crawl.', 'bad');
     else if (nm > 780) st.set('Frozen at the horizon and too red to see by eye. An infrared telescope still catches it, barely. Its clock has nearly stopped.', 'bad');
     else if (z > 1.6) st.set('Slowing and reddening. Each ping takes longer to reach you than the one before.', 'warn');
     else st.set('Falling. It looks almost normal from here.');

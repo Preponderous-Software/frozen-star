@@ -60,9 +60,9 @@ function baseHandlers(g) {
   });
   g.on('map', (it) => g.openApp(it, (b) => mapApp(b, g, { run: () => (g.flags.mapUnlocked ? g.lastRun : null) })));
   g.on('archive', (it) => g.openApp(it, (b) => archiveApp(b, g, { chapters: CHAPTER_LIST })));
-  g.on('helm', (it) => g.openApp(it, (b) => (g.flags.helmUnlocked ? helmApp(b, g, { onTarget: (r) => { g.helmTarget = r; } }) : (b.append(h3('Helm'), p('Holding station at 10 rₛ. Descent is locked until the survey plan calls for it.')), null))));
+  g.on('helm', (it) => g.openApp(it, (b) => (g.flags.helmUnlocked ? helmApp(b, g, { onTarget: (r) => { g.helmTarget = r; } }) : (b.append(h3('Helm'), p('Holding station at 10 rₛ. Descent is locked for now: later in the survey you will take the ship down toward the horizon from here.')), null))));
   g.on('comms', (it) => g.openApp(it, (b) => commsApp(b, g, { run: () => g.capsule, onFire: () => g.fireRecall?.(), showMap: (g.flags.rescueTries || 0) > 0 })));
-  g.on('feed', (it) => g.openApp(it, (b) => (g.feed ? feedApp(b, g, { feedState: g.feedState, feed: g.feed }) : (b.append(h3('Camera feed'), p('No signal.')), null))));
+  g.on('feed', (it) => g.openApp(it, (b) => (g.feed ? feedApp(b, g, { feedState: g.feedState, feed: g.feed }) : (b.append(h3('Camera feed'), p('No signal. This screen shows what a camera probe sends home, and none is out yet.')), null))));
   g.on('probe', (it) => g.openApp(it, (b) => probeApp(b, g, {
     name: g.flags.beaconDone ? 'Orpheus' : 'Beacon K-1',
     run: () => (g.flags.beaconDone ? g.orpheus : g.beacon),

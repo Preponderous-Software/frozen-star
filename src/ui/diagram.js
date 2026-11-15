@@ -64,11 +64,19 @@ export class SpacetimeDiagram {
     ctx.strokeStyle = 'rgba(143,184,255,.9)'; ctx.lineWidth = 2 * d; ctx.beginPath();
     ctx.moveTo(...this.P(f.R0, f.tTilde(0))); ctx.lineTo(...this.P(f.R0, nowStation)); ctx.stroke();
     // probe worldline
-    const tauNow = Math.min(this.tau, f.tauEnd);
+    // a rescued faller's line stops where the beam met her; a dashed green line climbs back out
+    const tauNow = Math.min(this.tau, f.tauEnd, this.cutTau ?? Infinity);
     ctx.strokeStyle = 'rgba(255,200,130,.95)'; ctx.lineWidth = 2 * d; ctx.beginPath();
     const N = 200;
     for (let i = 0; i <= N; i++) { const e = f.etaOfTau((tauNow * i) / N); const p = this.P(f.rOf(e), f.tTilde(e)); i ? ctx.lineTo(...p) : ctx.moveTo(...p); }
     ctx.stroke();
+    if (this.cutTau != null && this.tau > this.cutTau) {
+      const ec = f.etaOfTau(this.cutTau), rc = f.rOf(ec), tc = f.tTilde(ec);
+      const tEnd = Math.min(nowStation, tc + 2.2 * (f.R0 - rc)), rEnd = rc + (f.R0 - rc) * Math.min(1, (tEnd - tc) / (2.2 * (f.R0 - rc)));
+      ctx.strokeStyle = 'rgba(127,214,168,.95)'; ctx.setLineDash([5 * d, 4 * d]); ctx.beginPath();
+      ctx.moveTo(...this.P(rc, tc)); ctx.lineTo(...this.P(rEnd, tEnd)); ctx.stroke(); ctx.setLineDash([]);
+      this._label(ctx, 'engine burn: climbing out', this.P(rc, tc)[0] + 6 * d, this.P(rc, tc)[1] - 8 * d, 'rgba(127,214,168,.95)');
+    }
     for (const s of this.signals) this._outgoing(ctx, s, nowStation);
     for (const S of this.rescues) {
       const T0 = f.stationTTilde(S), hit = f.rescueAt(S), rEnd = hit.meets ? hit.r : 0;
