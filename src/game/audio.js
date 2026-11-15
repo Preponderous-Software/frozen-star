@@ -144,8 +144,8 @@ export function createAudio(opts = {}) {
     clockTicks(g, hidden);
     if (now - S.sceneAt < 0.1) return;
     S.sceneAt = now;
-    const ph = phaseOf(g.flags); // fetch Ines's clips for this act (and the next) once it starts
-    if (ph !== V.phase) { V.phase = ph; if (V.manifest) loadPhase(ph); else loadManifest(); }
+    const ph = phaseOf(g.flags); // fetch the voices' clips for this act (and the next) once it starts
+    if (ph !== V.phase) setPhase(ph);
     const room = ROOM_IDS.find((id) => g.inRoom?.(id)) || S.room || 'corridor';
     S.room = room; S.hidden = hidden;
     const R = ROOMS[room];
@@ -278,54 +278,62 @@ export function createAudio(opts = {}) {
     for (const n of [src, breath]) { n.start(t0); n.stop(end + 0.3); }
   }
 
-  // ---------- Ines's recorded voice ----------
-  // Lines recorded with Kokoro-82M (voice af_sky) live in assets/voice/ines, listed in manifest.json by
-  // their text. Clips are fetched an act at a time (the act the save is in, and the next), never all at
-  // once. A line with no clip yet, or one that has not finished loading, keeps the old behaviour.
+  // ---------- the recorded voices ----------
+  // Lines recorded with Kokoro-82M live in assets/voice/<speaker>/, listed in manifest.json by their text:
+  // Ines (voice af_sky) and WREN, the ship (bm_george). Clips are fetched an act at a time (the act the
+  // save is in, and the next), never all at once. A line with no clip yet, or one that has not finished
+  // loading, keeps the old behaviour: the procedural radio voice for Ines, silence for WREN.
   //
-  // Over the radio a clip plays at playbackRate 1/(1+z): gravitational redshift stretches time and
+  // Over the radio an Ines clip plays at playbackRate 1/(1+z): gravitational redshift stretches time and
   // lowers every frequency by the same factor, which is exactly what slowing a recording does. The
-  // receiver after it (band-pass, grit, static, squelch) is the ship's own and is not redshifted.
-  const VOICE_DIR = new URL('../../assets/voice/ines/', import.meta.url);
-  const V = { manifest: null, loading: null, byText: new Map(), patterns: [], clips: new Map(), phase: null, phaseLoaded: new Set(), radioReq: null, busyUntil: 0, played: [] };
-  function loadManifest() {
-    if (V.loading) return V.loading;
-    V.loading = fetch(new URL('manifest.json', VOICE_DIR)).then((r) => (r.ok ? r.json() : null)).then((m) => {
+  // receiver after it (band-pass, grit, static, squelch) is the ship's own and is not redshifted. WREN is
+  // the ship itself, so it is never redshifted: it speaks over the ship's PA, clean.
+  const bank = (dir) => ({ dir: new URL(`../../assets/voice/${dir}/`, import.meta.url), manifest: null, loading: null, byText: new Map(), patterns: [], clips: new Map(), phaseLoaded: new Set() });
+  const BANKS = { INES: bank('ines'), WREN: bank('wren') };
+  // one voice at a time across both speakers: busyUntil is when the last scheduled line ends
+  const V = { phase: null, radioReq: null, busyUntil: 0, played: [] };
+  function loadManifest(B) {
+    if (B.loading) return B.loading;
+    B.loading = fetch(new URL('manifest.json', B.dir)).then((r) => (r.ok ? r.json() : null)).then((m) => {
       if (!m?.lines) return null;
-      V.manifest = m;
+      B.manifest = m;
       for (const [key, e] of Object.entries(m.lines)) {
-        if (e.pattern) { try { V.patterns.push({ re: new RegExp(e.pattern, 'u'), key }); } catch { /* skip */ } } else V.byText.set(e.text, key);
+        if (e.pattern) { try { B.patterns.push({ re: new RegExp(e.pattern, 'u'), key }); } catch { /* skip */ } } else B.byText.set(e.text, key);
       }
-      if (V.phase) loadPhase(V.phase);
+      if (V.phase) loadPhase(B, V.phase);
       return m;
     }).catch(() => null);
-    return V.loading;
+    return B.loading;
   }
   function decode(ab) { return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p?.then) p.then(res, rej); }); }
-  function loadClip(key) {
-    if (!ctx || V.clips.has(key)) return V.clips.get(key)?.p;
+  function loadClip(B, key) {
+    if (!ctx || B.clips.has(key)) return B.clips.get(key)?.p;
     const c = { buf: null };
-    c.p = fetch(new URL(`${key}.ogg`, VOICE_DIR)).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))).then(decode)
+    c.p = fetch(new URL(`${key}.ogg`, B.dir)).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))).then(decode)
       .then((b) => { c.buf = b; return b; }, () => null);
-    V.clips.set(key, c);
+    B.clips.set(key, c);
     return c.p;
   }
-  function loadPhase(name) {
-    const m = V.manifest; if (!m) return;
+  function loadPhase(B, name) {
+    const m = B.manifest; if (!m) return;
     const i = m.phases.indexOf(name);
     for (const ph of [name, m.phases[i + 1]]) {
-      if (!ph || V.phaseLoaded.has(ph)) continue;
-      V.phaseLoaded.add(ph);
-      for (const [key, e] of Object.entries(m.lines)) if (e.phase === ph) loadClip(key);
+      if (!ph || B.phaseLoaded.has(ph)) continue;
+      B.phaseLoaded.add(ph);
+      for (const [key, e] of Object.entries(m.lines)) if (e.phase === ph) loadClip(B, key);
     }
+  }
+  function setPhase(ph) {
+    V.phase = ph;
+    for (const B of Object.values(BANKS)) { if (B.manifest) loadPhase(B, ph); else loadManifest(B); }
   }
   // which act the game is in, from its flags: only the clips for this act and the next are fetched
   function phaseOf(f = {}) {
     return f.finished ? 'free' : f.orpheusReady ? 'orpheus' : f.inesHome ? 'helm' : f.beaconDone ? 'rescue' : 'opening';
   }
-  const keyOf = (text) => V.byText.get(text) ?? V.patterns.find((p) => p.re.test(text))?.key;
+  const keyOf = (B, text) => B.byText.get(text) ?? B.patterns.find((p) => p.re.test(text))?.key;
 
-  /** Play a clip of `key` from time t0 in one of three settings; returns {end, stop}. */
+  /** Play a clip from time t0 in one of four settings; returns {end, stop}. */
   function playRecorded(buf, t0, setting, onePlusZ) {
     const src = ctx.createBufferSource(); src.buffer = buf;
     let end, chain;
@@ -345,6 +353,17 @@ export function createAudio(opts = {}) {
       tone({ f: 1400, at: t0 - 0.06, d: 0.035, vol: 0.012, bus: buses.sig });
       tone({ f: 1050, at: end + 0.05, d: 0.035, vol: 0.01, bus: buses.sig });
       chain = { stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); } };
+    } else if (setting === 'pa') {
+      // WREN, the ship's own voice over its PA: full range, never a radio. A gentle shelf off the lows and
+      // the very top (a good ceiling speaker, not a person beside you), a touch of presence, and a little
+      // more of the ship's room than a voice in person
+      end = t0 + buf.duration;
+      const out = gain(0.6, buses.sfx); out.connect(gain(0.16, buses.verb));
+      const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 2600; pres.gain.value = 1.5; pres.Q.value = 0.8; pres.connect(out);
+      const top = ctx.createBiquadFilter(); top.type = 'highshelf'; top.frequency.value = 7000; top.gain.value = -4; top.connect(pres);
+      const low = ctx.createBiquadFilter(); low.type = 'lowshelf'; low.frequency.value = 220; low.gain.value = -3; low.connect(top);
+      src.connect(filter('highpass', 110, 0.6, low));
+      chain = { stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); } };
     } else {
       // in the room with you: dry, with a little of the ship's own reverb
       end = t0 + buf.duration;
@@ -357,26 +376,31 @@ export function createAudio(opts = {}) {
   }
 
   /**
-   * Speak a line in Ines's recorded voice if there is a clip for it and it has loaded.
-   * setting: 'radio' (from the capsule), 'intercom' (from the capsule bay) or 'room' (in person). Over the
-   * radio, 1 + z comes from a radio(onePlusZ) call made in the same turn (it is 1 without one); the clip
-   * takes that call's place, so the procedural buzz only plays for lines that have no clip.
+   * Speak a line in a recorded voice (Ines or WREN) if there is a clip for it and it has loaded.
+   * Ines's setting: 'radio' (from the capsule), 'intercom' (from the capsule bay) or 'room' (in person). Over
+   * the radio, 1 + z comes from a radio(onePlusZ) call made in the same turn (it is 1 without one); the clip
+   * takes that call's place, so the procedural buzz only plays for lines that have no clip. WREN is always
+   * the ship's PA, whatever the subtitle's tag says.
    * Returns { dur, stop } (dur: seconds from now until the line has finished) or null.
    */
   function voice(who, text, setting = 'room') {
-    if (who !== 'INES' || !ctx) return null;
-    if (!V.manifest) { loadManifest(); return null; }
-    const key = keyOf(text);
-    const clip = key && V.clips.get(key);
-    if (!clip?.buf) { if (key) loadClip(key); return null; }
-    const req = V.radioReq;
-    if (req) V.radioReq = null; // claimed: no buzz for this line
-    const how = req && setting === 'room' ? 'radio' : setting; // a radio() call means a transmission, wherever she is
-    // one voice at a time: a line that arrives while she is still talking waits its turn
+    const B = BANKS[who];
+    if (!B || !ctx) return null;
+    if (!B.manifest) { loadManifest(B); return null; }
+    const key = keyOf(B, text);
+    const clip = key && B.clips.get(key);
+    if (!clip?.buf) { if (key) loadClip(B, key); return null; }
+    let how = 'pa', req = null;
+    if (who === 'INES') {
+      req = V.radioReq;
+      if (req) V.radioReq = null; // claimed: no buzz for this line
+      how = req && setting === 'room' ? 'radio' : setting; // a radio() call means a transmission, wherever she is
+    }
+    // one voice at a time, Ines and WREN alike: a line that arrives while someone is talking waits its turn
     const now = ctx.currentTime, t0 = Math.max(now + (how === 'radio' ? 0.14 : 0.05), V.busyUntil + 0.15);
     const p = playRecorded(clip.buf, t0, how, req?.z);
     V.busyUntil = p.end;
-    V.played.push({ key, how, z: req?.z ?? 1, sec: +(p.end - t0).toFixed(2) }); if (V.played.length > 20) V.played.shift();
+    V.played.push({ who, key, how, z: req?.z ?? 1, at: +t0.toFixed(2), sec: +(p.end - t0).toFixed(2) }); if (V.played.length > 20) V.played.shift();
     return { dur: p.end - now + 0.25, stop: p.stop };
   }
 
@@ -436,7 +460,7 @@ export function createAudio(opts = {}) {
     get ready() { return !!ctx; },
     get muted() { return muted; },
     /** For tests and the debug probe: the context and the current room/depth. */
-    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks }, voice: { phase: V.phase, loaded: [...V.clips.values()].filter((c) => c.buf).length, played: [...V.played] } }; },
+    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks }, voice: { phase: V.phase, loaded: Object.fromEntries(Object.entries(BANKS).map(([w, B]) => [w, [...B.clips.values()].filter((c) => c.buf).length])), played: [...V.played] } }; },
     setMuted(m) { muted = !!m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
     setVolume(v) { volume = Math.min(1, Math.max(0, +v || 0)); applyLevel(); },
     duck(on) { ducked = !!on; applyLevel(); },
@@ -516,7 +540,7 @@ export function createAudio(opts = {}) {
     radio,
     voice,
     /** For tests: fetch and decode the clip for a line; resolves true once voice() can play it. */
-    async voiceLoad(text) { if (!ctx) return false; await loadManifest(); const k = keyOf(text); return !!(k && await loadClip(k)); },
+    async voiceLoad(text, who = 'INES') { const B = BANKS[who]; if (!ctx || !B) return false; await loadManifest(B); const k = keyOf(B, text); return !!(k && await loadClip(B, k)); },
     alarm: setAlarm,
 
     /** Static hiss level 0..1 (the Orpheus feed losing its signal). */

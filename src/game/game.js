@@ -84,8 +84,9 @@ export function mountGame(root, { checkpoint } = {}) {
   g.until = (fn) => new Promise((res, rej) => waiters.push({ fn, res, rej }));
   g.say = (who, text, opts) => {
     if (g.aborted) return Promise.reject(new Error('aborted'));
-    // Ines's recorded voice, when the line has a clip: the subtitle stays up at least as long as she talks
-    // (the treatment follows her subtitle tag: "capsule" is the radio, "capsule bay" the intercom, none in person)
+    // a recorded voice (Ines or WREN), when the line has a clip: the subtitle stays up at least as long as it plays
+    // (Ines's treatment follows her subtitle tag: "capsule" is the radio, "capsule bay" the intercom, none in
+    // person; WREN is always the ship's PA)
     const at = opts?.where ?? hud.where?.[who];
     const v = audio.voice(who, text, at === 'capsule' ? 'radio' : at === 'capsule bay' ? 'intercom' : 'room');
     const pr = hud.say(who, text, v ? { ...opts, minDur: v.dur } : opts);
@@ -316,7 +317,7 @@ export function mountGame(root, { checkpoint } = {}) {
       if ((w.t != null && g.time >= w.t) || (w.fn && w.fn())) { waiters.splice(i, 1); w.res(); }
     }
     for (const t of g.ticks) t(dt);
-    if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after && (!objState.when || objState.when())) { objState.hinted = true; hud.say('WREN', objState.hint, { key: 'objhint' }); }
+    if (objState && !objState.hinted && g.mode === 'walk' && !g.paused && g.time - objState.since > objState.after && (!objState.when || objState.when())) { objState.hinted = true; g.say('WREN', objState.hint, { key: 'objhint' }).catch(() => {}); } // through g.say: WREN's voice speaks it
     else if (objState?.hinted && objState.when && !objState.when()) hud.unsay('objhint');
     const inp = controls.read(photo.on ? realDt : dt);
     // without pointer lock the mouse does not turn the view: say so whenever that is the case, so a lost lock

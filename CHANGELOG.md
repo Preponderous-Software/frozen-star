@@ -8,6 +8,7 @@ Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/p
 - **A real capsule bay.** Ines is visible doing pre-flight beside capsule C-1; the capsule leaves past the bridge window and docks again after the rescue. Her lines say where she is speaking from.
 - **Discoveries:** 20 achievements, each with a physics fact. **Photo mode** (P): freeze time, hide the HUD, float the camera and save a full-resolution picture.
 - **Controls and accessibility:** rebind every key and gamepad button; reduce flashing, subtitle background, console text size, hold or toggle run, colour-safe redshift.
+- **WREN speaks.** The ship's AI has a calm British voice (Kokoro-82M `bm_george`), heard clean over the ship's PA and never over Ines: the two take turns. Objective hints are spoken too.
 - **Renderer:** the photon ring is a continuous line at low resolution, and the sky's resolution climbs on GPUs that hold 30 fps.
 
 ## 0.1.0 (2026-11-15)

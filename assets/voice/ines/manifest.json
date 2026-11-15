@@ -109,6 +109,24 @@
     "src/game/story.js"
    ]
   },
+  "2ed6d820cc32": {
+   "text": "Bay doors opening. Watch the port side, doc.",
+   "phase": "rescue",
+   "dur": 2.775,
+   "sig": "0743a06dba",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "c5b5889748b6": {
+   "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!",
+   "phase": "rescue",
+   "dur": 2.751,
+   "sig": "f311a0a7ba",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
   "61640485ec00": {
    "text": "Docked. Hands still shaking.",
    "phase": "rescue",
@@ -123,15 +141,6 @@
    "phase": "rescue",
    "dur": 6.496,
    "sig": "e99bb041c1",
-   "where": [
-    "src/game/story.js"
-   ]
-  },
-  "c5b5889748b6": {
-   "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!",
-   "phase": "rescue",
-   "dur": 2.751,
-   "sig": "f311a0a7ba",
    "where": [
     "src/game/story.js"
    ]
@@ -316,9 +325,9 @@
     "src/game/story.js"
    ]
   },
-  "642634cedd9a": {
+  "ad77aacde62d": {
    "text": "When it passes the depth where we hovered, will its picture go all black, like our window did?",
-   "pattern": "^When\\ it\\ passes\\ .+?\\ rₛ,\\ where\\ we\\ hovered,\\ will\\ its\\ picture\\ go\\ all\\ black\\ like\\ our\\ window\\ did\\?$",
+   "pattern": "^When it passes .+? rₛ, where we hovered, will its picture go all black like our window did\\?$",
    "phase": "orpheus",
    "dur": 4.884,
    "sig": "2122a9ba82",
@@ -394,6 +403,24 @@
    "phase": "free",
    "dur": 2.526,
    "sig": "3ccc0ce781",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "5e1ec88ec737": {
+   "text": "…Catch you later, doc.",
+   "phase": "free",
+   "dur": 1.538,
+   "sig": "470dc58742",
+   "where": [
+    "src/game/story.js"
+   ]
+  },
+  "d0c8226f75ea": {
+   "text": "Still here. Go on, the window's yours.",
+   "phase": "free",
+   "dur": 2.242,
+   "sig": "b1b84e714c",
    "where": [
     "src/game/story.js"
    ]
