@@ -280,9 +280,9 @@
     "src/game/story.js"
    ]
   },
-  "2d462902fb0d": {
+  "f6c6ac96afe9": {
    "text": "You fired before the last possible moment. At that moment your screen showed her still well above the horizon, looking almost normal.",
-   "pattern": "^You\\ fired\\ .+?\\ seconds\\ before\\ the\\ last\\ possible\\ moment\\.\\ At\\ that\\ moment\\ your\\ screen\\ showed\\ her\\ .+?\\ rₛ\\ out,\\ looking\\ almost\\ normal\\.$",
+   "pattern": "^You fired .+? seconds before the last possible moment\\. At that moment your screen showed her .+? rₛ out, looking almost normal\\.$",
    "phase": "rescue",
    "dur": 8.587,
    "sig": "b5cce9bdf9",
@@ -308,9 +308,9 @@
     "src/game/story.js"
    ]
   },
-  "b650d1a170b0": {
+  "08f76c136aca": {
    "text": "The beam reached the capsule inside the horizon. Her engine cannot help her there.",
-   "pattern": "^The\\ beam\\ reached\\ the\\ capsule\\ at\\ .+?\\ rₛ\\.\\ Inside\\ the\\ horizon\\.\\ Her\\ engine\\ cannot\\ help\\ her\\ there\\.$",
+   "pattern": "^The beam reached the capsule at .+? rₛ\\. Inside the horizon\\. Her engine cannot help her there\\.$",
    "phase": "rescue",
    "dur": 5.382,
    "sig": "bb6b4ed3e8",
@@ -363,9 +363,9 @@
     "src/game/story.js"
    ]
   },
-  "a72b33202a7e": {
+  "339471c189c1": {
    "text": "Back at station. The rest of the universe aged more than we did down there.",
-   "pattern": "^Back\\ at\\ station\\.\\ The\\ rest\\ of\\ the\\ universe\\ aged\\ .+?\\ seconds\\ more\\ than\\ we\\ did\\ down\\ there\\.$",
+   "pattern": "^Back at station\\. The rest of the universe aged .+? seconds more than we did down there\\.$",
    "phase": "helm",
    "dur": 4.753,
    "sig": "7a83de82ba",
@@ -391,9 +391,9 @@
     "src/game/story.js"
    ]
   },
-  "64851cf793d9": {
+  "ec5d68f284b4": {
    "text": "No. Hovering there, the shadow covered most of our sky. Orpheus will pass that spot at nearly the speed of light, and its motion swings the sky ahead of it. It will see the shadow much smaller.",
-   "pattern": "^No\\.\\ Hovering\\ there,\\ the\\ shadow\\ covered\\ .+?\\ degrees\\ of\\ our\\ sky\\.\\ Orpheus\\ will\\ pass\\ that\\ spot\\ at\\ .+?%\\ of\\ light\\ speed,\\ and\\ its\\ motion\\ swings\\ the\\ sky\\ ahead\\ of\\ it\\.\\ It\\ will\\ see\\ the\\ shadow\\ only\\ .+?\\ degrees\\ across\\.$",
+   "pattern": "^No\\. Hovering there, the shadow covered .+? degrees of our sky\\. Orpheus will pass that spot at .+?% of light speed, and its motion swings the sky ahead of it\\. It will see the shadow only .+? degrees across\\.$",
    "phase": "orpheus",
    "dur": 12.306,
    "sig": "3283174d89",
@@ -473,9 +473,9 @@
     "src/game/story.js"
    ]
   },
-  "bb6dcced29ea": {
+  "4eadc15e66bd": {
    "text": "The field is pushing against an enormous pull to hold us here. Nobody aboard feels a thing.",
-   "pattern": "^The\\ field\\ is\\ pushing\\ against\\ .+?\\ to\\ hold\\ us\\ here\\.\\ Nobody\\ aboard\\ feels\\ a\\ thing\\.$",
+   "pattern": "^The field is pushing against .+? to hold us here\\. Nobody aboard feels a thing\\.$",
    "phase": "free",
    "dur": 5.936,
    "sig": "5fbacb231d",

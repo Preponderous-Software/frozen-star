@@ -328,6 +328,11 @@ def node_eval(exprs):
     return json.loads(out.stdout)
 
 
+def js_escape(text):
+    """Escape for a JS RegExp with the u flag, which rejects needless escapes such as Python's "\\ "."""
+    return re.sub(r'[\\^$.*+?()[\]{}|/]', lambda m: '\\' + m.group(0), text)
+
+
 EXPR = r'\$\{((?:[^{}]|\{[^{}]*\})*)\}'
 
 
@@ -352,7 +357,7 @@ def resolve(spk, found):
         spec = next((t for t in spk['templates'] if t['match'] in text), None)
         if spec and 'spoken' in spec:
             parts = re.split(EXPR, text)[::2]
-            add(spec['spoken'], phase, where, '^' + '.+?'.join(re.escape(unescape(p)) for p in parts) + '$')
+            add(spec['spoken'], phase, where, '^' + '.+?'.join(js_escape(unescape(p)) for p in parts) + '$')
             continue
         if spec and 'variants' in spec:
             for v in values['@' + spec['match']]:

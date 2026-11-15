@@ -325,9 +325,9 @@
     "src/game/story.js"
    ]
   },
-  "642634cedd9a": {
+  "ad77aacde62d": {
    "text": "When it passes the depth where we hovered, will its picture go all black, like our window did?",
-   "pattern": "^When\\ it\\ passes\\ .+?\\ rₛ,\\ where\\ we\\ hovered,\\ will\\ its\\ picture\\ go\\ all\\ black\\ like\\ our\\ window\\ did\\?$",
+   "pattern": "^When it passes .+? rₛ, where we hovered, will its picture go all black like our window did\\?$",
    "phase": "orpheus",
    "dur": 4.884,
    "sig": "2122a9ba82",
