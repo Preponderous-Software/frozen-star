@@ -1,0 +1,84 @@
+{
+  "session": "s01",
+  "goal": "A brand-new player, from the title menu: the dream, waking in the quarters, the corridor and capsule bay, the bridge, and dropping the beacon probe. Above all, watch the SHIP itself: does the ship's interior ever vanish or flash, even for one frame, leaving only the black hole visible (take a screenshot sequence while walking, turning and resizing nothing)? Also judge the new footsteps/head bob feel, the sealed hatches and interior art, and whether hints and markers overlap.",
+  "build": {
+    "version": "0.2.0",
+    "commit": "cca83e6"
+  },
+  "seed": null,
+  "durationSec": 966,
+  "outcome": "partial",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "crash",
+      "title": "Game froze permanently on stepping back (Esc) from the probe console after launching K-1",
+      "detail": "After launching Beacon K-1 and watching the panel for ~40 s, I pressed Esc to step back. The screen went CONSOLE -> CUTSCENE (mode 'tweening') at tick 7563 and the game never ticked again: tick stuck at 7581, state.json stale for over 2 minutes, every screenshot byte-identical (the probe readout 'its clock 12.23 M' never changed), Space and other keys did nothing. The Chrome tree had no GPU process left and data/chrome.log shows a crashpad dump at 00:28:02. Load average on the machine was ~52 and the kernel logged an NMI, so this is probably the SwiftShader GPU process dying under load rather than game code, but it happened exactly on the console step-back camera tween, so worth a check. A player would see a frozen frame with no error or 'reload' message; the game could detect a lost WebGL context and say so.",
+      "repro": "pt start ...; pt key Return; skip dream; walk to the bridge; walk to the probe console (left of helm); pt key e; click 'Launch Beacon K-1' (992,378); pt wait 40; pt key Escape",
+      "screenshot": "shots/frozen-after-console.png",
+      "tick": 7581
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Probe console hard to reach: the helm desk/chair blocks the direct path and walking slides sideways",
+      "detail": "From the bridge entrance, walking straight at the probe console (bearing ~0) stalled at ~3.6 m behind the helm chair; W slid the player sideways instead of forward. It took several strafes and turns to get within the 1.9 m use range, and pt walkto console went to the helm/feed consoles instead. A new player told 'the one on the left, by the window' will bump the helm chair. A wider gap or a slightly larger use range would help.",
+      "repro": "From bridge entrance at about (0,-5.6): pt face toward probe; pt hold w 1.0 x3 -> position barely changes (x 0.51, z -8.8)",
+      "screenshot": "shots/stuck.png",
+      "tick": 6486
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Waking HUD stacks four layers over the porthole you are told to look out of",
+      "detail": "On waking, the E use-prompt, 'Click to look around', the controls hint box and WREN's subtitle are stacked in the middle of the screen. They do not overlap each other, but together they cover the porthole and the black hole WREN is describing. The controls hint stays up until you have walked a fair way. Moving the controls hint to a corner, or showing it after the opening lines, would clear the view.",
+      "repro": "pt start; pt key Return; skip dream; pt await WORLD; pt shot",
+      "screenshot": "shots/hint-stack.png",
+      "tick": 1456
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "'Probe 2 m' waypoint marker sits on the use reticle and the console's screen text",
+      "detail": "Once the probe console is in reach, the orange waypoint diamond and 'Probe 2 m' label are drawn on top of the reticle bracket and over the console's own text (K-1 ready / ORPHEUS locked), just above the 'E Use the probe console' prompt. Hide the waypoint when the use prompt for the same target is showing. Similarly, in the corridor the edge-clamped 'Bridge 9 m' marker sat on the TERN poster.",
+      "repro": "Walk to the probe console until 'E Use the probe console' shows; pt shot",
+      "screenshot": "shots/marker-overlap.png",
+      "tick": 7038
+    },
+    {
+      "severity": "polish",
+      "category": "perf",
+      "title": "Game ran at ~10 fps / ~12-15 tps here, so walking and Shift-run felt very slow",
+      "detail": "The dream, the walk and the probe fall all ran at a fraction of real time (the 1-minute probe fall would take several minutes). Shift-run did not look noticeably faster than walking at this frame rate. This is likely due to machine load (load avg ~50); noted only so pacing feedback from this session is read with that in mind.",
+      "repro": "pt status; pt state (tick vs wall clock)",
+      "screenshot": "shots/sheetF.png",
+      "tick": 3660
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 2,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Go to the bridge": 64.7,
+      "Drop the beacon probe (probe console, left)": 118.9
+    },
+    "shipVanishFramesSeen": 0,
+    "screenshotsInMotionSequences": 77
+  },
+  "fun": 3,
+  "verdict": "I saw no ship-vanish or flash: across ~77 screenshots taken while walking, turning with the arrows and mouse-looking through the quarters, the corridor and the bridge, the interior was always there and the black hole showed only through the windows. The interior art (the sealed hatches with lilac hazard stripes, the TERN posters, the deck map, the capsule-bay window with Ines, the bridge with its ship/relay clock strip) is clear and charming. The run ended with a permanent freeze on stepping back from the probe console, probably the GPU process dying under heavy machine load. Footsteps could not be judged without audio, and head bob was too subtle to judge at ~10 fps.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That light from near a black hole gets stretched and slowed: the black disk is the hole's shadow (about 2.5x wider than the horizon), the bright ring is bent starlight, and a falling probe's clock and pings will look slower and redder to you on the ship (the 'light stretched by' factor and the x2 dashed line) than they are for the probe itself. I only got to the start of the fall (x1.03), so I saw the setup, not the payoff."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Getting to the probe console on the bridge. 'Left, by the window' was clear, but walking straight at it I got stuck behind the helm chair and slid sideways. It took several strafes before the use prompt appeared. Also, the wake-up screen piles four hint layers over the porthole just as WREN tells you to look at the black hole."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "I saw no ship vanishing or flashing in any frame, whether walking, turning or mouse-looking in the quarters, corridor or bridge. The one real break: after pressing Esc at the probe console (bridge, facing the probe console and the left window), the game froze on one frame for good. It looks like the browser's GPU process died under heavy machine load. Smaller things: the 'Probe 2 m' marker drew on top of the use reticle and the console's screen text, and the 'Bridge 9 m' marker sat on a TERN poster in the corridor (facing aft/right). The pointer-lock banner from Chrome showed at the top after clicking to look, which is the browser's, not the game's."
+    }
+  ]
+}
