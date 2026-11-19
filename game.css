@@ -262,3 +262,16 @@ canvas.fp-spark { width: 100%; height: 70px; display: block; border-radius: 6px;
 .fs-oops b { display: block; font-weight: 500; margin-bottom: 2px; }
 .fs-oops small { display: block; opacity: .7; font-family: "IBM Plex Mono", monospace; font-size: 11px; word-break: break-word; }
 .fs-oops button { margin-left: auto; background: none; border: 0; color: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+/* round 8: the recall beam answers the click at once, even on a slow frame */
+#fp-fire.sent { background: #5a2a20; border-color: #ff8a6a; box-shadow: 0 0 0 3px rgba(255,138,106,.35); transition: box-shadow .4s; }
+#fp-fire:active:not(:disabled) { transform: translateY(1px) scale(.99); }
+/* with a console open on the right, discovery toasts and hints move into the view on the left, not over the panel */
+@media not ((max-width: 760px) and (orientation: portrait)) {
+  .fp-root:has(.fp-panel:not([hidden])) .fp-toast.disc-toast { right: calc(min(560px, 48vw) + 16px); }
+  .fp-root:has(.fp-panel:not([hidden])) .fp-hint { left: calc((100% - min(560px, 48vw)) / 2); max-width: calc(100% - min(560px, 48vw) - 32px); }
+}
+/* the "click to look" pill gives way to the use bracket, and nothing from the world shows through a question or the logbook */
+.fp-root:has(.fp-focus:not([hidden])) .fp-look { visibility: hidden; }
+.fp-root:has(.fp-choice) .fp-prompt, .fp-root:has(.fp-choice) .fp-focus, .fp-root:has(.fp-choice) .fp-way,
+.fp-root:has(.fp-logbook) .fp-prompt, .fp-root:has(.fp-logbook) .fp-focus, .fp-root:has(.fp-logbook) .fp-way { visibility: hidden; }
+.fp-action:first-child { top: 63px; } /* first in the panel: sticks exactly where it already sits, so it never moves under the pointer */
