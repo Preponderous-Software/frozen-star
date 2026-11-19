@@ -352,7 +352,7 @@ export function mapApp(body, g, { run }) {
   });
 }
 
-export function helmApp(body, g, { onTarget }) {
+export function helmApp(body, g, { onTarget, presets = [] }) {
   const target = slider('Hold station at', { id: 'fp-alt', min: Math.log10(0.03), max: Math.log10(9), step: 0.002, value: Math.log10(g.helmTarget / 2 - 1), fmt: (x) => (x >= Math.log10(9) - 0.002 ? '10 rₛ' : `${sig(1 + 10 ** x, 4)} rₛ`) });
   // the top of the slider is the station itself (the browser rounds max down to a whole step)
   target.input.addEventListener('input', () => onTarget(target.value >= Math.log10(9) - 0.002 ? R_STATION : 2 * (1 + 10 ** target.value)));
@@ -367,7 +367,9 @@ export function helmApp(body, g, { onTarget }) {
   const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this view; the bright ring is the inner edge of the accretion disk, which now surrounds the ship.');
   body.append(h('p.eyebrow', 'Helm · station-keeping field'),
     h('section.fp-sec', rateHero.el, rateMeter.el),
-    h('div.fp-action', target.el, h('div.fp-action-row', up, ' ', rateBtn(2), ' ', rateBtn(4))),
+    h('div.fp-action', target.el, h('div.fp-action-row', up, ' ', rateBtn(2), ' ', rateBtn(4),
+      // extra one-press heights an act asks for (the Postscript's photon sphere), given in M like helmTarget
+      ...presets.flatMap(({ label, r, title }) => [' ', h('button.fp-rate-btn', { type: 'button', title, onclick: () => { target.value = Math.log10(r / 2 - 1); onTarget(r); } }, label)]))),
     h('div.stats', sR.el, sGain.el, sField.el, sTide.el), rearC, rearNote,
     h('p.fine', 'The field pushes every atom aboard equally, so nobody feels it. Pushing everything at once is indistinguishable from standing still: that is the equivalence principle. The field cannot hold the ship below about 1.03 rₛ.'));
   return loop(() => {
@@ -463,7 +465,7 @@ export function feedApp(body, g, { feedState, feed }) {
     const st = feedState();
     drawFeed(ctx, c.width, c.height, feed, st);
     if (!st.frames) { from.set('—', '', 'Waiting for the first frame to climb out to you.'); due.set(isFinite(st.nextIn) ? `${st.nextIn.toFixed(1)} s` : '–'); return; }
-    from.set((st.rSent / 2).toFixed(3), ' rₛ', isFinite(st.nextIn) ? 'The horizon is at 1 rₛ. Each frame left from deeper than the one before.' : 'This is the last frame that will ever arrive. Everything Orpheus sent later is still climbing, and never gets out.');
+    from.set((st.rSent / 2).toFixed(3), ' rₛ', isFinite(st.nextIn) ? 'The horizon is at 1 rₛ. Each frame left from deeper than the one before.' : 'This is the last frame that will ever arrive. The next one was due from inside the horizon, and nothing sent from there gets out.');
     from.tone(isFinite(st.nextIn) ? (st.rSent < 2.4 ? 'warn' : '') : 'bad');
     count.set(String(st.frames));
     due.set(isFinite(st.nextIn) ? `in ${st.nextIn.toFixed(1)} s` : 'never');

@@ -2,6 +2,29 @@
 
 Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/playtests/<version>/`, and the release process is in [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+A polish pass across the whole game, ending with an AI playtest round. The headline fix: the ship no longer flashes out of sight.
+
+- **The ship stays on screen (#41).** The ship is drawn on a transparent canvas over the sky, and resizing a canvas clears it. The automatic resolution change ran after the ship was drawn, and window resizes redrew nothing, so for one frame only the black hole showed. Size changes now happen before the draw and every resize redraws at once. The resolution no longer swings back and forth, the ship redraws as soon as a lost GPU context returns, and `tools/ship-flash-check.cjs` counts any cleared frame that reaches the screen (0 now, 7 before).
+- **Feel aboard (#38).** Footsteps follow your stride and speed, with a gentle head bob (off with reduced motion, or in Settings). The room sound ducks under dialogue, the hull creaks deeper on the descent, the capsule bay has its own room tone, and doors and usable things answer with small sounds.
+- **Interior art (#40).** The sealed hatches read as closed doors from any angle, the quarters have a padded headboard and shelf, and the consoles, archive terminal, server rack, lab bench and cable trays are textured.
+- **Robustness (#39).** Short key taps register even at low frame rates. The ship's shaders warm up before the first frame instead of freezing the page. An error shows a small notice instead of stopping the game. Damaged or unknown saves and settings fall back safely, and every earlier save still loads.
+- **Touch and accessibility (#42).** Thumb-sized buttons on touch screens, landscape consoles as a full-height side panel, a resting joystick, hold-to-move buttons in photo mode, and better screen-reader labels.
+- **Flow (#43).** A failed rescue no longer leaves its console open, the spacetime map keeps finished falls in view, quieter stretches are filled, and the helm has one-press ×2 and ×4 buttons.
+- **Playtest fixes (round 7):**
+  - A story choice or the logbook can no longer end up under the pause menu. Esc during a choice no longer pauses the game, and the answer keys do nothing while paused.
+  - The Orpheus question and the Postscript prediction come up without stepping back from the console first.
+  - Objectives tick off when the thing happens: "Wait for Ines's reply" when her reply arrives, "Return to 10 rₛ" on arrival, and a failed rescue is marked "Too late" instead of done.
+  - The Orpheus objective comes up first, with the talk alongside it.
+  - The helm has a one-press 1.5 rₛ button for the Postscript.
+  - Labels on the spacetime map no longer print on top of each other, and chart captions sit on a dark plate above the bars.
+  - Brackets and labels vanish during fades to black. The waypoint marker hides once the use prompt is up.
+  - On waking there is one "click to look" prompt, not two.
+  - The probe and comms consoles answer from a step further out.
+  - The photo bar's "Saved" line no longer moves the buttons.
+  - The Orpheus feed now explains correctly why no more frames come: the next one was due from inside the horizon.
+
 ## 0.2.0 (2026-11-15)
 
 Voices, a new chapter, and a ship you can read at a glance. Playtest evidence: [docs/playtests/0.2.0](docs/playtests/0.2.0).

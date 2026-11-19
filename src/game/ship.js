@@ -617,6 +617,9 @@ export function buildShip() {
   makeConsole('helm', 0, -11.3, 0, 'HELM', { low: true });
   { const it = interactables.find((i) => i.id === 'helm'); it.radius = 2.8; /* usable from behind the chair */ it.focus = { pos: new THREE.Vector3(0, 1.75, -9.4), look: new THREE.Vector3(0, 1.45, -13) }; } // at the helm, watch the window
   makeConsole('comms', 1.95, -11.2, -0.3, 'COMMS');
+  // the side consoles sit angled past the helm chair: let them answer from a step further out, so walking
+  // up from the door reaches them without edging round the chair
+  for (const id of ['probe', 'comms']) interactables.find((i) => i.id === id).radius = 2.3;
   // chair
   // the pilot's seat: a pedestal, a cushion, a reclined back and armrests, all inside the same footprint as before
   box(0.5, 0.04, 0.5, M.trim, 0, 0.02, -9.3); box(0.12, 0.34, 0.12, M.rail, 0, 0.2, -9.3);

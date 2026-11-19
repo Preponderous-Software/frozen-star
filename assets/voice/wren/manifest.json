@@ -419,11 +419,11 @@
     "src/game/story.js"
    ]
   },
-  "35b40c1265a7": {
-   "text": "No more frames are coming. Everything Orpheus sent after that last one is still trying to climb out, and never will. Its marker in the window is fading the same way.",
+  "b2e5963cd2f2": {
+   "text": "No more frames are coming. The next one was due from inside the horizon, and nothing sent from there gets out. Its marker in the window is fading: its last light is still climbing, slower and redder.",
    "phase": "orpheus",
-   "dur": 10.906,
-   "sig": "8b911adad1",
+   "dur": 12.819,
+   "sig": "62d93683ca",
    "where": [
     "src/game/story.js"
    ]
