@@ -52,6 +52,15 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
     return { el: h('label.ph-range', h('span', label), input, out), input, out };
   }
 
+  // touch has no R and F keys: two hold-to-move buttons raise and lower the camera instead
+  function riseBtn(label, code, glyph) {
+    const b = h('button.ph-rise', { type: 'button', 'aria-label': `Camera ${label.toLowerCase()} (hold)` }, glyph);
+    const on = (e) => { e.preventDefault(); held.add(code); }, off = () => held.delete(code);
+    b.addEventListener('pointerdown', on); for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, off);
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+    return b;
+  }
+
   function buildBar() {
     const toggle = (label, key) => h('button.ph-toggle', { type: 'button', 'aria-pressed': 'false', onclick: () => { look[key] = !look[key]; applyLook(); } }, label);
     const fov = range('Field of view', FOV_MIN, FOV_MAX, 1, 'fov'), ev = range('Exposure', -EV, EV, 0.1, 'ev');
@@ -60,9 +69,10 @@ export function createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCan
     const b = h('div.ph-bar', { role: 'toolbar', 'aria-label': 'Photo mode' },
       h('div.ph-row', h('p.eyebrow', 'Photo mode'), h('span.ph-keys',
         h('span.hint-keys', `Drag or click to look · ${moveKeysText()} move · R F up and down · C save · H hide · P done`),
-        h('span.hint-pad', 'Sticks move and look · LB RB down and up · A save · X Y looks · B done'))),
+        h('span.hint-pad', 'Sticks move and look · LB RB down and up · A save · X Y looks · B done'),
+        h('span.hint-touch', 'Drag to look · left thumb to move'))),
       h('div.ph-row', fov.el, ev.el),
-      h('div.ph-row', toggles.noShip, toggles.vignette,
+      h('div.ph-row', toggles.noShip, toggles.vignette, riseBtn('Up', 'KeyR', '▲'), riseBtn('Down', 'KeyF', '▼'),
         h('button.ph-save', { type: 'button', onclick: () => capture() }, 'Save picture'),
         h('button.ph-done', { type: 'button', onclick: () => exit() }, 'Done')),
       // the last save stays named here, so the confirmation cannot be missed (the toast fades)
