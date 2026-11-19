@@ -230,6 +230,11 @@ canvas.fp-spark { width: 100%; height: 70px; display: block; border-radius: 6px;
 /* ---- touch: every target a thumb can hit is 44 px or more; nothing from the HUD shows through the pause menu ---- */
 .fp-paused .fp-objective, .fp-paused .fp-look, .fp-paused .fp-prompt, .fp-paused .fp-way, .fp-paused .fp-focus, .fp-paused .fp-track, .fp-paused .fp-touch .fp-use { visibility: hidden; }
 .fp-menu-btn { width: 44px; height: 44px; }
+/* on a phone the logbook fills the screen: while a discovery toast shows, it moves down rather than sit under the toast */
+@media (max-width: 760px) {
+  .fp-logbook { transition: top .3s ease, max-height .3s ease; }
+  .fp-root:has(.fp-toast.disc-toast:not(.out)) .fp-logbook { top: calc(50% + 74px); max-height: calc(100% - 188px); }
+}
 @media (pointer: coarse) {
   .fp-menu > button, .fp-menu .fp-settings button:not(.fp-switch), .fp-close, .fp-skip, .fp-choice-opts button, .fp-logbook-actions button, .fp-app button, .ph-bar button { min-height: 44px; }
   .fp-seg-b { min-height: 44px; }
