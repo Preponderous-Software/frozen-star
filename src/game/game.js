@@ -7,7 +7,7 @@ import { BlackHoleView, AdaptiveScale, hoverVelocity, LOW_GPU } from '../render/
 import { buildShip } from './ship.js';
 import { createControls } from './controls.js';
 import { createHud } from './hud.js';
-import { step, EYE } from './walk.js';
+import { step, EYE, stride, strideStart } from './walk.js';
 import { shipPosition, toHole, fromHole, SEC_PER_M, R_STATION, DISK_OUTER } from './world.js';
 import { hoverRate } from '../physics/body.js';
 import { runStory } from './story.js';
@@ -267,7 +267,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const skyScale = { win: new AdaptiveScale({ scale: skyStart }), full: new AdaptiveScale({ scale: skyStart }) };
   let skyMode = null;
   let stillFrames = 0;
-  let last = performance.now(), raf = 0, alive = true, screenTimer = 0, stepDist = 0, frameAvg = 16, dprTimer = 0;
+  let last = performance.now(), raf = 0, alive = true, screenTimer = 0, gait = strideStart(), lastFocusId = null, frameAvg = 16, dprTimer = 0;
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
   const way = h('div.fp-way', { hidden: true }, h('i'), h('span'));
@@ -333,7 +333,8 @@ export function mountGame(root, { checkpoint } = {}) {
       g.me.yaw -= inp.lookDX; g.me.pitch = Math.max(-1.45, Math.min(1.45, g.me.pitch - inp.lookDY * (settings.invertY ? -1 : 1)));
       const px = g.me.x, pz = g.me.z;
       g.me = step(g.me, inp, dt, ship.colliders);
-      stepDist += Math.hypot(g.me.x - px, g.me.z - pz);
+      const moved = Math.hypot(g.me.x - px, g.me.z - pz);
+      const sd = stride(gait, moved, g.me.speed, !!inp.run, dt); gait = sd.st;
       if (ctlHint && !ctlHint.fading) {
         ctlHint.moved += Math.hypot(g.me.x - px, g.me.z - pz); ctlHint.looked += Math.abs(inp.lookDX) + Math.abs(inp.lookDY);
         const hintEl = el.querySelector('.fp-hint');
@@ -343,9 +344,19 @@ export function mountGame(root, { checkpoint } = {}) {
           setTimeout(() => { if (hintEl.innerHTML === ctlHint?.html) hud.hint(null); hintEl.classList.remove('out'); ctlHint = null; }, 900);
         }
       }
-      if (stepDist > (inp.run ? 0.95 : 0.75)) { stepDist = 0; audio.step(inp.run ? 1.2 : 0.8); }
-      camera.position.set(g.me.x, g.eye, g.me.z); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
+      if (sd.step) audio.step(sd.step); else if (sd.settle) audio.settle();
+      // head bob: the eye rises mid-stride and dips as each foot lands, with a slight sway (off in Comfort settings)
+      const bob = settings.headBob ? sd : { x: 0, y: 0 };
+      camera.position.set(g.me.x + Math.cos(g.me.yaw) * bob.x, g.eye + bob.y, g.me.z - Math.sin(g.me.yaw) * bob.x); camera.rotation.set(g.me.pitch, g.me.yaw, 0);
       focusIt = findInteractable();
+      // something usable comes under your gaze: a faint tick and the prompt pops in
+      if ((focusIt?.id ?? null) !== lastFocusId) {
+        lastFocusId = focusIt?.id ?? null;
+        if (focusIt) {
+          audio.focus();
+          for (const pe of [el.querySelector('.fp-prompt'), focusBox]) if (pe) { pe.classList.remove('fp-pop'); void pe.offsetWidth; pe.classList.add('fp-pop'); }
+        }
+      }
       const label = focusIt?.label;
       if (focusIt) {
         camera.updateMatrixWorld(); // the matrices may still hold last frame's pose (e.g. the console view)
@@ -371,7 +382,12 @@ export function mountGame(root, { checkpoint } = {}) {
     for (const d of ship.doors) {
       const near = Math.hypot(g.me.x - d.center[0], g.me.z - d.center[1]) < 1.8 && !d.locked && g.mode !== 'cutscene';
       if (near && !d.wasNear) audio.door();
+      else if (!near && d.wasNear && d.open > 0.3) audio.doorClose();
       d.wasNear = near;
+      // a locked door answers once as you walk up to it
+      const atLocked = d.locked && g.mode === 'walk' && Math.hypot(g.me.x - d.center[0], g.me.z - d.center[1]) < 1.25;
+      if (atLocked && !d.wasAtLocked) audio.denied();
+      d.wasAtLocked = atLocked;
       d.open += ((near ? 1 : 0) - d.open) * Math.min(1, dt * 6);
       const off = d.open * (d.width - 0.05);
       if (d.axis === 'x') d.panel.position.x = d.closed + off; else d.panel.position.z = d.closed + off;
