@@ -162,6 +162,7 @@ const h3 = (t) => Object.assign(document.createElement('h3'), { textContent: t }
 const p = (t) => Object.assign(document.createElement('p'), { textContent: t });
 
 function setWalk(g, x, z, yaw, pitch = 0) {
+  g.dropApp?.(); // never leave a console panel up behind a cut
   g.me = { x, z, yaw, pitch, vx: 0, vz: 0 };
   g.mode = 'walk'; g.controls.setEnabled(true); g.hud.crosshair(true);
 }
@@ -403,7 +404,7 @@ async function rescueAttempt(g) {
   // her messages, delivered when their light arrives
   const queue = INES_LINES.map(([tau, text]) => ({ tau, text, at: f.messageArrival(tau), done: false }));
   for (const q of queue) run.signals.push({ tau: q.tau });
-  let result = null;
+  let result = null, lastLine = 0;
   g.fireRecall = () => {
     if (run.fired != null) return;
     run.fired = run.S(); g.audio.click(); g.waypoint = null;
@@ -417,7 +418,7 @@ async function rescueAttempt(g) {
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
       const style = inesStyle(f, q.tau), z = f.onePlusZ(f.rOfTau(q.tau));
       const tag = z >= 1.1 ? `stretched ×${z < 10 ? z.toFixed(1) : Math.round(z)}` : null;
-      run.log.push({ text: q.text, style, tag }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag });
+      lastLine = S; run.log.push({ text: q.text, style, tag }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);
@@ -428,7 +429,9 @@ async function rescueAttempt(g) {
   g.ticks.add(tick);
   g.say('WREN', 'The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago.')
     .then(() => run.fired == null && g.say('WREN', `I can compute the deadline: the beam must leave within ${Math.round(secs(D))} seconds of her mayday. The clock is on the comms console. Her picture will not tell you.`)).catch(() => {});
-  await g.until(() => result || run.S() > 175);
+  // past the deadline with no beam fired, once her last message has arrived, there is nothing more to wait for
+  const allIn = () => queue.every((q) => q.done || !isFinite(q.at));
+  await g.until(() => result || run.S() > 175 || (run.fired == null && run.S() > D && allIn() && run.S() - lastLine > 8));
   let saved = !!result?.saved;
   if (saved) {
     run.hidden = true; removeMarker();

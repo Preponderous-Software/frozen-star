@@ -154,6 +154,12 @@ export function mountGame(root, { checkpoint } = {}) {
     appResolve?.(); appResolve = null;
   }
   g.openApp = openApp; g.closeApp = closeApp;
+  // a cut (the rescue retry, a teleport) while a console is open: drop the panel at once, no step back
+  g.dropApp = () => {
+    if (g.mode !== 'console') return;
+    appDispose?.(); appDispose = null; panel.hidden = true; panel.replaceChildren(); audio.close();
+    appResolve?.(); appResolve = null;
+  };
   const unwrap = (a, ref) => { while (a - ref > Math.PI) a -= 2 * Math.PI; while (a - ref < -Math.PI) a += 2 * Math.PI; return a; };
 
   // ---- interaction ----
@@ -191,7 +197,7 @@ export function mountGame(root, { checkpoint } = {}) {
       const hd = Math.hypot(to.x, to.z), hl = Math.hypot(dir.x, dir.z) || 1;
       if (hd > 0.05 && (to.x * dir.x + to.z * dir.z) / (hd * hl) < Math.cos(Math.min(0.6, 0.14 + Math.atan(0.45 / Math.max(0.3, d))))) continue;
       const cos = to.normalize().dot(dir);
-      if (cos < 0.75) continue; // and the look must be roughly on it up and down too
+      if (cos < (hd < 1.2 ? 0.6 : 0.75)) continue; // and the look must be roughly on it up and down too (more lenient up close: a low desk sits well below eye level)
       const score = cos + 0.06 * (1 - d / it.radius);
       if (score > bestScore) { bestScore = score; best = it; }
     }
