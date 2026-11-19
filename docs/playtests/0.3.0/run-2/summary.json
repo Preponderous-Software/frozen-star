@@ -1,0 +1,662 @@
+{
+  "runDir": "/tmp/playtest-frozen-star/20261119-0800",
+  "generated": "2026-11-19 08:15",
+  "sessions": [
+    {
+      "session": "s01",
+      "profile": "frozen-star",
+      "goal": "Drop the beacon probe K-1 at the probe console, step back with Esc (does the game keep running?), then answer Ines and do the rescue with the recall beam. Check objectives tick off the moment things happen, that the probe console is easy to reach past the helm chair, and watch for the ship interior flashing out of sight. Note anything confusing.",
+      "outcome": "achieved",
+      "fun": 4,
+      "durationSec": 1100,
+      "seed": null,
+      "build": {
+        "version": "0.2.0",
+        "commit": "1e8cfe9"
+      },
+      "verdict": "The beacon-and-rescue arc works and lands: objectives ticked at the same tick as the event (probe launch, capsule away, Ines's 'Engine's lit'), Esc from a console keeps time running (K-1's clock went 1.6 -> 5.2 M while I stood back), the probe console was easy to reach both from the start position and from the helm side, and across about 60 screenshots, red-alert lighting included, the ship interior never flashed out. The deadline countdown and WREN's 'your screen showed her 6.8 rs out, looking almost normal' make the old-light lesson hit hard. The rough edges are all in the overlays: a fire button that moves under the cursor, toasts and hints that overlap console panels, and dialogue threads that interleave.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 5,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Drop the beacon probe (probe console, left)": 14.5,
+          "Watch the probe fall": 119.4,
+          "Watch Ines launch: the port side of the bridge window": 151.8,
+          "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 211.2,
+          "Wait for Ines's reply: its light is still on the way (comms console)": 223.8
+        },
+        "beamFiredSecondsAfterMayday": 44,
+        "beamMarginSeconds": 5,
+        "fps": 10,
+        "approxTicksPerSecond": 10,
+        "interiorFlashesSeen": 0,
+        "screenshotsChecked": 60
+      },
+      "derived": {
+        "objectivesCompleted": 5,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Drop the beacon probe (probe console, left)",
+            "seconds": 14.5,
+            "wallSeconds": 50.3,
+            "tick": 868
+          },
+          {
+            "number": 2,
+            "title": "Watch the probe fall",
+            "seconds": 119.4,
+            "wallSeconds": 530.0,
+            "tick": 7164
+          },
+          {
+            "number": 3,
+            "title": "Watch Ines launch: the port side of the bridge window",
+            "seconds": 151.8,
+            "wallSeconds": 680.0,
+            "tick": 9108
+          },
+          {
+            "number": 4,
+            "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+            "seconds": 211.2,
+            "wallSeconds": 962.0,
+            "tick": 12671
+          },
+          {
+            "number": 5,
+            "title": "Wait for Ines's reply: its light is still on the way (comms console)",
+            "seconds": 223.8,
+            "wallSeconds": 1029.5,
+            "tick": 13427
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "objective_started": 6,
+          "screen": 17,
+          "dialogue": 34,
+          "objective_completed": 5,
+          "checkpoint": 2,
+          "card": 3
+        },
+        "lastTick": 14607
+      },
+      "ticksPerSecond": 60,
+      "notes": 4,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That what you see of something falling into a black hole is old, stretched light, not what is happening to it now. K-1's own clock ticks steadily and it crosses the horizon in under a minute of its own time, but from the ship its pings arrive further and further apart, redder and dimmer, and its picture freezes and fades at the edge. In the rescue, you can't judge the deadline from Ines's picture, because she looked almost normal at 6.8 rs when the beam was only 5 s from too late. You have to trust the computed clock and remember that a light-speed beam takes time to reach her."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "The rescue at the comms console. The brief told me to 'answer Ines', but I found no reply control, only the fire button, so I scrolled the panel looking for one. That scroll then moved the sticky fire button just as I clicked, with about 7 s left, and my first click missed. After the beam fired, the objective stayed open for about 6 more game seconds until 'Beam delivered', which makes sense physically but felt at first as if the click hadn't registered. A smaller confusion: right after the horizon crossing, Ines's question and WREN's answer were split by an unrelated helm exchange."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "No rendering glitches: there was no interior flashing, no holes and no black sky. The black hole was blurry, as expected. The UI overlap problems: (1) At the helm console, on the bridge's starboard-forward side facing the helm, two Discovery toasts covered the helm panel's text. (2) At the spacetime map on the port wall, facing the map, the centred hint 'Optional: the spacetime map is on th...' was clipped under the right-hand panel. (3) At the comms console, facing it, the sticky fire-beam block jumped about 40 px up after the panel scrolled. (4) Looking aft from the probe console toward the corridor door, the 'DECK 1 · BRIDGE' floor lettering reads mirrored. Also, between the probe console and the helm, facing the comms monitor, the prompt said 'Use the helm console'."
+        }
+      ]
+    },
+    {
+      "session": "s02",
+      "profile": "frozen-star",
+      "goal": "Finish the story: the Orpheus feed, Ines's question (does it come up without pressing Esc? try pressing Esc during the choice: the game must NOT pause), the epilogue logbook (it must not appear over the pause menu), then start the Postscript and use the helm's 1.5 rs button. Check the feed's final explanation reads correctly. Watch for the ship flashing out of sight.",
+      "outcome": "achieved",
+      "fun": 4,
+      "durationSec": 1060,
+      "seed": null,
+      "build": {
+        "version": "0.2.0",
+        "commit": "1e8cfe9"
+      },
+      "verdict": "All the checked fixes hold: Ines's question pops up by itself, Esc during the choice does not pause, the pause menu freezes time so the logbook never appeared over it, and the Postscript's 1.5 rs descent and laser test run cleanly with no ship flashing out of sight in ~80 captured frames of the descent and pulse. The Orpheus feed is the strongest moment (frames spreading out, static, then 'never'), and the final explanation reads correctly. The main thing to fix is that the hull camera prints the 11.1 s answer before the player is asked to predict it.",
+      "reportValid": true,
+      "reported": {
+        "objectivesCompleted": 7,
+        "deaths": 0,
+        "secondsToObjective": {
+          "Launch Orpheus (probe console), then watch its feed (starboard screen)": 17.9,
+          "Watch the Orpheus feed (starboard screen)": 113.4,
+          "Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)": 175.7,
+          "Photon sphere reached. Listen to WREN's briefing": 199.9,
+          "Log a prediction (the answer box)": 213.5,
+          "Fire the ranging laser along the hull (helm)": 217.4,
+          "Watch the pulse go round Erebus (helm panel)": 228.5
+        },
+        "orpheusFramesReceived": 65,
+        "orpheusLastFrameRs": 1.211,
+        "choiceAppearedWithoutKeyTick": 7125,
+        "escDuringChoicePaused": 0,
+        "logbookShownOverPause": 0,
+        "pulseRoundTripShipSeconds": 11.1,
+        "shipFlashOutOfSightSeen": 0
+      },
+      "derived": {
+        "objectivesCompleted": 7,
+        "objectives": [
+          {
+            "number": 1,
+            "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)",
+            "seconds": 17.9,
+            "wallSeconds": 78.9,
+            "tick": 1072
+          },
+          {
+            "number": 2,
+            "title": "Watch the Orpheus feed (starboard screen)",
+            "seconds": 113.3,
+            "wallSeconds": 460.1,
+            "tick": 6801
+          },
+          {
+            "number": 3,
+            "title": "Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)",
+            "seconds": 175.7,
+            "wallSeconds": 786.4,
+            "tick": 10544
+          },
+          {
+            "number": 4,
+            "title": "Photon sphere reached. Listen to WREN's briefing",
+            "seconds": 199.9,
+            "wallSeconds": 875.1,
+            "tick": 11996
+          },
+          {
+            "number": 5,
+            "title": "Log a prediction (the answer box)",
+            "seconds": 213.5,
+            "wallSeconds": 923.4,
+            "tick": 12812
+          },
+          {
+            "number": 6,
+            "title": "Fire the ranging laser along the hull (helm)",
+            "seconds": 217.4,
+            "wallSeconds": 939.4,
+            "tick": 13046
+          },
+          {
+            "number": 7,
+            "title": "Watch the pulse go round Erebus (helm panel)",
+            "seconds": 228.5,
+            "wallSeconds": 984.5,
+            "tick": 13712
+          }
+        ],
+        "progressReached": null,
+        "deaths": 0,
+        "saves": 0,
+        "loads": 0,
+        "eventCounts": {
+          "world": 1,
+          "screen": 21,
+          "objective_started": 7,
+          "dialogue": 22,
+          "objective_completed": 7,
+          "checkpoint": 3,
+          "card": 2
+        },
+        "lastTick": 14792
+      },
+      "ticksPerSecond": 60,
+      "notes": 4,
+      "crash": null,
+      "questions": [
+        "In your own words, what was the game teaching?",
+        "Which moment was the most confusing, and why?",
+        "Did anything look broken on screen? Describe each problem, where you were and which way you were facing."
+      ],
+      "answers": [
+        {
+          "question": "In your own words, what was the game teaching?",
+          "answer": "That what you see of something falling into a black hole is not what happens to it. Orpheus's frames are sent evenly by its own clock but arrive further and further apart and fainter, and the last one comes from just outside the horizon; it really did cross in under a minute of its own time, but from far away it is never seen to fall in ('a fact about light, not about the things that fall'). The Postscript adds that at 1.5 rs light can orbit the hole: a pulse fired along the hull comes back round in circumference/c, 11.1 s, and hovering low makes your clock run slow against the far-away relay."
+        },
+        {
+          "question": "Which moment was the most confusing, and why?",
+          "answer": "After the laser test finished, the objective box disappeared and the helm card went back to 'The laser arms in a moment: listen to WREN first' with a greyed button, so I could not tell if the Postscript was over or if something else was coming. Also the prediction question felt odd because the answer (11.1 s) was already printed on the hull camera next to it. Before that, the long silent stretch of the Orpheus fall (minutes at this frame rate) left me unsure whether to keep watching the panel or step back."
+        },
+        {
+          "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+          "answer": "Nothing seriously broken. At the starboard feed console (facing the feed screen) the 'sent every 0.9 s' chart label was overlapped by the bars. Facing the feed screen when Ines's question and later the logbook opened, a faint 'Watch the probe camera' prompt showed through the dialog panels. At the helm (facing forward) the panel first opened scrolled halfway down. During the descent to 1.5 rs the forward windows went fully black from about 5 rs, which fits WREN's explanation of the shadow growing; I did not see the ship or the Tern marker flash out of sight in the 3D view, the hull camera, or the top-down diagram."
+        }
+      ]
+    }
+  ],
+  "severityCounts": {
+    "blocker": 0,
+    "major": 0,
+    "minor": 8,
+    "polish": 6
+  },
+  "findingReports": 14,
+  "findings": [
+    {
+      "title": "'E Use the helm console' prompt shows while the crosshair is on the comms monitor",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Standing between the probe console and the helm chair, facing the comms side (helm 1.0 m at -4 deg, comms 3.0 m at +10 deg), the crosshair sits on the COMMS monitor's screen but the prompt says 'Use the helm console'. The low helm desk is the target, but the bright screen the player is looking at belongs to comms, so E opens something different from what the player expects.",
+      "repro": "pt start --checkpoint bridge; stand at about x=-0.94 z=-10.87 facing the comms monitor; read the prompt",
+      "screenshots": [
+        "s01/shots/after_choice.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Comms console: the 'Fire recall beam' button jumps when the panel scrolls, so a click under the deadline lands on the progress bar",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "With the comms panel open during the rescue I scrolled once to look for a way to answer Ines. Shortly after, the panel scrolled and the sticky fire block moved up from y~198 to y~157. My click at the button's old position (992,198) hit the mayday/deadline bar and did nothing, with about 7 s left. The second click at y~157 did fire ('Beam fired 44 s after her mayday, 5 s before the deadline'), but the button kept reading 'Fire recall beam' for about a game second, so I clicked and held it again before the label changed. On a timed, high-stakes button, the layout should not move, and the label should change the instant you press it.",
+      "repro": "pt start --checkpoint bridge; launch K-1; wait for the capsule mayday; pt walkto console (comms) + e; pt move 990 500; pt scroll 5; pt shot; pt click 992 198 (old button y)",
+      "screenshots": [
+        "s01/shots/fired.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Discovery toasts cover the Helm panel's description text",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "I opened the helm console just as the probe-fall discoveries fired. The two toasts 'Discovery · Metronome' and 'Discovery · Called it' sit on top of the Helm panel's body text ('Holding station at 10 rs. Descent ... the survey you will take the ship down toward the horizon from here'), and the overlapping text cannot be read in either one. Toasts should sit outside the console panel, or stack below its text.",
+      "repro": "pt start --checkpoint bridge; launch K-1; answer the ping-9 prediction; open the helm console around tick 4800",
+      "screenshots": [
+        "s01/shots/toast_overlap.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Game ran at roughly 9-15 ticks a second (load average ~30), making walking and waiting very slow",
+      "severity": "minor",
+      "categories": [
+        "perf"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Machine was shared with other sessions. Walking a few metres took 8+ real seconds and a single E press at the probe console was missed once. Logged for context; the Orpheus fall took ~6 real minutes.",
+      "repro": "pt status / uptime during the session",
+      "screenshots": [
+        "s02/shots/probe2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Helm laser card reverts to stale 'The laser arms in a moment: listen to WREN first' after the test is finished",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "After the pulse is caught at the stern and the last Postscript objective completes, the ranging-laser card shows the greyed Fire button again with the pre-briefing line 'The laser arms in a moment: listen to WREN first.' It reads as if the test is still pending. Expected: a 'test complete: 11.1 s, 3.34 million km' style line.",
+      "repro": "same as above; fire the laser, wait until WREN says 'Caught at the stern...', look at the top of the helm panel",
+      "screenshots": [
+        "s02/shots/helm-stale-text.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Photon-sphere prediction is spoiled: hull camera caption already shows '11.1 s' beside the question",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The prediction box asks when the pulse will come back round by the ship's clock (11 s / 19 s / never). The helm panel's hull camera, visible right next to it, already reads 'Dead ahead: our own light, 11.1 s old' (it shows that from the moment the ship reaches 1.5 rs). A player can read the answer off the screen before predicting. Expected: hide or blur that caption until after the prediction is logged.",
+      "repro": "pt start --checkpoint helm-done; launch Orpheus, watch feed to the end, answer Ines, Postscript from the logbook, helm -> '1.5 rs . photon sphere'; wait for the CHOICE; look at the hull camera card",
+      "screenshots": [
+        "s02/shots/spoiler-hullcam.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Spacetime map: centred 'Optional: the spacetime map is on th...' hint is clipped under the console panel",
+      "severity": "minor",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "At the spacetime map console, the screen-centre hint 'Optional: the spacetime map is on the port wall.' is cut off by the right-hand panel. The hint is also redundant by then, because the player is already using the map. It should hide while a console is open, or at least once the map has been opened.",
+      "repro": "pt start --checkpoint bridge; after WREN says the fall is drawn on the spacetime map, walk to the map (port wall) and press e",
+      "screenshots": [
+        "s01/shots/map_hint_cut.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Two dialogue threads interleave after opening the helm during the probe fall, so the replies come out of order",
+      "severity": "minor",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "After the horizon-crossing line I opened the helm. The subtitles then ran: WREN 'Descent is locked until the survey plan calls for it' -> INES 'Then what am I looking at? It's still there on the screen' -> INES 'And not while I'm prepping the capsule, please' -> WREN 'Old light...'. Ines's question and WREN's answer have the helm exchange spliced between them, and two Ines lines from different topics stack up at once. A helm aside should either wait for the current exchange to end or be queued as a whole.",
+      "repro": "pt start --checkpoint bridge; launch K-1; right after 'K-1 crossed the horizon 58 seconds after release', open the helm console (E or Return)",
+      "screenshots": [
+        "s01/shots/w4_2.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Feed panel says frames are sent 'every few seconds' but also 'all 0.9 s apart'; chart label overlapped by bars",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "Under FRAMES RECEIVED the caption reads 'one sent every few seconds of its time', while the line below says 'On Orpheus's own clock they are all 0.9 s apart' (and the probe console said 'every few seconds' too). In the frame-gap chart the 'sent every 0.9 s' label sits on the dashed line and the bars are drawn across it, so it is partly hidden. The final explanation itself ('This is the last frame that will ever arrive. The next one was due from inside the horizon, and nothing sent from there gets out.' plus 'Last gap: 4.7 s') reads correctly and matches WREN's line and the logbook.",
+      "repro": "pt start --checkpoint helm-done; launch Orpheus; use the feed console; wait until NEXT FRAME DUE reads 'never'; scroll the panel down",
+      "screenshots": [
+        "s02/shots/feed-chart-label.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Floor lettering 'DECK 1 · BRIDGE' reads mirrored from inside the bridge",
+      "severity": "polish",
+      "categories": [
+        "text"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Looking back from the probe console toward the corridor door, the floor text near the door is mirrored (it reads correctly only from the door side). Cosmetic.",
+      "repro": "pt start --checkpoint bridge; walk to the probe console; pt face 150",
+      "screenshots": [
+        "s01/shots/look_back.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Helm panel opens scrolled part-way down, hiding its header and Fire button",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "The first time I opened the helm in the Postscript, the panel was already scrolled so it started at 'Altitude 10.000 rs...'; the HELM header and the ranging-laser card were above the fold. I had scrolled the feed panel earlier, so the scroll position may be carried over between consoles. Expected: each console opens at the top.",
+      "repro": "scroll down in the feed console panel; Esc; walk to helm; press E",
+      "screenshots": [
+        "s02/shots/helm1.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Objective box goes blank in the gaps between story beats",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "Between 'Watch the probe fall' completing (tick 7164) and 'Watch Ines launch' starting (8148), and again between 'Wait for Ines's reply' (13427) and the descent objective (14417), the HUD shows no objective at all. That is about 16 game seconds each time, and on a slow machine it felt longer. A 'Wait / listen to Ines' line would tell the player that nothing is expected of them yet.",
+      "repro": "pt start --checkpoint bridge; play through the probe fall; watch the top-left after the objective ticks",
+      "screenshots": [
+        "s01/shots/after_map.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "Return in walk mode opens the console under the crosshair (undocumented, easy to hit by accident)",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s01"
+      ],
+      "reports": 1,
+      "detail": "I pressed Return by accident after a choice, and it opened the helm console, as E would. That is harmless, but the controls don't mention it, and it is the same key that starts the game from the title screen and might be used to confirm choices.",
+      "repro": "pt start --checkpoint bridge; stand within reach of a console; pt key Return",
+      "screenshots": [
+        "s01/shots/toast_overlap.png"
+      ],
+      "alsoTitled": []
+    },
+    {
+      "title": "World-space use prompt ('Watch the probe camera') bleeds through behind the choice box and logbook",
+      "severity": "polish",
+      "categories": [
+        "ux"
+      ],
+      "sessions": [
+        "s02"
+      ],
+      "reports": 1,
+      "detail": "While Ines's question is open, and later in the logbook, a faint 'Watch the probe camera' prompt is visible through the dialog panels (e.g. under the second answer, and in the logbook's Ines entry). Expected: hide the use prompt while a modal is open.",
+      "repro": "stand at the feed console when the Orpheus feed ends; wait for the CHOICE; look under answer 2",
+      "screenshots": [
+        "s02/shots/choice-esc-ok.png"
+      ],
+      "alsoTitled": []
+    }
+  ],
+  "objectiveTimings": [
+    {
+      "number": 1,
+      "title": "Drop the beacon probe (probe console, left)",
+      "seconds": {
+        "s01": 14.5
+      },
+      "sessions": 1,
+      "min": 14.5,
+      "median": 14.5,
+      "max": 14.5
+    },
+    {
+      "number": 1,
+      "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)",
+      "seconds": {
+        "s02": 17.9
+      },
+      "sessions": 1,
+      "min": 17.9,
+      "median": 17.9,
+      "max": 17.9
+    },
+    {
+      "number": 2,
+      "title": "Watch the Orpheus feed (starboard screen)",
+      "seconds": {
+        "s02": 113.3
+      },
+      "sessions": 1,
+      "min": 113.3,
+      "median": 113.3,
+      "max": 113.3
+    },
+    {
+      "number": 2,
+      "title": "Watch the probe fall",
+      "seconds": {
+        "s01": 119.4
+      },
+      "sessions": 1,
+      "min": 119.4,
+      "median": 119.4,
+      "max": 119.4
+    },
+    {
+      "number": 3,
+      "title": "Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)",
+      "seconds": {
+        "s02": 175.7
+      },
+      "sessions": 1,
+      "min": 175.7,
+      "median": 175.7,
+      "max": 175.7
+    },
+    {
+      "number": 3,
+      "title": "Watch Ines launch: the port side of the bridge window",
+      "seconds": {
+        "s01": 151.8
+      },
+      "sessions": 1,
+      "min": 151.8,
+      "median": 151.8,
+      "max": 151.8
+    },
+    {
+      "number": 4,
+      "title": "Photon sphere reached. Listen to WREN's briefing",
+      "seconds": {
+        "s02": 199.9
+      },
+      "sessions": 1,
+      "min": 199.9,
+      "median": 199.9,
+      "max": 199.9
+    },
+    {
+      "number": 4,
+      "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.",
+      "seconds": {
+        "s01": 211.2
+      },
+      "sessions": 1,
+      "min": 211.2,
+      "median": 211.2,
+      "max": 211.2
+    },
+    {
+      "number": 5,
+      "title": "Log a prediction (the answer box)",
+      "seconds": {
+        "s02": 213.5
+      },
+      "sessions": 1,
+      "min": 213.5,
+      "median": 213.5,
+      "max": 213.5
+    },
+    {
+      "number": 5,
+      "title": "Wait for Ines's reply: its light is still on the way (comms console)",
+      "seconds": {
+        "s01": 223.8
+      },
+      "sessions": 1,
+      "min": 223.8,
+      "median": 223.8,
+      "max": 223.8
+    },
+    {
+      "number": 6,
+      "title": "Fire the ranging laser along the hull (helm)",
+      "seconds": {
+        "s02": 217.4
+      },
+      "sessions": 1,
+      "min": 217.4,
+      "median": 217.4,
+      "max": 217.4
+    },
+    {
+      "number": 7,
+      "title": "Watch the pulse go round Erebus (helm panel)",
+      "seconds": {
+        "s02": 228.5
+      },
+      "sessions": 1,
+      "min": 228.5,
+      "median": 228.5,
+      "max": 228.5
+    }
+  ],
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "That what you see of something falling into a black hole is old, stretched light, not what is happening to it now. K-1's own clock ticks steadily and it crosses the horizon in under a minute of its own time, but from the ship its pings arrive further and further apart, redder and dimmer, and its picture freezes and fades at the edge. In the rescue, you can't judge the deadline from Ines's picture, because she looked almost normal at 6.8 rs when the beam was only 5 s from too late. You have to trust the computed clock and remember that a light-speed beam takes time to reach her."
+        },
+        {
+          "session": "s02",
+          "answer": "That what you see of something falling into a black hole is not what happens to it. Orpheus's frames are sent evenly by its own clock but arrive further and further apart and fainter, and the last one comes from just outside the horizon; it really did cross in under a minute of its own time, but from far away it is never seen to fall in ('a fact about light, not about the things that fall'). The Postscript adds that at 1.5 rs light can orbit the hole: a pulse fired along the hull comes back round in circumference/c, 11.1 s, and hovering low makes your clock run slow against the far-away relay."
+        }
+      ]
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "The rescue at the comms console. The brief told me to 'answer Ines', but I found no reply control, only the fire button, so I scrolled the panel looking for one. That scroll then moved the sticky fire button just as I clicked, with about 7 s left, and my first click missed. After the beam fired, the objective stayed open for about 6 more game seconds until 'Beam delivered', which makes sense physically but felt at first as if the click hadn't registered. A smaller confusion: right after the horizon crossing, Ines's question and WREN's answer were split by an unrelated helm exchange."
+        },
+        {
+          "session": "s02",
+          "answer": "After the laser test finished, the objective box disappeared and the helm card went back to 'The laser arms in a moment: listen to WREN first' with a greyed button, so I could not tell if the Postscript was over or if something else was coming. Also the prediction question felt odd because the answer (11.1 s) was already printed on the hull camera next to it. Before that, the long silent stretch of the Orpheus fall (minutes at this frame rate) left me unsure whether to keep watching the panel or step back."
+        }
+      ]
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answers": [
+        {
+          "session": "s01",
+          "answer": "No rendering glitches: there was no interior flashing, no holes and no black sky. The black hole was blurry, as expected. The UI overlap problems: (1) At the helm console, on the bridge's starboard-forward side facing the helm, two Discovery toasts covered the helm panel's text. (2) At the spacetime map on the port wall, facing the map, the centred hint 'Optional: the spacetime map is on th...' was clipped under the right-hand panel. (3) At the comms console, facing it, the sticky fire-beam block jumped about 40 px up after the panel scrolled. (4) Looking aft from the probe console toward the corridor door, the 'DECK 1 · BRIDGE' floor lettering reads mirrored. Also, between the probe console and the helm, facing the comms monitor, the prompt said 'Use the helm console'."
+        },
+        {
+          "session": "s02",
+          "answer": "Nothing seriously broken. At the starboard feed console (facing the feed screen) the 'sent every 0.9 s' chart label was overlapped by the bars. Facing the feed screen when Ines's question and later the logbook opened, a faint 'Watch the probe camera' prompt showed through the dialog panels. At the helm (facing forward) the panel first opened scrolled halfway down. During the descent to 1.5 rs the forward windows went fully black from about 5 rs, which fits WREN's explanation of the shadow growing; I did not see the ship or the Tern marker flash out of sight in the 3D view, the hull camera, or the top-down diagram."
+        }
+      ]
+    }
+  ],
+  "problems": []
+}

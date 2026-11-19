@@ -24,6 +24,7 @@ A polish pass across the whole game, ending with two AI playtest rounds. The hea
   - The probe and comms consoles answer from a step further out.
   - The photo bar's "Saved" line no longer moves the buttons.
   - The Orpheus feed now explains correctly why no more frames come: the next one was due from inside the horizon.
+  - In the Postscript, the hull camera no longer gives away the prediction's answer, and the helm says when the laser test is complete (#45).
 
 ## 0.2.0 (2026-11-15)
 
