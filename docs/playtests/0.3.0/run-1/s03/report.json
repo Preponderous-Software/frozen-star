@@ -1,0 +1,119 @@
+{
+  "session": "s03",
+  "goal": "Finish the story (Orpheus feed, the choice, the epilogue logbook: does it open cleanly, not on top of a console?), then the optional Postscript (photon sphere). Then photo mode: save a picture and exit photo mode; does the ship come back immediately and stay visible? Open and close the pause menu, Settings and Discoveries several times and watch for the ship flashing out. Note anything confusing.",
+  "build": {
+    "version": "0.2.0",
+    "commit": "cca83e6"
+  },
+  "seed": null,
+  "durationSec": 1450,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "major",
+      "category": "bug",
+      "title": "Epilogue logbook opens on top of the pause menu (both panels drawn, overlapping)",
+      "detail": "After the Orpheus choice and the closing lines, the 'Expedition log: What you saw, and what happened' logbook appeared, but the game also switched to PAUSE on its own (event WORLD->PAUSE at tick 7988, no key pressed since ~7016). The pause menu's title and buttons stick out from behind the logbook on the right. The background is the feed console's static, seen close up, because the camera was still parked at the feed screen. After choosing 'Postscript' in the logbook the game was still paused and I had to click Resume. Expected: the logbook alone, centred, with the game not paused underneath. It did not open on top of a console panel, but it did open on top of the pause menu.",
+      "repro": "pt start --checkpoint helm-done; launch Orpheus at the probe console; watch the feed at the starboard screen to the end; Esc; pick answer 1; wait ~10 s without input",
+      "screenshot": "shots/logbook-over-pause.png",
+      "tick": 7988
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Game auto-pauses during the 'What do you tell Ines?' choice; number keys still answer while paused",
+      "detail": "The choice appeared at tick 6984; at 7002 the game went to PAUSE by itself (I had pressed nothing). With the pause menu open, pressing 1 still picked the answer (Ines's reply subtitle appeared) while the game stayed paused. Looks like the same auto-pause that fires when the logbook opens (probably on losing mouse capture). Expected: no auto-pause when a choice or logbook takes the mouse, and answer keys ignored while paused.",
+      "repro": "As above; at the feed console press Esc after the objective completes; wait ~10 s; observe PAUSE; press 1",
+      "screenshot": "shots/paused-during-choice.png",
+      "tick": 7002
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Story choices only appear after you leave the console, with nothing telling you to",
+      "detail": "Orpheus: the feed objective completed at tick 6618 and Ines asks 'Did it fall in, or is it stuck there?', but the answer box only appeared after I pressed Esc (tick ~6990); for ~370 ticks I sat at the feed with no objective and no hint. Postscript: the objective 'Listen to WREN, then log a prediction' started at 9534, but the prediction box (timed) only appeared after I pressed Esc at the helm at 10826, ~1300 ticks later. A player waiting at the console for the question will wait forever. Expected: the choice appears over the console, or the objective says 'step back from the console'.",
+      "repro": "pt start --checkpoint helm-done; play to the end of the Orpheus feed and stay at the feed console; later stay at the helm after the field locks at 1.5 rs",
+      "screenshot": "shots/prediction-after-esc.png",
+      "tick": 10826
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Feed says nothing sent after 1.21 rs will ever get out, though it was still outside the horizon",
+      "detail": "On the last frame (sent from 1.211 rs) the panel says 'This is the last frame that will ever arrive. Everything Orpheus sent later is still climbing, and never gets out.' Frames sent between 1.21 rs and the horizon at 1 rs are outside the horizon, so they should get out eventually, just very late and very red. The wording suggests light from outside the horizon is trapped. Something like 'the rest would take longer than you will wait, and anything sent from inside never gets out' would be accurate.",
+      "repro": "Watch the Orpheus feed to the end",
+      "screenshot": "shots/last-frame-claim.png",
+      "tick": 6276
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Photo mode: 'Saved' message pushes the panel up, so the first click on Done misses",
+      "detail": "After Save picture, 'Saved frozen-star-...png to your Downloads folder.' shows up a second or two later and moves the photo-mode panel up about 23 px. My click on Done, aimed where it had just been, missed and photo mode stayed open. The second click on Done exited, and the ship came back immediately and stayed visible. The file was saved (frozen-star-2026-11-19-00-35-21.png). Expected: buttons stay put, with the message shown somewhere that doesn't move the layout.",
+      "repro": "After the epilogue: Esc, Photo mode, Save picture, then click Done at once",
+      "screenshot": "shots/photo-done-shift.png",
+      "tick": 12341
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Helm has no 1.5 rs preset; reaching the photon sphere needs fiddly slider work",
+      "detail": "The objective asks for 1.5 rs, but the presets are only 'Return to 10 rs', '×2 · 1.33 rs' and '×4 · 1.07 rs'. The slider is non-linear (a click jumped to 1.164 or 1.551), so I needed about 20 Left-arrow nudges to get near 1.50. The field then snapped and locked at 1.500, which is nice, but a 'photon sphere 1.5 rs' preset or snap marker would help.",
+      "repro": "Postscript: open the helm, scroll down to 'Hold station at'",
+      "screenshot": "shots/helm3.png",
+      "tick": 8900
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Feed chart label 'sent every 0.9 s' is drawn over the bars",
+      "detail": "In the frame-gap chart on the feed panel, the 'sent every 0.9 s' label sits on top of the bars once they grow tall, so it is hard to read.",
+      "repro": "Watch the Orpheus feed past ~3 rs",
+      "screenshot": "shots/chart-label-overlap.png",
+      "tick": 4866
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "helm-done checkpoint shows no objective for the first ~12 game seconds",
+      "detail": "You start on the bridge with no objective panel. WREN's line about Orpheus comes at tick 288 and the objective only at tick 708. A player who misses the subtitle has nothing on screen saying what to do.",
+      "repro": "pt start --checkpoint helm-done; take shots before tick 700",
+      "screenshot": "shots/w1.png",
+      "tick": 228
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 6,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Launch Orpheus (probe console), then watch its feed (starboard screen)": 14.9,
+      "Watch the Orpheus feed (starboard screen)": 110.3,
+      "Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)": 158.9,
+      "Photon sphere reached. Listen to WREN, then log a prediction": 183.1,
+      "Fire the ranging laser along the hull (helm)": 189.4,
+      "Watch the pulse go round Erebus (helm panel)": 199.8
+    },
+    "orpheusFramesReceived": 65,
+    "unpromptedAutoPauses": 2,
+    "pauseSettingsDiscoveriesCycles": 4,
+    "shipFlashOutsSeen": 0,
+    "photosSaved": 1,
+    "typicalTps": 12
+  },
+  "fun": 4,
+  "verdict": "The Orpheus feed is the highlight: frames that come further apart and noisier, then 'next frame due: never'. The photon-sphere laser coming back after 11.1 s is a satisfying payoff, and I could work out the answer. The main problems are around modal UI: the game pauses itself when the choice or logbook appears, so the logbook draws over the pause menu, and both story questions only appear once you leave the console, with no prompt to do so. Photo mode and the pause, Settings and Discoveries menus were solid: the ship never flashed out in about 30 screenshots across 4 cycles.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "How gravity near a black hole changes time and light. A probe falling in sends frames at a steady rate on its own clock, but you receive them further and further apart, more and more stretched and faint, until they stop arriving at all. So from outside it seems to freeze at the edge, while it actually falls straight through. Also that what you see depends on how you move (WREN: same place, different motion, different sky), that clocks run slow when you hover deep (the relay runs ×1.73 at 1.5 rs), and that at the photon sphere light can orbit: a laser pulse fired along the hull came back to the stern after 11.1 s by the ship's clock."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "After the feed ended and Ines asked 'Did it fall in, or is it stuck there?', I sat at the feed console waiting to answer. No answer buttons appeared and the objective disappeared. The choice only showed up when I pressed Esc. The same thing happened in the Postscript: 'log a prediction' with no way to do it until I left the helm. Close behind: a pause menu appearing by itself behind the epilogue logbook."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "1) Epilogue: on the bridge, facing the starboard feed screen up close (yaw about -160, feed console): the expedition logbook drew on top of a pause menu that had opened by itself, with the two panels overlapping on the right. 2) Feed panel (same spot): the 'sent every 0.9 s' chart label overlaps the bars. 3) Photo mode at the helm (yaw about -294): the 'Saved...' line pushed the buttons up, so Done moved under the cursor. Nothing else: the black-hole view, the windows going black at 1.5 rs, and the ship after leaving photo mode and the menus all looked right. Apart from blur, no flicker and no ship flash-out."
+    }
+  ]
+}

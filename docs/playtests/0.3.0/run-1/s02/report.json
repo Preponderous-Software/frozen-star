@@ -1,0 +1,111 @@
+{
+  "session": "s02",
+  "goal": "Save Ines with the recall beam (try failing once first if time allows, then retry: does the retry come back cleanly with no console left open?), then take the Tern down with the helm, using the new x2/x4 buttons. Watch for the ship interior flashing out of sight for a frame, objectives lagging, and dead air. Check the spacetime map console after the rescue.",
+  "build": {
+    "version": "0.2.0",
+    "commit": "cca83e6"
+  },
+  "seed": null,
+  "durationSec": 1373,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "Helm 'Return to 10 rs' objective stays open ~6 game s after the ship is back and WREN says 'Back at station'",
+      "detail": "After the hold, pressed 'Return to 10 rs'. Altitude reached 10 rs and WREN said 'Back at station. The rest of the universe aged 39 seconds more...' at tick 12051, but the OBJECTIVE box still read 'Return to 10 rs (helm)' after I stepped back from the console (tick 12429). It only completed at tick 12435, together with the 'IV · Orpheus' card. At the ~8-10 tps of this machine that was about a minute of real time with a stale objective. Expected the objective to tick off when WREN confirms arrival.",
+      "repro": "pt start --checkpoint probe-done; complete the rescue; at helm click x2, hold 20 s, click 'Return to 10 rs'; watch the objective box after WREN's 'Back at station' line",
+      "screenshot": "shots/obj7lag.png",
+      "tick": 12429
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "'Wait for Ines's reply' objective stays open ~15 game s after her reply has arrived",
+      "detail": "Ines's reply 'Engine's lit! I felt that. I'm climbing. I'm coming home!' arrived at tick 7995, but the objective 'Wait for Ines's reply: its light is still on the way' only completed at tick 8901, after the 'Twenty minutes later' card. In the meantime WREN talked about the firing time and the objective still said her reply was on the way. Expected it to complete when the reply line plays (or the objective text to say what it is actually waiting for).",
+      "repro": "pt start --checkpoint probe-done; fire the recall beam early at comms; stay on the console and compare the reply subtitle with the objective box",
+      "screenshot": "shots/objlag.png",
+      "tick": 7995
+    },
+    {
+      "severity": "minor",
+      "category": "bug",
+      "title": "After a failed rescue the objective is logged as completed and the retry restarts as objective #3 with a ~3 s gap",
+      "detail": "I let the deadline pass and fired 6 s late. WREN: 'The beam never caught her...', and the card 'That isn't how it went. Not yet. Try again.' The failed objective #2 'Save Ines' was recorded as objective_completed (tick 6567). After the fade back to WORLD (tick 6650), no objective was on screen until tick 6836, when the same 'Save Ines' objective started as #3. Expected the failed attempt not to count as completed and the objective to stay visible across the retry.",
+      "repro": "pt start --checkpoint probe-done; open comms; wait until the panel says 'The deadline has passed'; click Fire recall beam; wait for the retry card; pt events",
+      "screenshot": "shots/retry1.png",
+      "tick": 6740
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "The retry is clean (no console left open), but the capsule label and a bracket reticle stay bright through the black fade",
+      "detail": "The retry came back cleanly: WORLD screen, mode walk, no panel, facing the helm. During the fade-to-black, the 'Capsule · Ines 15 m, holding station' label and an orange bracket reticle near the bottom centre were drawn at full brightness over the black screen. The orange bracket is still there once the scene fades in. WREN's line 'The comms console now shows the spacetime map...' also started while the screen was still black.",
+      "repro": "fail the rescue as above; pt shot during the fade back",
+      "screenshot": "shots/fail5.png",
+      "tick": 6662
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Spacetime map labels overlap: 'Ines' covers 'Engine burn: climbing out'; 'ship · now' overlaps another label",
+      "detail": "After the rescue, the map console (Ines's fall) draws the 'Ines' label on top of the green 'Engine burn: climbing out' label, so it reads 'Ines e burn: climbing out'. The bridge wall screen shows the same overlap. Before the rescue, the map on the comms panel also had 'ship · now' overlapping a second label at the 10 rs row. With an early shot her gold path is only a tiny stub, and the dashed green 'climb home' line is hard to find.",
+      "repro": "rescue Ines early; walk to map console; press e",
+      "screenshot": "shots/maplabels2.png",
+      "tick": 13123
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "WREN's helm explainer about 1.33 rs plays after the player has already reached x2",
+      "detail": "WREN's line 'The station-keeping field can take us lower. Below 1.33 rs, every second aboard is two seconds on the relay far away.' played at tick 10359, after the x2 objective had completed (9843) and during the 20 s hold. It reads like an intro to the descent. Two WREN lines were also stacked on screen at once.",
+      "repro": "after the rescue, open helm and immediately click x2 · 1.33 rs",
+      "screenshot": "shots/hold4.png",
+      "tick": 10359
+    },
+    {
+      "severity": "polish",
+      "category": "perf",
+      "title": "Game ran at about 8-10 ticks a second, so story gaps that are a few game seconds are about a minute of real waiting",
+      "detail": "The opening has dead air on screen. Ines speaks, then nothing shows (no objective, no subtitle) until tick 378. Between 'Capsule away' (tick 1190) and the mayday (tick 1688) there was no objective or subtitle. These gaps are short in game time (6-8 s) but felt like dead air at this frame rate. The 'Watch Ines launch' objective took about 13 game s to complete. Also the probe's state.json stopped updating at tick 5721 for about 40 s real while events continued (harness or probe stall).",
+      "repro": "pt start --checkpoint probe-done; pt state every 15 s",
+      "screenshot": "shots/w1.png",
+      "tick": 306
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 7,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Watch Ines launch: the port side of the bridge window": 19.8,
+      "Save Ines (failed attempt, fired 6 s after deadline)": 109.5,
+      "Save Ines: fire the recall beam from the comms console (retry)": 120.6,
+      "Wait for Ines's reply: its light is still on the way (comms console)": 148.4,
+      "Take the Tern down until the relay clock runs twice as fast (helm)": 164.1,
+      "Hold at twice the relay rate for 20 seconds (helm)": 184.2,
+      "Return to 10 rs (helm)": 207.3
+    },
+    "rescueAttempts": 2,
+    "retryFiredSecondsAfterMayday": 6,
+    "failedFiredSecondsAfterDeadline": 6,
+    "consoleLeftOpenAfterRetry": 0,
+    "interiorFlashesSeen": 0,
+    "approxTicksPerSecond": 9
+  },
+  "fun": 4,
+  "verdict": "The rescue loop works and teaches well. The comms deadline bar, the 'as received' log with stretch factors and the late 'Fire. Fire now.' lines that arrive after you've already fired make light delay something you feel. The fail-and-retry comes back cleanly with no console left open, and the x2/x4 helm buttons are clear and quick. The main roughness is objectives lagging behind the dialogue that resolves them (reply, return to station), a failed attempt being logged as completed, and some label overlap on the spacetime map. I saw no interior flash in any screenshot.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That what you see of something falling toward a black hole is old, stretched light. Her picture lags behind where she really is and slows and reddens near the horizon, so you can't judge the rescue by looking at her; you need the computed light-speed deadline. The helm part teaches gravitational time dilation: the lower you hold station, the faster far-away clocks run compared with yours (x2 at 1.33 rs, x4 at 1.07 rs), and you can't feel the field that holds you up (equivalence principle)."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "Right after firing too late. The panel already said the beam was fired 6 s after the deadline, and WREN said 'The beam never caught her', but Ines kept sending 'Okay. Maybe now, doc?', 'Fire. Fire now.' and 'I can't tell if you've fired.' for a while afterwards. It makes sense as old light once you think about it, but WREN's verdict came before those lines, so it first looked like the dialogue was out of order. Second: the 'Watch Ines launch: the port side of the bridge window' objective. I faced the left side windows first and nothing happened; the capsule appeared over the front window."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "Nothing badly broken, and I saw no interior flash. (1) During the fade to black after the failed rescue, at the helm facing forward, the 'Capsule · Ines 15 m' label and an orange bracket reticle near the bottom centre stayed bright over the black screen. (2) At the map console on the bridge's port wall, facing it after the rescue, the 'Ines' label overlaps 'Engine burn: climbing out'. The comms panel's map had 'ship · now' overlapping another label. (3) At the helm at 1.33 rs and 1.06 rs, facing the front windows, the windows were almost fully black. That matches WREN's explanation that the shadow covers more than half the sky, so I don't think it is a bug. (4) The ship interior turned a pink/red tint during the rescue, which I took to be an alert lighting state."
+    }
+  ]
+}

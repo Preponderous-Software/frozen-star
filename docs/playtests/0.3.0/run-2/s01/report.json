@@ -1,0 +1,118 @@
+{
+  "session": "s01",
+  "goal": "Drop the beacon probe K-1 at the probe console, step back with Esc (does the game keep running?), then answer Ines and do the rescue with the recall beam. Check objectives tick off the moment things happen, that the probe console is easy to reach past the helm chair, and watch for the ship interior flashing out of sight. Note anything confusing.",
+  "build": {
+    "version": "0.2.0",
+    "commit": "1e8cfe9"
+  },
+  "seed": null,
+  "durationSec": 1100,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Comms console: the 'Fire recall beam' button jumps when the panel scrolls, so a click under the deadline lands on the progress bar",
+      "detail": "With the comms panel open during the rescue I scrolled once to look for a way to answer Ines. Shortly after, the panel scrolled and the sticky fire block moved up from y~198 to y~157. My click at the button's old position (992,198) hit the mayday/deadline bar and did nothing, with about 7 s left. The second click at y~157 did fire ('Beam fired 44 s after her mayday, 5 s before the deadline'), but the button kept reading 'Fire recall beam' for about a game second, so I clicked and held it again before the label changed. On a timed, high-stakes button, the layout should not move, and the label should change the instant you press it.",
+      "repro": "pt start --checkpoint bridge; launch K-1; wait for the capsule mayday; pt walkto console (comms) + e; pt move 990 500; pt scroll 5; pt shot; pt click 992 198 (old button y)",
+      "screenshot": "shots/fired.png",
+      "tick": 12197
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Discovery toasts cover the Helm panel's description text",
+      "detail": "I opened the helm console just as the probe-fall discoveries fired. The two toasts 'Discovery · Metronome' and 'Discovery · Called it' sit on top of the Helm panel's body text ('Holding station at 10 rs. Descent ... the survey you will take the ship down toward the horizon from here'), and the overlapping text cannot be read in either one. Toasts should sit outside the console panel, or stack below its text.",
+      "repro": "pt start --checkpoint bridge; launch K-1; answer the ping-9 prediction; open the helm console around tick 4800",
+      "screenshot": "shots/toast_overlap.png",
+      "tick": 4906
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Spacetime map: centred 'Optional: the spacetime map is on th...' hint is clipped under the console panel",
+      "detail": "At the spacetime map console, the screen-centre hint 'Optional: the spacetime map is on the port wall.' is cut off by the right-hand panel. The hint is also redundant by then, because the player is already using the map. It should hide while a console is open, or at least once the map has been opened.",
+      "repro": "pt start --checkpoint bridge; after WREN says the fall is drawn on the spacetime map, walk to the map (port wall) and press e",
+      "screenshot": "shots/map_hint_cut.png",
+      "tick": 7626
+    },
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "'E Use the helm console' prompt shows while the crosshair is on the comms monitor",
+      "detail": "Standing between the probe console and the helm chair, facing the comms side (helm 1.0 m at -4 deg, comms 3.0 m at +10 deg), the crosshair sits on the COMMS monitor's screen but the prompt says 'Use the helm console'. The low helm desk is the target, but the bright screen the player is looking at belongs to comms, so E opens something different from what the player expects.",
+      "repro": "pt start --checkpoint bridge; stand at about x=-0.94 z=-10.87 facing the comms monitor; read the prompt",
+      "screenshot": "shots/after_choice.png",
+      "tick": 4600
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Two dialogue threads interleave after opening the helm during the probe fall, so the replies come out of order",
+      "detail": "After the horizon-crossing line I opened the helm. The subtitles then ran: WREN 'Descent is locked until the survey plan calls for it' -> INES 'Then what am I looking at? It's still there on the screen' -> INES 'And not while I'm prepping the capsule, please' -> WREN 'Old light...'. Ines's question and WREN's answer have the helm exchange spliced between them, and two Ines lines from different topics stack up at once. A helm aside should either wait for the current exchange to end or be queued as a whole.",
+      "repro": "pt start --checkpoint bridge; launch K-1; right after 'K-1 crossed the horizon 58 seconds after release', open the helm console (E or Return)",
+      "screenshot": "shots/w4_2.png",
+      "tick": 5350
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Objective box goes blank in the gaps between story beats",
+      "detail": "Between 'Watch the probe fall' completing (tick 7164) and 'Watch Ines launch' starting (8148), and again between 'Wait for Ines's reply' (13427) and the descent objective (14417), the HUD shows no objective at all. That is about 16 game seconds each time, and on a slow machine it felt longer. A 'Wait / listen to Ines' line would tell the player that nothing is expected of them yet.",
+      "repro": "pt start --checkpoint bridge; play through the probe fall; watch the top-left after the objective ticks",
+      "screenshot": "shots/after_map.png",
+      "tick": 7680
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Return in walk mode opens the console under the crosshair (undocumented, easy to hit by accident)",
+      "detail": "I pressed Return by accident after a choice, and it opened the helm console, as E would. That is harmless, but the controls don't mention it, and it is the same key that starts the game from the title screen and might be used to confirm choices.",
+      "repro": "pt start --checkpoint bridge; stand within reach of a console; pt key Return",
+      "screenshot": "shots/toast_overlap.png",
+      "tick": 4768
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Floor lettering 'DECK 1 · BRIDGE' reads mirrored from inside the bridge",
+      "detail": "Looking back from the probe console toward the corridor door, the floor text near the door is mirrored (it reads correctly only from the door side). Cosmetic.",
+      "repro": "pt start --checkpoint bridge; walk to the probe console; pt face 150",
+      "screenshot": "shots/look_back.png",
+      "tick": 1500
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 5,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Drop the beacon probe (probe console, left)": 14.5,
+      "Watch the probe fall": 119.4,
+      "Watch Ines launch: the port side of the bridge window": 151.8,
+      "Save Ines: fire the recall beam from the comms console. Wait as long as you dare.": 211.2,
+      "Wait for Ines's reply: its light is still on the way (comms console)": 223.8
+    },
+    "beamFiredSecondsAfterMayday": 44,
+    "beamMarginSeconds": 5,
+    "fps": 10,
+    "approxTicksPerSecond": 10,
+    "interiorFlashesSeen": 0,
+    "screenshotsChecked": 60
+  },
+  "fun": 4,
+  "verdict": "The beacon-and-rescue arc works and lands: objectives ticked at the same tick as the event (probe launch, capsule away, Ines's 'Engine's lit'), Esc from a console keeps time running (K-1's clock went 1.6 -> 5.2 M while I stood back), the probe console was easy to reach both from the start position and from the helm side, and across about 60 screenshots, red-alert lighting included, the ship interior never flashed out. The deadline countdown and WREN's 'your screen showed her 6.8 rs out, looking almost normal' make the old-light lesson hit hard. The rough edges are all in the overlays: a fire button that moves under the cursor, toasts and hints that overlap console panels, and dialogue threads that interleave.",
+  "answers": [
+    {
+      "question": "In your own words, what was the game teaching?",
+      "answer": "That what you see of something falling into a black hole is old, stretched light, not what is happening to it now. K-1's own clock ticks steadily and it crosses the horizon in under a minute of its own time, but from the ship its pings arrive further and further apart, redder and dimmer, and its picture freezes and fades at the edge. In the rescue, you can't judge the deadline from Ines's picture, because she looked almost normal at 6.8 rs when the beam was only 5 s from too late. You have to trust the computed clock and remember that a light-speed beam takes time to reach her."
+    },
+    {
+      "question": "Which moment was the most confusing, and why?",
+      "answer": "The rescue at the comms console. The brief told me to 'answer Ines', but I found no reply control, only the fire button, so I scrolled the panel looking for one. That scroll then moved the sticky fire button just as I clicked, with about 7 s left, and my first click missed. After the beam fired, the objective stayed open for about 6 more game seconds until 'Beam delivered', which makes sense physically but felt at first as if the click hadn't registered. A smaller confusion: right after the horizon crossing, Ines's question and WREN's answer were split by an unrelated helm exchange."
+    },
+    {
+      "question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.",
+      "answer": "No rendering glitches: there was no interior flashing, no holes and no black sky. The black hole was blurry, as expected. The UI overlap problems: (1) At the helm console, on the bridge's starboard-forward side facing the helm, two Discovery toasts covered the helm panel's text. (2) At the spacetime map on the port wall, facing the map, the centred hint 'Optional: the spacetime map is on th...' was clipped under the right-hand panel. (3) At the comms console, facing it, the sticky fire-beam block jumped about 40 px up after the panel scrolled. (4) Looking aft from the probe console toward the corridor door, the 'DECK 1 · BRIDGE' floor lettering reads mirrored. Also, between the probe console and the helm, facing the comms monitor, the prompt said 'Use the helm console'."
+    }
+  ]
+}

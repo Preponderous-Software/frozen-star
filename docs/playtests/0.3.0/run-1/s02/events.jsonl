@@ -1,0 +1,72 @@
+{"type": "world", "tick": 6, "wallTimeMs": 1795072441769, "how": "created", "seed": 0}
+{"type": "screen", "tick": 6, "wallTimeMs": 1795072441770, "from": null, "to": "WORLD"}
+{"type": "dialogue", "tick": 378, "wallTimeMs": 1795072487038, "who": "INES", "text": "Bay doors opening. Watch the port side, doc."}
+{"type": "objective_started", "tick": 378, "wallTimeMs": 1795072487269, "number": 1, "title": "Watch Ines launch: the port side of the bridge window"}
+{"type": "dialogue", "tick": 1190, "wallTimeMs": 1795072604977, "who": "WREN", "text": "Capsule away. She is holding position beside us."}
+{"type": "objective_completed", "tick": 1190, "wallTimeMs": 1795072605277, "number": 1, "title": "Watch Ines launch: the port side of the bridge window"}
+{"type": "dialogue", "tick": 1688, "wallTimeMs": 1795072670264, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 1688, "wallTimeMs": 1795072670269, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 1688, "wallTimeMs": 1795072670276, "number": 2, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 1760, "wallTimeMs": 1795072679593, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "dialogue", "tick": 2012, "wallTimeMs": 1795072704648, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 2409, "wallTimeMs": 1795072755022, "who": "WREN", "text": "The recall beam is on the comms console, to the right of the helm."}
+{"type": "dialogue", "tick": 2421, "wallTimeMs": 1795072756605, "who": "INES", "text": "You should see the ring from here. It's getting bigger."}
+{"type": "dialogue", "tick": 2511, "wallTimeMs": 1795072770420, "who": "WREN", "text": "I can compute the deadline: the beam must leave within 49 seconds of her mayday. The clock is on the comms console. Her picture will not tell you."}
+{"type": "dialogue", "tick": 2919, "wallTimeMs": 1795072824103, "who": "INES", "text": "Halfway to the edge of the shadow, I think. The data's beautiful."}
+{"type": "screen", "tick": 3345, "wallTimeMs": 1795072892269, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 3435, "wallTimeMs": 1795072903285, "who": "INES", "text": "Doc, the stars behind me are going blue. Is that right?"}
+{"type": "dialogue", "tick": 3939, "wallTimeMs": 1795072971920, "who": "INES", "text": "Still okay. Still waiting. Don't fire yet."}
+{"type": "dialogue", "tick": 4389, "wallTimeMs": 1795073029978, "who": "INES", "text": "Everything overhead is so bright I can barely read the instruments."}
+{"type": "dialogue", "tick": 4821, "wallTimeMs": 1795073086320, "who": "INES", "text": "The black fills most of the window now."}
+{"type": "dialogue", "tick": 5187, "wallTimeMs": 1795073124781, "who": "INES", "text": "Okay. Maybe now, doc?"}
+{"type": "dialogue", "tick": 5547, "wallTimeMs": 1795073173225, "who": "INES", "text": "Doc? Now would be good."}
+{"type": "dialogue", "tick": 5673, "wallTimeMs": 1795073196485, "who": "WREN", "text": "The beam never caught her. By her own clock she had already crossed the horizon and reached the centre."}
+{"type": "dialogue", "tick": 5847, "wallTimeMs": 1795073210645, "who": "INES", "text": "Fire. Fire now."}
+{"type": "dialogue", "tick": 6135, "wallTimeMs": 1795073234258, "who": "INES", "text": "I can't tell if you've fired."}
+{"type": "dialogue", "tick": 6375, "wallTimeMs": 1795073280684, "who": "INES", "text": "It doesn't look like anything. There's no edge."}
+{"type": "objective_completed", "tick": 6567, "wallTimeMs": 1795073300269, "number": 2, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "card", "tick": 6579, "wallTimeMs": 1795073302006, "title": "That isn't how it went.", "subtitle": "Not yet. Try again."}
+{"type": "screen", "tick": 6650, "wallTimeMs": 1795073305269, "from": "CONSOLE", "to": "WORLD"}
+{"type": "dialogue", "tick": 6650, "wallTimeMs": 1795073306512, "who": "WREN", "text": "The comms console now shows the spacetime map. The red dashed line is the last moment the beam can still reach her."}
+{"type": "dialogue", "tick": 6836, "wallTimeMs": 1795073336296, "who": "WREN", "text": "Doctor, Ines's capsule has lost main power. It is falling."}
+{"type": "dialogue", "tick": 6836, "wallTimeMs": 1795073336298, "who": "WREN", "text": "The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago."}
+{"type": "objective_started", "tick": 6836, "wallTimeMs": 1795073336769, "number": 3, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "dialogue", "tick": 6908, "wallTimeMs": 1795073342800, "who": "INES", "text": "Lost main power. Everything's dead except the radio and the backup engine. I'm drifting in."}
+{"type": "screen", "tick": 6962, "wallTimeMs": 1795073347269, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 7160, "wallTimeMs": 1795073364154, "who": "INES", "text": "Don't fire yet! The spectrometer's on battery. This is the best data anyone will ever get."}
+{"type": "dialogue", "tick": 7238, "wallTimeMs": 1795073371839, "who": "WREN", "text": "Beam delivered, in time. But her picture will keep falling for a while, and her older messages are still on their way. That is old light: she is already climbing. Her reply will come after them."}
+{"type": "objective_completed", "tick": 7238, "wallTimeMs": 1795073372269, "number": 3, "title": "Save Ines: fire the recall beam from the comms console. Wait as long as you dare."}
+{"type": "objective_started", "tick": 7238, "wallTimeMs": 1795073372269, "number": 4, "title": "Wait for Ines's reply: its light is still on the way (comms console)"}
+{"type": "dialogue", "tick": 7995, "wallTimeMs": 1795073426341, "who": "INES", "text": "Engine's lit! I felt that. I'm climbing. I'm coming home!"}
+{"type": "dialogue", "tick": 8283, "wallTimeMs": 1795073452706, "who": "WREN", "text": "You fired 43 seconds before the last possible moment. At that moment your screen showed her 9.9 r\u209b out, looking almost normal."}
+{"type": "card", "tick": 8841, "wallTimeMs": 1795073500107, "title": "Twenty minutes later", "subtitle": null}
+{"type": "dialogue", "tick": 8895, "wallTimeMs": 1795073504010, "who": "INES", "text": "Docked. Hands still shaking."}
+{"type": "checkpoint", "tick": 8895, "wallTimeMs": 1795073504011, "checkpoint": "rescue-done"}
+{"type": "card", "tick": 8895, "wallTimeMs": 1795073504012, "title": "III \u00b7 The descent", "subtitle": "Closer to the edge."}
+{"type": "objective_completed", "tick": 8901, "wallTimeMs": 1795073505633, "number": 4, "title": "Wait for Ines's reply: its light is still on the way (comms console)"}
+{"type": "objective_started", "tick": 8901, "wallTimeMs": 1795073505634, "number": 5, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "screen", "tick": 9051, "wallTimeMs": 1795073517269, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 9075, "wallTimeMs": 1795073518769, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 9087, "wallTimeMs": 1795073519597, "who": "INES", "text": "You know what scares me? On your screen I looked fine the whole time. If you'd waited until I looked like I was in trouble..."}
+{"type": "screen", "tick": 9219, "wallTimeMs": 1795073529769, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 9597, "wallTimeMs": 1795073557578, "who": "WREN", "text": "It would have been far too late. By the deadline, her picture was still only a third of the way down."}
+{"type": "dialogue", "tick": 9843, "wallTimeMs": 1795073573329, "who": "WREN", "text": "Relay clock at double speed. Hold here for twenty seconds."}
+{"type": "objective_completed", "tick": 9843, "wallTimeMs": 1795073573769, "number": 5, "title": "Take the Tern down until the relay clock runs twice as fast (helm)"}
+{"type": "objective_started", "tick": 9843, "wallTimeMs": 1795073573769, "number": 6, "title": "Hold at twice the relay rate for 20 seconds (helm)"}
+{"type": "dialogue", "tick": 10095, "wallTimeMs": 1795073589609, "who": "INES", "text": "I want to see that again. Without dying this time."}
+{"type": "dialogue", "tick": 10131, "wallTimeMs": 1795073591881, "who": "INES", "text": "The window's gone completely black. WREN, is the camera broken?"}
+{"type": "dialogue", "tick": 10359, "wallTimeMs": 1795073606435, "who": "WREN", "text": "The station-keeping field can take us lower. Below 1.33 r\u209b, every second aboard is two seconds on the relay far away."}
+{"type": "dialogue", "tick": 10437, "wallTimeMs": 1795073611142, "who": "WREN", "text": "No. From this low, the shadow covers more than half the sky. Every star is squeezed into a bright patch behind us. The helm screen shows the rear camera."}
+{"type": "dialogue", "tick": 11049, "wallTimeMs": 1795073649400, "who": "INES", "text": "Okay. That's enough. Take us back up."}
+{"type": "objective_completed", "tick": 11049, "wallTimeMs": 1795073649769, "number": 6, "title": "Hold at twice the relay rate for 20 seconds (helm)"}
+{"type": "objective_started", "tick": 11049, "wallTimeMs": 1795073649769, "number": 7, "title": "Return to 10 r\u209b (helm)"}
+{"type": "dialogue", "tick": 12051, "wallTimeMs": 1795073708675, "who": "WREN", "text": "Back at station. The rest of the universe aged 39 seconds more than we did down there."}
+{"type": "screen", "tick": 12231, "wallTimeMs": 1795073722769, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 12261, "wallTimeMs": 1795073725269, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "checkpoint", "tick": 12435, "wallTimeMs": 1795073737152, "checkpoint": "helm-done"}
+{"type": "card", "tick": 12435, "wallTimeMs": 1795073737154, "title": "IV \u00b7 Orpheus", "subtitle": "The last probe has a camera."}
+{"type": "dialogue", "tick": 12435, "wallTimeMs": 1795073737156, "who": "INES", "text": "One probe left. Orpheus. It has a camera, and it streams."}
+{"type": "objective_completed", "tick": 12435, "wallTimeMs": 1795073737269, "number": 7, "title": "Return to 10 r\u209b (helm)"}
+{"type": "dialogue", "tick": 12725, "wallTimeMs": 1795073767040, "who": "WREN", "text": "Orpheus is loaded at the probe console. Its feed will show on the starboard screen."}
+{"type": "screen", "tick": 13007, "wallTimeMs": 1795073792269, "from": "WORLD", "to": "CONSOLE"}
+{"type": "objective_started", "tick": 13103, "wallTimeMs": 1795073803224, "number": 8, "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)"}

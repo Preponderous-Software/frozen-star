@@ -1,0 +1,63 @@
+{"type": "world", "tick": 12, "wallTimeMs": 1795100143067, "how": "created", "seed": 0}
+{"type": "screen", "tick": 12, "wallTimeMs": 1795100143069, "from": null, "to": "WORLD"}
+{"type": "objective_started", "tick": 12, "wallTimeMs": 1795100143070, "number": 1, "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)"}
+{"type": "dialogue", "tick": 289, "wallTimeMs": 1795100157487, "who": "WREN", "text": "Orpheus is loaded at the probe console. Its feed will show on the starboard screen."}
+{"type": "screen", "tick": 459, "wallTimeMs": 1795100166956, "from": "WORLD", "to": "CONSOLE"}
+{"type": "screen", "tick": 537, "wallTimeMs": 1795100172456, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 567, "wallTimeMs": 1795100174456, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 936, "wallTimeMs": 1795100202456, "from": "WORLD", "to": "CONSOLE"}
+{"type": "objective_completed", "tick": 1072, "wallTimeMs": 1795100221964, "number": 1, "title": "Launch Orpheus (probe console), then watch its feed (starboard screen)"}
+{"type": "objective_started", "tick": 1072, "wallTimeMs": 1795100221965, "number": 2, "title": "Watch the Orpheus feed (starboard screen)"}
+{"type": "screen", "tick": 1116, "wallTimeMs": 1795100226956, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 1140, "wallTimeMs": 1795100231456, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 1501, "wallTimeMs": 1795100259186, "who": "INES", "text": "There it goes. The shadow's bigger every frame."}
+{"type": "screen", "tick": 1615, "wallTimeMs": 1795100267456, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 2065, "wallTimeMs": 1795100291746, "who": "INES", "text": "When it passes 1.33 r\u209b, where we hovered, will its picture go all black like our window did?"}
+{"type": "dialogue", "tick": 2467, "wallTimeMs": 1795100316041, "who": "WREN", "text": "No. Hovering there, the shadow covered 207 degrees of our sky. Orpheus will pass that spot at 85% of light speed, and its motion swings the sky ahead of it. It will see the shadow only 79 degrees across."}
+{"type": "dialogue", "tick": 3228, "wallTimeMs": 1795100371922, "who": "WREN", "text": "Same place, different motion, different sky."}
+{"type": "dialogue", "tick": 4323, "wallTimeMs": 1795100455561, "who": "WREN", "text": "Frames are arriving further apart. The signal is being stretched as it climbs out."}
+{"type": "dialogue", "tick": 4833, "wallTimeMs": 1795100493131, "who": "YOU", "text": "(That view. That's what I dreamt.)"}
+{"type": "dialogue", "tick": 5715, "wallTimeMs": 1795100550198, "who": "WREN", "text": "No more frames are coming. The next one was due from inside the horizon, and nothing sent from there gets out. Its marker in the window is fading: its last light is still climbing, slower and redder."}
+{"type": "dialogue", "tick": 6789, "wallTimeMs": 1795100602840, "who": "INES", "text": "So that last frame is all we get. Did it fall in, or is it stuck there?"}
+{"type": "screen", "tick": 6801, "wallTimeMs": 1795100603216, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "objective_completed", "tick": 6801, "wallTimeMs": 1795100603216, "number": 2, "title": "Watch the Orpheus feed (starboard screen)"}
+{"type": "screen", "tick": 6819, "wallTimeMs": 1795100603938, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "screen", "tick": 7125, "wallTimeMs": 1795100625562, "from": "WORLD", "to": "CHOICE"}
+{"type": "dialogue", "tick": 7641, "wallTimeMs": 1795100661098, "who": "INES", "text": "And the rest of the trip, the part inside... nobody out here will ever see it."}
+{"type": "screen", "tick": 7641, "wallTimeMs": 1795100661153, "from": "CHOICE", "to": "WORLD"}
+{"type": "dialogue", "tick": 7995, "wallTimeMs": 1795100690498, "who": "WREN", "text": "No one outside ever will. Only Orpheus saw it."}
+{"type": "screen", "tick": 8181, "wallTimeMs": 1795100707665, "from": "WORLD", "to": "PAUSE"}
+{"type": "screen", "tick": 8195, "wallTimeMs": 1795100731085, "from": "PAUSE", "to": "WORLD"}
+{"type": "dialogue", "tick": 8249, "wallTimeMs": 1795100734507, "who": "YOU", "text": "(Only Orpheus. And me, in a dream.)"}
+{"type": "checkpoint", "tick": 8249, "wallTimeMs": 1795100734509, "checkpoint": "epilogue"}
+{"type": "checkpoint", "tick": 8555, "wallTimeMs": 1795100758835, "checkpoint": "epilogue"}
+{"type": "card", "tick": 8555, "wallTimeMs": 1795100758836, "title": "Frozen Star", "subtitle": "Thanks for playing. The Tern is yours to explore."}
+{"type": "screen", "tick": 8633, "wallTimeMs": 1795100764544, "from": "WORLD", "to": "LOGBOOK"}
+{"type": "card", "tick": 9269, "wallTimeMs": 1795100794940, "title": "Postscript \u00b7 The photon sphere", "subtitle": "Where light goes in circles."}
+{"type": "checkpoint", "tick": 9269, "wallTimeMs": 1795100794945, "checkpoint": "halo"}
+{"type": "dialogue", "tick": 9269, "wallTimeMs": 1795100794960, "who": "WREN", "text": "Doctor, one item is left on the survey plan, if you want it. It is optional. A ranging-laser test at the photon sphere."}
+{"type": "screen", "tick": 9275, "wallTimeMs": 1795100795021, "from": "LOGBOOK", "to": "WORLD"}
+{"type": "objective_started", "tick": 9275, "wallTimeMs": 1795100795022, "number": 3, "title": "Optional: take the Tern down to the photon sphere, 1.5 r\u209b (helm)"}
+{"type": "dialogue", "tick": 9788, "wallTimeMs": 1795100841139, "who": "INES", "text": "The what sphere?"}
+{"type": "screen", "tick": 9842, "wallTimeMs": 1795100848283, "from": "WORLD", "to": "CONSOLE"}
+{"type": "dialogue", "tick": 9938, "wallTimeMs": 1795100858064, "who": "WREN", "text": "One and a half horizon radii. At that height light can orbit Erebus. A beam fired sideways goes all the way round."}
+{"type": "dialogue", "tick": 10454, "wallTimeMs": 1795100920763, "who": "INES", "text": "Light going in a circle. Okay, doc, I have to see that."}
+{"type": "objective_completed", "tick": 10544, "wallTimeMs": 1795100929475, "number": 3, "title": "Optional: take the Tern down to the photon sphere, 1.5 r\u209b (helm)"}
+{"type": "objective_started", "tick": 10544, "wallTimeMs": 1795100929475, "number": 4, "title": "Photon sphere reached. Listen to WREN's briefing"}
+{"type": "dialogue", "tick": 10736, "wallTimeMs": 1795100938543, "who": "WREN", "text": "Photon sphere. I have locked the field to it, to within a centimetre. You will see why that matters."}
+{"type": "dialogue", "tick": 11168, "wallTimeMs": 1795100964699, "who": "WREN", "text": "Look forward: the shadow now covers exactly half the sky, 180 degrees. Its edge is a circle at right angles to our nose: straight up, straight down, and straight out on either side of the hull."}
+{"type": "objective_completed", "tick": 11996, "wallTimeMs": 1795101018185, "number": 4, "title": "Photon sphere reached. Listen to WREN's briefing"}
+{"type": "screen", "tick": 11996, "wallTimeMs": 1795101018184, "from": "CONSOLE", "to": "CHOICE"}
+{"type": "objective_started", "tick": 11996, "wallTimeMs": 1795101018185, "number": 5, "title": "Log a prediction (the answer box)"}
+{"type": "screen", "tick": 12812, "wallTimeMs": 1795101066425, "from": "CHOICE", "to": "CONSOLE"}
+{"type": "objective_completed", "tick": 12812, "wallTimeMs": 1795101066426, "number": 5, "title": "Log a prediction (the answer box)"}
+{"type": "objective_started", "tick": 12812, "wallTimeMs": 1795101066426, "number": 6, "title": "Fire the ranging laser along the hull (helm)"}
+{"type": "dialogue", "tick": 13040, "wallTimeMs": 1795101082118, "who": "WREN", "text": "Pulse away. Watch the plot on the helm panel."}
+{"type": "objective_started", "tick": 13046, "wallTimeMs": 1795101082479, "number": 7, "title": "Watch the pulse go round Erebus (helm panel)"}
+{"type": "objective_completed", "tick": 13046, "wallTimeMs": 1795101082478, "number": 6, "title": "Fire the ranging laser along the hull (helm)"}
+{"type": "dialogue", "tick": 13712, "wallTimeMs": 1795101127149, "who": "WREN", "text": "Caught at the stern, 11.1 seconds after it left, 2.7 metres from where it set out. It went all the way round Erebus: 3.34 million km."}
+{"type": "objective_completed", "tick": 13712, "wallTimeMs": 1795101127582, "number": 7, "title": "Watch the pulse go round Erebus (helm panel)"}
+{"type": "screen", "tick": 14306, "wallTimeMs": 1795101162975, "from": "CONSOLE", "to": "CUTSCENE"}
+{"type": "screen", "tick": 14330, "wallTimeMs": 1795101163956, "from": "CUTSCENE", "to": "WORLD"}
+{"type": "dialogue", "tick": 14432, "wallTimeMs": 1795101168651, "who": "WREN", "text": "As you predicted. That is just the circumference divided by the speed of light."}
+{"type": "dialogue", "tick": 14792, "wallTimeMs": 1795101194966, "who": "INES", "text": "Wait. So any light that leaves the ship sideways comes back round to us?"}

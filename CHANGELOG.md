@@ -2,9 +2,9 @@
 
 Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/playtests/<version>/`, and the release process is in [docs/RELEASING.md](docs/RELEASING.md).
 
-## Unreleased
+## 0.3.0 (2026-11-19)
 
-A polish pass across the whole game, ending with an AI playtest round. The headline fix: the ship no longer flashes out of sight.
+A polish pass across the whole game, ending with two AI playtest rounds. The headline fix: the ship no longer flashes out of sight. Playtest evidence: [docs/playtests/0.3.0](docs/playtests/0.3.0).
 
 - **The ship stays on screen (#41).** The ship is drawn on a transparent canvas over the sky, and resizing a canvas clears it. The automatic resolution change ran after the ship was drawn, and window resizes redrew nothing, so for one frame only the black hole showed. Size changes now happen before the draw and every resize redraws at once. The resolution no longer swings back and forth, the ship redraws as soon as a lost GPU context returns, and `tools/ship-flash-check.cjs` counts any cleared frame that reaches the screen (0 now, 7 before).
 - **Feel aboard (#38).** Footsteps follow your stride and speed, with a gentle head bob (off with reduced motion, or in Settings). The room sound ducks under dialogue, the hull creaks deeper on the descent, the capsule bay has its own room tone, and doors and usable things answer with small sounds.
@@ -24,6 +24,7 @@ A polish pass across the whole game, ending with an AI playtest round. The headl
   - The probe and comms consoles answer from a step further out.
   - The photo bar's "Saved" line no longer moves the buttons.
   - The Orpheus feed now explains correctly why no more frames come: the next one was due from inside the horizon.
+  - In the Postscript, the hull camera no longer gives away the prediction's answer, and the helm says when the laser test is complete (#45).
 
 ## 0.2.0 (2026-11-15)
 

@@ -1,0 +1,92 @@
+{
+  "session": "s02",
+  "goal": "Finish the story: the Orpheus feed, Ines's question (does it come up without pressing Esc? try pressing Esc during the choice: the game must NOT pause), the epilogue logbook (it must not appear over the pause menu), then start the Postscript and use the helm's 1.5 rs button. Check the feed's final explanation reads correctly. Watch for the ship flashing out of sight.",
+  "build": {"version": "0.2.0", "commit": "1e8cfe9"},
+  "seed": null,
+  "durationSec": 1060,
+  "outcome": "achieved",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "ux",
+      "title": "Photon-sphere prediction is spoiled: hull camera caption already shows '11.1 s' beside the question",
+      "detail": "The prediction box asks when the pulse will come back round by the ship's clock (11 s / 19 s / never). The helm panel's hull camera, visible right next to it, already reads 'Dead ahead: our own light, 11.1 s old' (it shows that from the moment the ship reaches 1.5 rs). A player can read the answer off the screen before predicting. Expected: hide or blur that caption until after the prediction is logged.",
+      "repro": "pt start --checkpoint helm-done; launch Orpheus, watch feed to the end, answer Ines, Postscript from the logbook, helm -> '1.5 rs . photon sphere'; wait for the CHOICE; look at the hull camera card",
+      "screenshot": "shots/spoiler-hullcam.png",
+      "tick": 12800
+    },
+    {
+      "severity": "minor",
+      "category": "text",
+      "title": "Helm laser card reverts to stale 'The laser arms in a moment: listen to WREN first' after the test is finished",
+      "detail": "After the pulse is caught at the stern and the last Postscript objective completes, the ranging-laser card shows the greyed Fire button again with the pre-briefing line 'The laser arms in a moment: listen to WREN first.' It reads as if the test is still pending. Expected: a 'test complete: 11.1 s, 3.34 million km' style line.",
+      "repro": "same as above; fire the laser, wait until WREN says 'Caught at the stern...', look at the top of the helm panel",
+      "screenshot": "shots/helm-stale-text.png",
+      "tick": 14288
+    },
+    {
+      "severity": "polish",
+      "category": "text",
+      "title": "Feed panel says frames are sent 'every few seconds' but also 'all 0.9 s apart'; chart label overlapped by bars",
+      "detail": "Under FRAMES RECEIVED the caption reads 'one sent every few seconds of its time', while the line below says 'On Orpheus's own clock they are all 0.9 s apart' (and the probe console said 'every few seconds' too). In the frame-gap chart the 'sent every 0.9 s' label sits on the dashed line and the bars are drawn across it, so it is partly hidden. The final explanation itself ('This is the last frame that will ever arrive. The next one was due from inside the horizon, and nothing sent from there gets out.' plus 'Last gap: 4.7 s') reads correctly and matches WREN's line and the logbook.",
+      "repro": "pt start --checkpoint helm-done; launch Orpheus; use the feed console; wait until NEXT FRAME DUE reads 'never'; scroll the panel down",
+      "screenshot": "shots/feed-chart-label.png",
+      "tick": 6729
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "World-space use prompt ('Watch the probe camera') bleeds through behind the choice box and logbook",
+      "detail": "While Ines's question is open, and later in the logbook, a faint 'Watch the probe camera' prompt is visible through the dialog panels (e.g. under the second answer, and in the logbook's Ines entry). Expected: hide the use prompt while a modal is open.",
+      "repro": "stand at the feed console when the Orpheus feed ends; wait for the CHOICE; look under answer 2",
+      "screenshot": "shots/choice-esc-ok.png",
+      "tick": 7635
+    },
+    {
+      "severity": "polish",
+      "category": "ux",
+      "title": "Helm panel opens scrolled part-way down, hiding its header and Fire button",
+      "detail": "The first time I opened the helm in the Postscript, the panel was already scrolled so it started at 'Altitude 10.000 rs...'; the HELM header and the ranging-laser card were above the fold. I had scrolled the feed panel earlier, so the scroll position may be carried over between consoles. Expected: each console opens at the top.",
+      "repro": "scroll down in the feed console panel; Esc; walk to helm; press E",
+      "screenshot": "shots/helm1.png",
+      "tick": 9800
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "title": "Game ran at roughly 9-15 ticks a second (load average ~30), making walking and waiting very slow",
+      "detail": "Machine was shared with other sessions. Walking a few metres took 8+ real seconds and a single E press at the probe console was missed once. Logged for context; the Orpheus fall took ~6 real minutes.",
+      "repro": "pt status / uptime during the session",
+      "screenshot": "shots/probe2.png",
+      "tick": 906
+    }
+  ],
+  "metrics": {
+    "objectivesCompleted": 7,
+    "deaths": 0,
+    "secondsToObjective": {
+      "Launch Orpheus (probe console), then watch its feed (starboard screen)": 17.9,
+      "Watch the Orpheus feed (starboard screen)": 113.4,
+      "Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)": 175.7,
+      "Photon sphere reached. Listen to WREN's briefing": 199.9,
+      "Log a prediction (the answer box)": 213.5,
+      "Fire the ranging laser along the hull (helm)": 217.4,
+      "Watch the pulse go round Erebus (helm panel)": 228.5
+    },
+    "orpheusFramesReceived": 65,
+    "orpheusLastFrameRs": 1.211,
+    "choiceAppearedWithoutKeyTick": 7125,
+    "escDuringChoicePaused": 0,
+    "logbookShownOverPause": 0,
+    "pulseRoundTripShipSeconds": 11.1,
+    "shipFlashOutOfSightSeen": 0
+  },
+  "fun": 4,
+  "verdict": "All the checked fixes hold: Ines's question pops up by itself, Esc during the choice does not pause, the pause menu freezes time so the logbook never appeared over it, and the Postscript's 1.5 rs descent and laser test run cleanly with no ship flashing out of sight in ~80 captured frames of the descent and pulse. The Orpheus feed is the strongest moment (frames spreading out, static, then 'never'), and the final explanation reads correctly. The main thing to fix is that the hull camera prints the 11.1 s answer before the player is asked to predict it."
+  ,
+  "answers": [
+    {"question": "In your own words, what was the game teaching?", "answer": "That what you see of something falling into a black hole is not what happens to it. Orpheus's frames are sent evenly by its own clock but arrive further and further apart and fainter, and the last one comes from just outside the horizon; it really did cross in under a minute of its own time, but from far away it is never seen to fall in ('a fact about light, not about the things that fall'). The Postscript adds that at 1.5 rs light can orbit the hole: a pulse fired along the hull comes back round in circumference/c, 11.1 s, and hovering low makes your clock run slow against the far-away relay."},
+    {"question": "Which moment was the most confusing, and why?", "answer": "After the laser test finished, the objective box disappeared and the helm card went back to 'The laser arms in a moment: listen to WREN first' with a greyed button, so I could not tell if the Postscript was over or if something else was coming. Also the prediction question felt odd because the answer (11.1 s) was already printed on the hull camera next to it. Before that, the long silent stretch of the Orpheus fall (minutes at this frame rate) left me unsure whether to keep watching the panel or step back."},
+    {"question": "Did anything look broken on screen? Describe each problem, where you were and which way you were facing.", "answer": "Nothing seriously broken. At the starboard feed console (facing the feed screen) the 'sent every 0.9 s' chart label was overlapped by the bars. Facing the feed screen when Ines's question and later the logbook opened, a faint 'Watch the probe camera' prompt showed through the dialog panels. At the helm (facing forward) the panel first opened scrolled halfway down. During the descent to 1.5 rs the forward windows went fully black from about 5 rs, which fits WREN's explanation of the shadow growing; I did not see the ship or the Tern marker flash out of sight in the 3D view, the hull camera, or the top-down diagram."}
+  ]
+}
