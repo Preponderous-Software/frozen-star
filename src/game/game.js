@@ -154,6 +154,12 @@ export function mountGame(root, { checkpoint } = {}) {
     appResolve?.(); appResolve = null;
   }
   g.openApp = openApp; g.closeApp = closeApp;
+  // a cut (the rescue retry, a teleport) while a console is open: drop the panel at once, no step back
+  g.dropApp = () => {
+    if (g.mode !== 'console') return;
+    appDispose?.(); appDispose = null; panel.hidden = true; panel.replaceChildren(); audio.close();
+    appResolve?.(); appResolve = null;
+  };
   const unwrap = (a, ref) => { while (a - ref > Math.PI) a -= 2 * Math.PI; while (a - ref < -Math.PI) a += 2 * Math.PI; return a; };
 
   // ---- interaction ----
@@ -191,7 +197,7 @@ export function mountGame(root, { checkpoint } = {}) {
       const hd = Math.hypot(to.x, to.z), hl = Math.hypot(dir.x, dir.z) || 1;
       if (hd > 0.05 && (to.x * dir.x + to.z * dir.z) / (hd * hl) < Math.cos(Math.min(0.6, 0.14 + Math.atan(0.45 / Math.max(0.3, d))))) continue;
       const cos = to.normalize().dot(dir);
-      if (cos < 0.75) continue; // and the look must be roughly on it up and down too
+      if (cos < (hd < 1.2 ? 0.6 : 0.75)) continue; // and the look must be roughly on it up and down too (more lenient up close: a low desk sits well below eye level)
       const score = cos + 0.06 * (1 - d / it.radius);
       if (score > bestScore) { bestScore = score; best = it; }
     }
@@ -464,7 +470,16 @@ export function mountGame(root, { checkpoint } = {}) {
         const onScreen = !behind && Math.abs(x) < 0.85 && Math.abs(y) < 0.8;
         if (!onScreen) { const k = 0.85 / Math.max(Math.abs(x) / 0.92, Math.abs(y) / 0.82, 1e-6); x *= k; y *= k; if (behind && Math.hypot(x, y) < 0.5) { x = 0; y = -0.8; } }
         way.hidden = false; way.classList.toggle('edge', !onScreen);
-        way.style.transform = `translate(${((x + 1) / 2) * W}px, ${((1 - y) / 2) * H}px)`;
+        let px = ((x + 1) / 2) * W, py = ((1 - y) / 2) * H;
+        // keep the marker and its label clear of the centre-screen prompts (controls hint, 'click to look around')
+        const er = el.getBoundingClientRect();
+        for (const o of el.querySelectorAll('.fp-hint, .fp-look')) {
+          if (!o || o.hidden || o.classList.contains('out')) continue;
+          const r = o.getBoundingClientRect(); if (!r.width) continue;
+          const l = r.left - er.left - 12, t = r.top - er.top - 10, rr = r.right - er.left + 4, b = r.bottom - er.top + 10;
+          if (px + 120 > l && px - 10 < rr && py > t && py < b) py = py - t < b - py ? t : b; // to the nearer edge
+        }
+        way.style.transform = `translate(${px}px, ${py}px)`;
         way.querySelector('i').style.transform = onScreen ? '' : `rotate(${Math.atan2(-y, x)}rad)`;
         way.querySelector('span').textContent = `${g.waypoint.label || ''} ${d3.toFixed(0)} m`;
       }

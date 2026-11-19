@@ -22,7 +22,13 @@ const consolePos = (g, id) => g.ship.interactables.find((i) => i.id === id).pos.
 export async function runStory(g, cp) {
   const at = Math.max(0, ORDER.indexOf(cp));
   // starting partway (continue or chapter select): unlock what earlier acts would have
-  if (at >= 2) Object.assign(g.flags, { beaconDone: true, mapUnlocked: true });
+  if (at >= 2) {
+    Object.assign(g.flags, { beaconDone: true, mapUnlocked: true });
+    // the map plots the last fall: a save from later in the story still shows K-1's, already over
+    const k1 = createRun(g, 'beacon', { ago: 400 });
+    k1.signals = Array.from({ length: 9 }, (_, i) => ({ tau: (i + 1) * 10 }));
+    g.lastRun = k1;
+  }
   if (at >= 3) Object.assign(g.flags, { inesHome: true, rescueIntro: true });
   if (at >= 4) Object.assign(g.flags, { helmUnlocked: true });
   g.flags.stats = g.flags.stats || {};
@@ -156,6 +162,7 @@ const h3 = (t) => Object.assign(document.createElement('h3'), { textContent: t }
 const p = (t) => Object.assign(document.createElement('p'), { textContent: t });
 
 function setWalk(g, x, z, yaw, pitch = 0) {
+  g.dropApp?.(); // never leave a console panel up behind a cut
   g.me = { x, z, yaw, pitch, vx: 0, vz: 0 };
   g.mode = 'walk'; g.controls.setEnabled(true); g.hud.crosshair(true);
 }
@@ -206,6 +213,9 @@ async function dream(g) {
   if (!skipped) g.hud.fade(0, 3);
   await Promise.race([g.wait(2), g.until(() => skipped)]);
   if (!skipped) g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
+  // a line in the long first stretch, so the dream never seems to stall (the fall starts slowly)
+  await g.until(() => f.rOfTau(tau) < 18.5 || skipped);
+  if (!skipped) g.say('YOU', '(Below you, a perfect black disk in the stars. You are falling toward it.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 14 || skipped);
   if (!skipped) g.say('YOU', '(It grows. The stars around its edge are bending, crowding into a ring.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 7 || skipped);
@@ -394,7 +404,7 @@ async function rescueAttempt(g) {
   // her messages, delivered when their light arrives
   const queue = INES_LINES.map(([tau, text]) => ({ tau, text, at: f.messageArrival(tau), done: false }));
   for (const q of queue) run.signals.push({ tau: q.tau });
-  let result = null;
+  let result = null, lastLine = 0;
   g.fireRecall = () => {
     if (run.fired != null) return;
     run.fired = run.S(); g.audio.click(); g.waypoint = null;
@@ -408,7 +418,7 @@ async function rescueAttempt(g) {
       if (result?.saved && q.tau > result.tau) continue; // she escaped: these were never sent
       const style = inesStyle(f, q.tau), z = f.onePlusZ(f.rOfTau(q.tau));
       const tag = z >= 1.1 ? `stretched ×${z < 10 ? z.toFixed(1) : Math.round(z)}` : null;
-      run.log.push({ text: q.text, style, tag }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag });
+      lastLine = S; run.log.push({ text: q.text, style, tag }); g.audio.radio(z, q.text.length); g.say('INES', q.text, { style, tag });
     }
     if (run.fired != null && !result) {
       const hit = f.rescueAt(run.fired);
@@ -419,7 +429,9 @@ async function rescueAttempt(g) {
   g.ticks.add(tick);
   g.say('WREN', 'The recall beam travels at light speed. It must reach her before she crosses the horizon. And Doctor: whatever you see of her left her a while ago.')
     .then(() => run.fired == null && g.say('WREN', `I can compute the deadline: the beam must leave within ${Math.round(secs(D))} seconds of her mayday. The clock is on the comms console. Her picture will not tell you.`)).catch(() => {});
-  await g.until(() => result || run.S() > 175);
+  // past the deadline with no beam fired, once her last message has arrived, there is nothing more to wait for
+  const allIn = () => queue.every((q) => q.done || !isFinite(q.at));
+  await g.until(() => result || run.S() > 175 || (run.fired == null && run.S() > D && allIn() && run.S() - lastLine > 8));
   let saved = !!result?.saved;
   if (saved) {
     run.hidden = true; removeMarker();
@@ -470,7 +482,7 @@ async function helmAct(g) {
   g.ticks.add(rearTick);
   // the objective comes first, so there is never a stretch with nothing to do; the talk runs alongside
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
-  g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
+  g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 2.2 };
   (async () => {
     if (g.dockTalk) { await g.dockTalk; g.dockTalk = null; await g.wait(1); }
     await g.say('INES', 'I want to see that again. Without dying this time.');
@@ -600,6 +612,7 @@ async function epilogue(g, haloNow) {
   let wantHalo = haloNow;
   if (!haloNow) {
     g.save('epilogue');
+    if (g.mode === 'console') await g.closeApp(); // step back from the feed: the logbook should not sit over an open console
     await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
     if (first && (await logbook(g, { halo: !g.flags.haloDone })) === 'halo') wantHalo = true;
   }
