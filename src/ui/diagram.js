@@ -6,6 +6,7 @@
 // The window scrolls like a strip chart, keeping "now" in view, with at most a 2:1 squash of time.
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
+const SING = 'singularity: the end of every path inside', HOR = 'horizon: no way back below this';
 
 export class SpacetimeDiagram {
   constructor(canvas, infall) {
@@ -46,6 +47,12 @@ export class SpacetimeDiagram {
     // inside the horizon
     const [, yH] = this.P(2, 0), [, y0] = this.P(0, 0);
     ctx.fillStyle = 'rgba(255,90,80,.08)'; ctx.fillRect(pad.l, yH, w, y0 - yH);
+    // labels claim their space as they go; the moving ones (names, 'now', the burn) step aside from each other
+    // and from the fixed captions, reserved here first, instead of printing on top of them
+    this._placed = [];
+    ctx.font = `${10 * d}px ${MONO}`;
+    const reserve = (text, x, y) => { this._placed.push([x - 3 * d, y - 10 * d, x + ctx.measureText(text).width + 3 * d, y + 4 * d]); };
+    reserve(SING, pad.l + 6 * d, y0 - 8 * d); reserve(HOR, pad.l + 6 * d, yH - 6 * d);
     // light-cone lattice
     const stepT = 10 * Math.ceil((t1 - t0) / 90);
     for (const r of [1, 4, 8, 12, 16, 20]) for (let T = Math.ceil(t0 / stepT) * stepT; T < t1; T += stepT) this._cone(ctx, r, T, 0.22);
@@ -92,7 +99,7 @@ export class SpacetimeDiagram {
     this._dot(ctx, f.rOf(eNow), f.tTilde(eNow), '#ffc882');
     this._dot(ctx, f.R0, nowStation, '#8fb8ff');
     const pf = this.P(f.rOf(eNow), f.tTilde(eNow)), ps = this.P(f.R0, nowStation);
-    if (this.names.faller && pf[0] > pad.l + 4 * d) this._tag(ctx, this.names.faller, pf[0] + 8 * d, Math.min(pf[1] - 6 * d, h - pad.b - 4 * d), 'rgba(255,200,130,.98)');
+    if (this.names.faller && pf[0] > pad.l + 4 * d) this._tag(ctx, this.names.faller, pf[0] + 8 * d, Math.min(pf[1] - 6 * d, y0 - 14 * d), 'rgba(255,200,130,.98)'); // above the singularity line, never clipped under it
     // at the start "now" sits where the station's own label is: say both in one tag instead of two on top of each other
     ctx.font = `${10 * d}px ${MONO}`;
     const stationEnd = pad.l + 6 * d + ctx.measureText(this.names.station).width + 6 * d;
@@ -109,8 +116,8 @@ export class SpacetimeDiagram {
     ctx.fillStyle = 'rgba(155,152,180,.9)';
     ctx.textAlign = 'right'; ctx.fillText('later →', w - pad.r, h - 10 * d); ctx.textAlign = 'start';
     ctx.fillText(`time → (${(t1 - t0).toFixed(0)} M across) · up: distance from centre`, pad.l, h - 10 * d);
-    this._label(ctx, 'singularity: the end of every path inside', pad.l + 6 * d, y0 - 8 * d, 'rgba(255,107,92,.95)');
-    this._label(ctx, 'horizon: no way back below this', pad.l + 6 * d, yH - 6 * d, 'rgba(255,180,92,.95)');
+    this._label(ctx, SING, pad.l + 6 * d, y0 - 8 * d, 'rgba(255,107,92,.95)', true);
+    this._label(ctx, HOR, pad.l + 6 * d, yH - 6 * d, 'rgba(255,180,92,.95)', true);
     if (!nowMerged) this._label(ctx, this.names.station, pad.l + 6 * d, this.P(f.R0, 0)[1] - 6 * d, 'rgba(143,184,255,.95)');
   }
 
@@ -147,8 +154,23 @@ export class SpacetimeDiagram {
   _tag(ctx, text, x, y, color) {
     const d = this.g.d; ctx.font = `500 ${10.5 * d}px ${MONO}`; const tw = ctx.measureText(text).width;
     x = Math.min(x, this.g.w - this.g.pad.r - tw - 4 * d);
+    y = this._fit(x, y, tw);
     ctx.fillStyle = 'rgba(8,10,20,.82)'; ctx.fillRect(x - 3 * d, y - 10 * d, tw + 6 * d, 14 * d);
     ctx.fillStyle = color; ctx.fillText(text, x, y);
   }
-  _label(ctx, text, x, y, color) { ctx.fillStyle = color; ctx.font = `${10 * this.g.d}px ${MONO}`; ctx.fillText(text, x, y); }
+  _label(ctx, text, x, y, color, fixed = false) {
+    ctx.fillStyle = color; ctx.font = `${10 * this.g.d}px ${MONO}`;
+    if (!fixed) y = this._fit(x, y, ctx.measureText(text).width);
+    ctx.fillText(text, x, y);
+  }
+  /** The nearest height at or around y where a label of width tw at x overlaps nothing placed so far. */
+  _fit(x, y, tw) {
+    const d = this.g.d, placed = this._placed || (this._placed = []);
+    const box = (yy) => [x - 3 * d, yy - 10 * d, x + tw + 3 * d, yy + 4 * d];
+    for (const k of [0, -14, 14, -28, 28, -42, 42]) {
+      const r = box(y + k * d);
+      if (!placed.some((p) => r[0] < p[2] && r[2] > p[0] && r[1] < p[3] && r[3] > p[1])) { placed.push(r); return y + k * d; }
+    }
+    placed.push(box(y)); return y;
+  }
 }

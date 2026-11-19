@@ -72,7 +72,10 @@ export function mountGame(root, { checkpoint } = {}) {
   const hud = createHud(el);
   g.hud = hud;
   const audio = createAudio(); g.audio = audio;
-  const controls = createControls(el, { onBack: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (g.photo) g.photo.exit(); else if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk') setPaused(true); }, onSkip: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (!g.paused && !g.photo) hud.skip(); } });
+  // a story choice or the logbook holds the screen: Esc there must not open the pause menu on top of it (a
+  // player still pressing Esc to leave a console the story already closed paused the game mid-choice)
+  const storyUi = () => hud.choosing || !!el.querySelector('.fp-logbook');
+  const controls = createControls(el, { onBack: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (g.photo) g.photo.exit(); else if (g.mode === 'console') closeApp(); else if (g.paused) resume(); else if (g.mode === 'walk' && !storyUi()) setPaused(true); }, onSkip: () => { if (g.skipCutscene && !g.paused) g.skipCutscene(); else if (!g.paused && !g.photo) hud.skip(); } });
   // ---- settings ----
   let settings = loadSettings();
   function applySettings() {
@@ -233,7 +236,10 @@ export function mountGame(root, { checkpoint } = {}) {
   let wasLocked = false;
   const onLockChange = () => {
     const locked = document.pointerLockElement === el;
-    if (wasLocked && !locked && g.mode === 'walk' && !g.paused && !hud.choosing && !menuSuppress && !g.photo) setPaused(true);
+    if (wasLocked && !locked && g.mode === 'walk' && !g.paused && !storyUi() && !menuSuppress && !g.photo) setPaused(true);
+    // the mouse was taken (a late lock request, a click on the view) while a choice or the logbook is up: hand it
+    // back quietly, so the buttons can be clicked and losing it later does not pause
+    if (locked && storyUi()) { wasLocked = false; document.exitPointerLock?.(); return; }
     wasLocked = locked;
   };
   let menuSuppress = false;
@@ -357,7 +363,7 @@ export function mountGame(root, { checkpoint } = {}) {
     const inp = controls.read(photo.on ? realDt : dt);
     // without pointer lock the mouse does not turn the view: say so whenever that is the case, so a lost lock
     // never leaves the view looking stuck
-    hud.lookHint(g.mode === 'walk' && !g.paused && !photo.on && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && !el.querySelector('.fp-logbook'));
+    hud.lookHint(g.mode === 'walk' && !g.paused && !photo.on && !controls.isTouch() && !controls.locked && !hud.choosing && g.time > 1 && !el.querySelector('.fp-logbook') && !ctlHint); // the controls hint already says to click: one prompt, not two stacked over the view
     if (g.mode !== 'walk' || g.paused) focusBox.hidden = true;
     runChip.hidden = !(settings.runMode === 'toggle' && controls.running && g.mode === 'walk' && !g.paused && !photo.on);
     if (photo.on) photo.update(realDt, inp);
@@ -461,7 +467,8 @@ export function mountGame(root, { checkpoint } = {}) {
     if (g.waypoint && g.mode === 'walk') {
       const wp = g.waypoint.pos || g.waypoint;
       const d3 = Math.hypot(wp.x - g.me.x, wp.z - g.me.z);
-      if (d3 < (g.waypoint.near ?? 1.6)) way.hidden = true;
+      // arrived, or the use prompt is already up (the bracket marks the thing): the marker would only cover it
+      if (d3 < (g.waypoint.near ?? 1.6) || (focusIt && d3 < 3.5)) way.hidden = true;
       else {
         const v = wp.clone().project(camera), W = el.clientWidth, H = el.clientHeight;
         const behind = v.z > 1;

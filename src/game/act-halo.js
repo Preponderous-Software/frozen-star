@@ -98,7 +98,7 @@ function drawSide(ctx, w, hh, cam, locked) {
 // ---------- the laser section of the helm panel ----------
 function laserApp(body, g, st) {
   st.cam = st.cam || g.haloCam || (g.haloCam = sideCam()); // one WebGL context, made the first time it is needed
-  const dispose = helmApp(body, g, { onTarget: (r) => { g.helmTarget = Math.abs(r - PHOTON_SPHERE) < SNAP ? PHOTON_SPHERE : r; st.locked = false; } }); // a near miss snaps to 1.5 rₛ
+  const dispose = helmApp(body, g, { onTarget: (r) => { g.helmTarget = Math.abs(r - PHOTON_SPHERE) < SNAP ? PHOTON_SPHERE : r; st.locked = false; }, presets: [{ label: '1.5 rₛ · photon sphere', r: PHOTON_SPHERE, title: 'Take the Tern straight to the photon sphere' }] }); // a near miss snaps to 1.5 rₛ
   const orbit = h('canvas.fp-feed', { style: { aspectRatio: '1 / 1', maxWidth: '360px', margin: '0 auto' } }); orbit.width = orbit.height = 400;
   const side = h('canvas.fp-feed'); side.width = 640; side.height = 360;
   const status = h('p.fine');
@@ -153,11 +153,12 @@ export async function haloAct(g, { logbook } = {}) {
   })().catch(() => {});
   await g.until(() => st.locked);
   g.waypoint = null;
-  g.objective('Photon sphere reached. Listen to WREN, then log a prediction'); // the descent is done: its hint must not fire now
+  g.objective('Photon sphere reached. Listen to WREN\'s briefing'); // the descent is done: its hint must not fire now
   stats.halo = { ...(stats.halo || {}) };
   await intro; // a quick pilot gets there first: let the briefing finish, so the lines stay in order
   await g.say('WREN', 'Photon sphere. I have locked the field to it, to within a centimetre. You will see why that matters.');
   await g.say('WREN', `Look forward: the shadow now covers exactly half the sky, ${Math.round(shadowDeg(PHOTON_SPHERE))} degrees. Its edge is a circle at right angles to our nose: straight up, straight down, and straight out on either side of the hull.`);
+  g.objective('Log a prediction (the answer box)');
   const pick = await g.hud.choice('Log a prediction: fired along the hull, when will the pulse come back round to the stern, by the ship\'s clock?', [
     `After about ${LAP_S.toFixed(0)} seconds`,
     `After about ${LAP_FAR_S.toFixed(0)} seconds`,

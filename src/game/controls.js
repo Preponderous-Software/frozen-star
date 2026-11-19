@@ -50,7 +50,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     if (k === 'Escape' || is(k, 'pause')) { backEdge = true; onBack?.(); return; }
     // answering a question: click the matching option (the HUD also takes plain 1 2 3)
     const ans = ANSWERS.findIndex((a) => is(k, a));
-    if (ans >= 0 && !e.repeat) { const b = el.querySelectorAll('.fp-choice-opts button')[ans]; if (b) { e.preventDefault(); b.click(); return; } }
+    if (ans >= 0 && !e.repeat && !el.classList.contains('fp-paused')) { const b = el.querySelectorAll('.fp-choice-opts button')[ans]; if (b) { e.preventDefault(); b.click(); return; } }
     if (is(k, 'skip')) { onSkip?.(); if (!enabled) return; }
     if (!enabled) return;
     // Enter on a focused button presses that button, not "use"

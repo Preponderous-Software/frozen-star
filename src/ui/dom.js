@@ -109,10 +109,18 @@ export function sparkline(canvas, values, { kind = 'line', color = '#8fb8ff', mi
   for (const r of refs) {
     const y = Y(r.y); ctx.strokeStyle = r.color || 'rgba(155,152,180,.6)'; ctx.setLineDash([3 * d, 3 * d]);
     ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke(); ctx.setLineDash([]);
-    if (r.label) { ctx.fillStyle = r.color || 'rgba(155,152,180,.9)'; ctx.textAlign = 'right'; ctx.fillText(r.label, W - pad.r - 2 * d, y - 3 * d); ctx.textAlign = 'start'; }
   }
+  // the reference labels go on last, on a dark backing, so tall bars never cover them
+  const refLabels = () => {
+    for (const r of refs) {
+      if (!r.label) continue;
+      const y = Y(r.y), tw = ctx.measureText(r.label).width, x1 = W - pad.r - 2 * d, by = Math.max(pad.t + 9 * d, y - 3 * d);
+      ctx.fillStyle = 'rgba(9,11,22,.82)'; ctx.fillRect(x1 - tw - 3 * d, by - 10 * d, tw + 5 * d, 13 * d);
+      ctx.fillStyle = r.color || 'rgba(155,152,180,.95)'; ctx.textAlign = 'right'; ctx.fillText(r.label, x1, by); ctx.textAlign = 'start';
+    }
+  };
   if (xLabel) { ctx.fillStyle = 'rgba(155,152,180,.8)'; ctx.fillText(xLabel, pad.l, H - 3 * d); }
-  if (!values.length) return;
+  if (!values.length) { refLabels(); return; }
   const w = W - pad.l - pad.r;
   if (kind === 'bars') {
     const n = values.length, slot = Math.min(w / n, 40 * d), bw = Math.max(2 * d, slot * 0.7);
@@ -125,4 +133,5 @@ export function sparkline(canvas, values, { kind = 'line', color = '#8fb8ff', mi
     ctx.strokeStyle = color; ctx.lineWidth = 1.6 * d; ctx.beginPath(); values.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)))); ctx.stroke();
     ctx.fillStyle = color; ctx.beginPath(); ctx.arc(X(n - 1), Y(values[n - 1]), 3 * d, 0, 7); ctx.fill();
   }
+  refLabels();
 }

@@ -444,6 +444,7 @@ async function rescueAttempt(g) {
     await g.until(() => run.S() >= run.saved.seenAt);
     const lit = 'Engine\'s lit! I felt that. I\'m climbing. I\'m coming home!';
     run.log.push({ text: lit }); g.audio.radio(f.onePlusZ(f.rOfTau(run.saved.tau)), lit.length);
+    g.objective(null); // the reply is in: done now, not after the debrief
     await g.say('INES', lit);
     await g.say('WREN', `You fired ${g.flags.stats.marginS} seconds before the last possible moment. At that moment your screen showed her ${(f.seenAt(run.fired).r / 2).toFixed(1)} rₛ out, looking almost normal.`);
     g.ticks.delete(tick);
@@ -468,7 +469,8 @@ async function rescueAttempt(g) {
     await g.until(() => queue.every((q) => q.done || !isFinite(q.at)) || run.S() > 200);
     await g.wait(3);
     g.ticks.delete(tick); removeMarker();
-    g.objective(null);
+    // the objective is not done, it failed: it stays up (marked) and the retry picks it up again
+    g.hud.objectiveNote('Too late');
   }
   return saved;
 }
@@ -485,8 +487,11 @@ async function helmAct(g) {
   g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 2.2 };
   (async () => {
     if (g.dockTalk) { await g.dockTalk; g.dockTalk = null; await g.wait(1); }
+    // a quick pilot may already be down there: then the briefing would come after the fact, so skip it
+    const below = () => 1 / hoverRate(g.shipR) >= 2;
+    if (below()) return;
     await g.say('INES', 'I want to see that again. Without dying this time.');
-    await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
+    if (!below()) await g.say('WREN', 'The station-keeping field can take us lower. Below 1.33 rₛ, every second aboard is two seconds on the relay far away.');
   })().catch(() => {});
   await g.until(() => 1 / hoverRate(g.shipR) >= 2);
   g.waypoint = null;
@@ -514,10 +519,10 @@ async function helmAct(g) {
   g.objective('Return to 10 rₛ (helm)');
   await g.say('INES', 'Okay. That\'s enough. Take us back up.');
   await g.until(() => g.shipR > R_STATION - 0.05);
+  g.objective(null); // arrived: done now, not after WREN's line
   const lost = (g.clocks.relay - relay0) - (g.clocks.ship - ship0);
   g.flags.stats.lost = lost;
   await g.say('WREN', `Back at station. The rest of the universe aged ${Math.round(lost)} seconds more than we did down there.`);
-  g.objective(null);
   g.save('helm-done');
 }
 
@@ -526,10 +531,13 @@ async function orpheusAct(g) {
   g.flags.orpheusReady = true; g.flags.beaconDone = true; g.flags.mapUnlocked = true;
   let launched = false, onLaunch = null;
   g.launchOrpheus = () => { if (g.orpheus) return; launched = true; onLaunch?.(); };
-  await g.say('INES', 'One probe left. Orpheus. It has a camera, and it streams.');
-  await g.say('WREN', 'Orpheus is loaded at the probe console. Its feed will show on the starboard screen.');
+  // the objective first, the talk alongside: never a stretch with nothing to do
   g.objective('Launch Orpheus (probe console), then watch its feed (starboard screen)', { hint: 'Orpheus is loaded at the probe console, on the left.' });
   g.waypoint = { pos: consolePos(g, 'probe'), label: 'Probe', near: 1.4 };
+  const intro = (async () => {
+    await g.say('INES', 'One probe left. Orpheus. It has a camera, and it streams.');
+    await g.say('WREN', 'Orpheus is loaded at the probe console. Its feed will show on the starboard screen.');
+  })().catch(() => {});
   g.feed = createFeed();
   const FRAME = 1.5; // M of probe time between frames
   let frames = 0, tauSent = 0, rSent = R_STATION;
@@ -568,6 +576,7 @@ async function orpheusAct(g) {
   g.objective('Watch the Orpheus feed (starboard screen)', { hint: 'The feed is on the big screen on the starboard wall, to the right as you face the window.', after: 25 });
   // while the early frames come in: what to expect when Orpheus passes the depth where the ship hovered
   (async () => {
+    await intro; // a quick launch: the intro lines finish first, so the talk stays in order
     await g.until(() => frames >= 8);
     await g.say('INES', 'There it goes. The shadow\'s bigger every frame.');
     await g.until(() => frames >= 18);
@@ -583,11 +592,14 @@ async function orpheusAct(g) {
   g.say('YOU', '(That view. That\'s what I dreamt.)', { style: { fontStyle: 'italic' } });
   await g.wait(6);
   await g.until(() => !isFinite(g.feedState().nextIn)); // only once the last frame is in
-  g.say('WREN', 'No more frames are coming. Everything Orpheus sent after that last one is still trying to climb out, and never will. Its marker in the window is fading the same way.');
+  g.say('WREN', 'No more frames are coming. The next one was due from inside the horizon, and nothing sent from there gets out. Its marker in the window is fading: its last light is still climbing, slower and redder.');
   await g.until(() => run.seen().lnz > 9);
   await g.wait(2);
   g.objective(null);
+  // step back from the feed while Ines asks, so the answer box comes up as soon as she finishes
+  const stepBack = g.mode === 'console' ? g.closeApp() : null;
   await g.say('INES', 'So that last frame is all we get. Did it fall in, or is it stuck there?');
+  await stepBack;
   if (g.mode === 'console') await g.closeApp();
   const pick = await g.hud.choice('What do you tell Ines?', ['It fell in. Its last light just never reaches us.', 'It is frozen at the edge, forever.']);
   g.flags.stats.frames = frames; g.flags.stats.rLast = rSent / 2; g.flags.stats.answer = pick === 0 ? 'fell in' : 'frozen';
@@ -687,7 +699,9 @@ function freeRoam(g) {
 }
 
 // ---------- the logbook: what the player saw, against what really happened ----------
-function logbook(g, { halo = false } = {}) {
+async function logbook(g, { halo = false } = {}) {
+  // never on top of the pause menu: a player who paused just before it opens sees it once they resume
+  await g.until(() => !g.paused);
   const st = g.flags.stats || {}, tries = g.flags.rescueTries || 0;
   const f = new Infall(R_STATION), s = (m) => Math.round(secs(m)), inside = secs(f.tauEnd - f.tauH).toFixed(1);
   const label = (t) => `<small style="display:block;font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">${t}</small>`;

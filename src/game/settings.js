@@ -98,7 +98,7 @@ export function controlsHintHtml({ touch = false } = {}) {
   const k = (a) => `<kbd>${esc(keyName(keysFor(a)[0]) || '?')}</kbd>`;
   const turn = keysFor('turnLeft').length && keysFor('turnRight').length ? ` or ${k('turnLeft')}${k('turnRight')}` : '';
   const run = keysFor('run').length ? (loadSettings().runMode === 'toggle' ? `, ${k('run')} to run (press again to walk)` : `, hold ${k('run')} to run`) : '';
-  return `${k('forward')}${k('left')}${k('backward')}${k('right')} to walk${run}, mouse${turn} to look, ${keyHtml('use')} to use things, <kbd>Esc</kbd> to pause.`;
+  return `${k('forward')}${k('left')}${k('backward')}${k('right')} to walk${run}, click and move the mouse${turn} to look, ${keyHtml('use')} to use things, <kbd>Esc</kbd> to pause.`;
 }
 
 // ---- settings ----

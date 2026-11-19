@@ -72,6 +72,7 @@ export function createHud(root) {
     /** Fade to `alpha` (0 = clear, 1 = black) over `sec` seconds. */
     fade(alpha, sec = 1, color = '#000') {
       fade.style.transition = `opacity ${sec}s ease`; fade.style.background = color; fade.style.opacity = alpha;
+      root.classList.toggle('fp-faded', alpha > 0.5); // labels and brackets drawn over the view go dark with it
       return new Promise((r) => setTimeout(r, sec * 1000));
     },
     /** A title card in the middle of the screen. */
@@ -91,7 +92,7 @@ export function createHud(root) {
         const qid = `fp-q${++choiceN}`;
         const box = h('div.fp-choice', { role: 'dialog', 'aria-labelledby': qid }, h('p', { id: qid }, question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${answerLabel(i)}. ${o}`))), bar);
         root.append(box);
-        const key = (e) => { const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
+        const key = (e) => { if (root.classList.contains('fp-paused')) return; /* behind the pause menu the answer keys do nothing */ const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
         addEventListener('keydown', key);
         if (document.pointerLockElement) document.exitPointerLock?.();
         // the time limit runs on game time (it stops while paused), with a bar that shows what is left
