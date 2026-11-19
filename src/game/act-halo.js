@@ -81,7 +81,7 @@ function sideCam() {
   };
 }
 
-function drawSide(ctx, w, hh, cam, locked) {
+function drawSide(ctx, w, hh, cam, locked, told) {
   ctx.drawImage(cam.canvas, 0, 0, w, hh);
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, w, hh * 0.13);
   ctx.fillStyle = '#ffc882'; ctx.font = `500 ${hh * 0.05}px "IBM Plex Mono", monospace`;
@@ -92,7 +92,8 @@ function drawSide(ctx, w, hh, cam, locked) {
   ctx.beginPath(); ctx.arc(w / 2, hh / 2, hh * 0.06, 0, 7); ctx.moveTo(w / 2, hh * 0.3); ctx.lineTo(w / 2, hh * 0.41); ctx.moveTo(w / 2, hh * 0.59); ctx.lineTo(w / 2, hh * 0.7); ctx.stroke();
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, hh * 0.86, w, hh * 0.14);
   ctx.fillStyle = '#9dffd0';
-  ctx.fillText(`Dead ahead: our own light, ${LAP_S.toFixed(1)} s old`, w * 0.03, hh * 0.945);
+  // the light's age is the answer to the prediction question: shown only once a prediction is logged
+  ctx.fillText(told ? `Dead ahead: our own light, ${LAP_S.toFixed(1)} s old` : 'Dead ahead: the edge of the shadow', w * 0.03, hh * 0.945);
 }
 
 // ---------- the laser section of the helm panel ----------
@@ -113,13 +114,13 @@ function laserApp(body, g, st) {
     fire.hidden = st.step !== 'hull';
     fire.disabled = !st.locked || flying || st.step !== 'hull' || !st.onFire;
     mast.hidden = st.step !== 'mast'; mast.disabled = !st.locked || flying || st.step !== 'mast' || !st.onFire;
-    status.textContent = st.locked ? `Field locked to the photon sphere, ${(PHOTON_SPHERE / 2).toFixed(3)} rₛ, to within a centimetre.${!flying && !st.onFire && st.step !== 'done' ? ' The laser arms in a moment: listen to WREN first.' : ''}`
+    status.textContent = st.locked ? `Field locked to the photon sphere, ${(PHOTON_SPHERE / 2).toFixed(3)} rₛ, to within a centimetre.${st.step === 'done' ? ' Laser test complete.' : !flying && !st.onFire && st.step === 'hull' && !st.pulses.length ? ' The laser arms in a moment: listen to WREN first.' : ''}`
       : Math.abs(g.shipR - PHOTON_SPHERE) < 0.2 ? `Altitude ${(g.shipR / 2).toFixed(3)} rₛ. Bring it to 1.500 rₛ and the field will lock.`
         : `Altitude ${(g.shipR / 2).toFixed(3)} rₛ. The laser test needs the ship at the photon sphere, 1.5 rₛ.`;
     drawOrbit(orbit.getContext('2d'), orbit.width, orbit.height, { shipR: g.shipR, pulses: st.pulses });
     // the hull camera: re-rendered only when the altitude has moved, or once the lock engages
     if (st.cam.ok() && (Math.abs(camAt - g.shipR) > 0.02 || camLocked !== st.locked)) { camAt = g.shipR; camLocked = st.locked; st.cam.render(g.shipR, g.time); }
-    if (st.cam.ok()) drawSide(side.getContext('2d'), side.width, side.height, st.cam, st.locked); else side.hidden = true;
+    if (st.cam.ok()) drawSide(side.getContext('2d'), side.width, side.height, st.cam, st.locked, st.predicted); else side.hidden = true;
   });
   return () => { stop(); dispose?.(); };
 }
@@ -164,6 +165,7 @@ export async function haloAct(g, { logbook } = {}) {
     `After about ${LAP_FAR_S.toFixed(0)} seconds`,
     'Never: light travels in straight lines',
   ], { timeout: 25 });
+  st.predicted = true;
   stats.halo.prediction = pick === 0 ? 'right' : pick == null ? 'none' : 'wrong';
   g.objective('Fire the ranging laser along the hull (helm)', { hint: 'The laser controls are at the top of the helm panel, once the field is locked at 1.5 rₛ.', after: 20 });
 
