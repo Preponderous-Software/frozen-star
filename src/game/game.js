@@ -66,6 +66,8 @@ export function mountGame(root, { checkpoint } = {}) {
     me: { x: 3.1, z: 4.8, yaw: 0, pitch: 0, vx: 0, vz: 0 },
     eye: EYE, clocks: { ship: 0, relay: 0 }, physicsPaused: false, physicsTime: 0,
     skyOverride: null, screenDraw: {}, aborted: false, ticks: new Set(),
+    // ship-layer bookkeeping (read it with ?debug as __fs.renderStats): blankFrames must stay 0
+    renderStats: { frames: 0, redraws: 0, dprChanges: 0, blankFrames: 0, errors: 0, lost: 0, restored: 0 },
   };
   const hud = createHud(el);
   g.hud = hud;
@@ -270,6 +272,7 @@ export function mountGame(root, { checkpoint } = {}) {
   let skyMode = null;
   let stillFrames = 0;
   let last = performance.now(), raf = 0, alive = true, screenTimer = 0, gait = strideStart(), lastFocusId = null, frameAvg = 16, dprTimer = 0;
+  let dprCeil = { dpr: Infinity, until: 0 }; // after a size proved too slow, stay below it for a while
   let dpr = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
   const raycaster = new THREE.Raycaster();
   const way = h('div.fp-way', { hidden: true }, h('i'), h('span'));
@@ -284,18 +287,41 @@ export function mountGame(root, { checkpoint } = {}) {
   // the controls hint stays until the player has both walked and looked around, then fades
   let ctlHint = null;
   g.controlsHint = (html) => { hud.hint(html); ctlHint = html ? { html: el.querySelector('.fp-hint').innerHTML, moved: 0, looked: 0, fading: false } : null; };
-  function resize() {
-    stillFrames = 0; // a resized canvas is cleared: draw it again
+  // The ship canvas sits over the sky with a transparent background. Setting its size clears it, and the browser
+  // shows whatever the canvas holds when the current task ends (a rAF frame or a ResizeObserver callback). So every
+  // size change is followed by a draw in the same task: a cleared canvas never reaches the screen.
+  let shipCleared = false;
+  let shipLive = false; // set once the loop starts (after the shader warm-up): before that a draw would link shaders synchronously
+  function setCanvasSize() {
+    stillFrames = 0;
     const w = el.clientWidth, hh = el.clientHeight;
+    const pw = threeCanvas.width, ph = threeCanvas.height;
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, hh, false);
+    if (threeCanvas.width !== pw || threeCanvas.height !== ph) shipCleared = true;
     camera.aspect = w / Math.max(1, hh);
     // keep at least ~80° across on tall (portrait) screens
     const hfov = THREE.MathUtils.degToRad(80);
     camera.fov = camera.aspect < 1.15 ? Math.min(105, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / camera.aspect))) : settings.fov;
     camera.updateProjectionMatrix();
   }
-  const ro = new ResizeObserver(resize); ro.observe(el); applySettings();
+  /** Draw the ship layer now (unless the story hides it). Safe to call from anywhere: no world time passes. */
+  function drawShip() {
+    if (g.skyOverride && g.hideShip) { shipCleared = false; return; } // the canvas is hidden: a clear does not show
+    try { renderer.render(scene, camera); g.renderStats.frames++; shipCleared = false; }
+    catch (err) { g.renderStats.errors++; if (g.renderStats.errors < 4) console.error('Ship render failed:', err); }
+  }
+  function resize() {
+    setCanvasSize();
+    if (shipCleared && shipLive) { drawShip(); g.renderStats.redraws++; } // before the first frame nothing is on screen yet
+  }
+  const ro = new ResizeObserver(() => { resize(); if (shipCleared && shipLive) g.renderStats.blankFrames++; }); ro.observe(el); applySettings();
+  // a lost GPU context (a driver reset): three.js asks for it back and rebuilds its GL state when it returns;
+  // here the count is kept and the ship is drawn again at once, at the right size
+  const onShipLost = () => { g.renderStats.lost++; };
+  const onShipRestored = () => { g.renderStats.restored++; stillFrames = 0; shipCleared = true; resize(); };
+  threeCanvas.addEventListener('webglcontextlost', onShipLost);
+  threeCanvas.addEventListener('webglcontextrestored', onShipRestored);
   const photo = createPhoto(g, { el, THREE, camera, scene, renderer, sky, skyCanvas, threeCanvas, controls, audio, resize, invertY: () => settings.invertY });
   g.ticks.add(watchGame(g));
   const stopDisc = onUnlock((d) => hud.toast(`Discovery · ${d.title}`, { sub: d.fact, cls: 'disc-toast', sec: 5 }));
@@ -499,20 +525,28 @@ export function mountGame(root, { checkpoint } = {}) {
       }
     }
     threeCanvas.style.visibility = g.skyOverride && g.hideShip ? 'hidden' : 'visible';
-    if (frameN <= 3) mark('pre-render');
-    if (!(g.skyOverride && g.hideShip) && !idle) renderer.render(scene, camera);
-    if (frameN <= 3) mark('rendered');
-    audio.scene(g);
-    // adaptive resolution for the ship view: aim for 30+ fps
+    // adaptive resolution for the ship view: aim for 30+ fps. Changing the size clears the canvas, so it
+    // happens here, BEFORE this frame's render: done after it, the browser showed one cleared (transparent)
+    // frame, the sky alone, and the ship flashed out of sight.
     const frameMs = (realDt / TIME_SCALE) * 1000;
     if (!(frameMs > 60 && frameMs > 3 * frameAvg)) frameAvg = frameAvg * 0.95 + frameMs * 0.05; // skip one-off hitches
     dprTimer += realDt / TIME_SCALE;
-    if (dprTimer > 2) {
+    if (dprTimer > 2 && !idle) {
       dprTimer = 0;
-      const max = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1);
-      const next = frameAvg > 38 ? Math.max(0.6, dpr * 0.8) : frameAvg < 20 ? Math.min(max, dpr * 1.15) : dpr;
-      if (Math.abs(next - dpr) > 0.02) { dpr = next; resize(); }
+      const now = performance.now();
+      const max = Math.min(LOW_GPU ? 0.75 : 1.5, devicePixelRatio || 1, now < dprCeil.until ? dprCeil.dpr : Infinity);
+      let next = dpr;
+      if (frameAvg > 38) next = Math.max(0.6, dpr * 0.8);
+      // going up costs 1.15² ≈ 1.32× the pixels: only when that still fits, so the size does not swing back and forth
+      else if (frameAvg * 1.32 < 26) next = Math.min(max, dpr * 1.15);
+      if (next < dpr - 0.02) dprCeil = { dpr, until: now + 30000 }; // too slow here: don't try this size again for a while
+      if (Math.abs(next - dpr) > 0.02) { dpr = next; setCanvasSize(); g.renderStats.dprChanges++; }
     }
+    if (frameN <= 3) mark('pre-render');
+    if (!idle) drawShip();
+    if (frameN <= 3) mark('rendered');
+    if (shipCleared) g.renderStats.blankFrames++; // a cleared canvas is about to reach the screen
+    audio.scene(g);
     raf = requestAnimationFrame(frame);
   }
   // one frame that throws must not stop the world: report it, then keep the loop going
@@ -538,7 +572,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const warmEl = h('div.fp-warm', { role: 'status' }, 'Warming up the ship\u2026');
   el.append(warmEl);
   let going = false;
-  const go = () => { if (going) return; going = true; warmEl.remove(); if (!alive) return; mark('shaders warm'); last = performance.now(); raf = requestAnimationFrame(frame); document.body.dataset.ready = '1'; };
+  const go = () => { if (going) return; going = true; warmEl.remove(); if (!alive) return; shipLive = true; mark('shaders warm'); last = performance.now(); raf = requestAnimationFrame(frame); document.body.dataset.ready = '1'; };
   let warm = null;
   try { warm = renderer.compileAsync?.(scene, camera); } catch (e) { console.warn('shader warm-up failed', e); }
   const warmed = warm ? Promise.race([warm, new Promise((r) => setTimeout(r, 8000))]).catch(() => {}) : Promise.resolve();
@@ -550,6 +584,7 @@ export function mountGame(root, { checkpoint } = {}) {
 
   return () => {
     alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); stopPad(); document.removeEventListener('pointerlockchange', onLockChange);
+    threeCanvas.removeEventListener('webglcontextlost', onShipLost); threeCanvas.removeEventListener('webglcontextrestored', onShipRestored);
     for (const w of waiters) w.rej(new Error('aborted'));
     photo.dispose(); stopDisc(); appDispose?.(); controls.dispose(); hud.dispose(); renderer.dispose(); sky?.dispose(); audio.dispose();
     document.body.classList.remove('fp-active');
