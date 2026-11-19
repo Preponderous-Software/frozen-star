@@ -30,9 +30,9 @@ export function mountGame(root, { checkpoint } = {}) {
   const el = h('div.fp-root');
   const skyCanvas = h('canvas.fp-sky', { 'aria-hidden': 'true' });
   const threeCanvas = h('canvas.fp-three', { 'aria-label': 'Inside the research vessel Tern' });
-  const panel = h('div.fp-panel', { hidden: true });
-  const menuBtn = h('button.fp-menu-btn', { type: 'button', 'aria-label': 'Menu' }, '☰');
-  const menu = h('div.fp-menu', { hidden: true });
+  const panel = h('div.fp-panel', { hidden: true, role: 'region', 'aria-label': 'Console' });
+  const menuBtn = h('button.fp-menu-btn', { type: 'button', 'aria-label': 'Pause menu', 'aria-expanded': 'false', 'aria-controls': 'fp-menu' }, '☰');
+  const menu = h('div.fp-menu', { hidden: true, id: 'fp-menu', role: 'dialog', 'aria-label': 'Paused' });
   el.append(skyCanvas, threeCanvas, panel, menuBtn, menu);
   root.replaceChildren(el);
   document.body.classList.add('fp-active');
@@ -129,7 +129,8 @@ export function mountGame(root, { checkpoint } = {}) {
     // the panel covers the right of the screen: turn a little so the thing you use sits in the free part
     // (on narrow screens it covers the bottom 62%, so look down a little instead)
     const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
-    if (innerWidth > 760) a.yaw -= Math.atan((Math.min(560, innerWidth * 0.48) / innerWidth) * tv * camera.aspect);
+    if (!matchMedia('(max-width: 760px) and (orientation: portrait)').matches) // the side panel (game.css)
+      a.yaw -= Math.atan((Math.min(560, innerWidth * 0.48) / innerWidth) * tv * camera.aspect);
     else a.pitch -= Math.atan(0.62 * tv);
     const tween = g.tweenTo(fpos, unwrap(a.yaw, g.pose.yaw), a.pitch, 0.7);
     // the panel opens while the camera is still settling: a quarter second of real time, so it opens promptly
@@ -208,7 +209,7 @@ export function mountGame(root, { checkpoint } = {}) {
   g.paused = false;
   const isDesktop = /Electron/.test(navigator.userAgent);
   function setPaused(p) {
-    g.paused = p; menu.hidden = !p; audio.duck(p); el.classList.toggle('fp-paused', p);
+    g.paused = p; menu.hidden = !p; audio.duck(p); el.classList.toggle('fp-paused', p); menuBtn.setAttribute('aria-expanded', String(p));
     if (p) { controls.unlock(); renderMenu('main'); }
   }
   function togglePause() { setPaused(!g.paused); }
@@ -247,7 +248,7 @@ export function mountGame(root, { checkpoint } = {}) {
         btn('Main menu', (e) => {
           // two clicks: anything since the last chapter checkpoint is lost
           if (e.currentTarget.dataset.armed) { location.hash = '#title'; return; }
-          e.currentTarget.dataset.armed = '1'; e.currentTarget.textContent = 'Main menu: click again (you go back to the last chapter)';
+          e.currentTarget.dataset.armed = '1'; e.currentTarget.textContent = `Main menu: ${controls.isTouch() ? 'tap' : 'click'} again (you go back to the last chapter)`;
         }),
         isDesktop ? btn('Quit', () => window.close()) : null,
         h('p.fine', 'Progress saves automatically at each chapter.')].filter(Boolean));

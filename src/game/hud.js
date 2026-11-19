@@ -10,7 +10,7 @@ const SPEAKERS = {
 
 export function createHud(root) {
   const subs = h('div.fp-subs', { 'aria-live': 'polite' });
-  const objective = h('div.fp-objective', { hidden: true }, h('span', 'Objective'), h('b'), h('small.fp-obj-note', { hidden: true }));
+  const objective = h('div.fp-objective', { hidden: true, role: 'status' }, h('span', 'Objective'), h('b'), h('small.fp-obj-note', { hidden: true, 'aria-hidden': 'true' }) /* a ticking countdown: not read out every second */);
   const prompt = h('div.fp-prompt', { hidden: true });
   const cross = h('div.fp-cross');
   const fade = h('div.fp-fade');
@@ -18,7 +18,7 @@ export function createHud(root) {
   const hint = h('div.fp-hint', { hidden: true });
   root.append(cross, objective, prompt, subs, hint, card, fade);
 
-  let lineId = 0, pending = null;
+  let lineId = 0, pending = null, choiceN = 0;
   const timers = new Set(); // lines on screen, counted down in game time so pausing freezes them
   const look = h('div.fp-look', { hidden: true }, 'Click to look around');
   root.append(look);
@@ -88,7 +88,8 @@ export function createHud(root) {
         api.choosing = true;
         let finish = (i) => { if (done) return; done = true; api.choosing = false; box.remove(); res(i); };
         const bar = timeout ? h('div.fp-choice-time', h('i')) : null;
-        const box = h('div.fp-choice', h('p', question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${answerLabel(i)}. ${o}`))), bar);
+        const qid = `fp-q${++choiceN}`;
+        const box = h('div.fp-choice', { role: 'dialog', 'aria-labelledby': qid }, h('p', { id: qid }, question), h('div.fp-choice-opts', options.map((o, i) => h('button', { type: 'button', onclick: () => finish(i) }, `${answerLabel(i)}. ${o}`))), bar);
         root.append(box);
         const key = (e) => { const n = Number(e.key); if (n >= 1 && n <= options.length) { removeEventListener('keydown', key); finish(n - 1); } };
         addEventListener('keydown', key);

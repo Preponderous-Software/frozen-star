@@ -93,7 +93,7 @@ export function answerLabel(i) { return keyName(keysFor(`answer${i + 1}`)[0]) ||
 
 /** The first "how to move" hint, in whatever the player holds. */
 export function controlsHintHtml({ touch = false } = {}) {
-  if (touch) return 'Left thumb to walk, drag to look around.';
+  if (touch) return 'Left thumb on the faint circle to walk (push to its edge to run). Drag anywhere else to look. ☰ pauses.';
   if (padMode()) return `Left stick to walk, right stick to look, ${keyHtml('use')} to use things, <kbd>${esc(padName(padFor('pause')))}</kbd> to pause.`;
   const k = (a) => `<kbd>${esc(keyName(keysFor(a)[0]) || '?')}</kbd>`;
   const turn = keysFor('turnLeft').length && keysFor('turnRight').length ? ` or ${k('turnLeft')}${k('turnRight')}` : '';

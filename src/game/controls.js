@@ -31,12 +31,16 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   const is = (code, a) => !!byCode.get(code)?.has(a);
   const touchUI = document.createElement('div');
   touchUI.className = 'fp-touch';
-  touchUI.innerHTML = '<div class="fp-stick"><i></i></div><button type="button" class="fp-use" hidden>Use</button>';
+  touchUI.innerHTML = '<div class="fp-stick" aria-hidden="true"><i></i></div><button type="button" class="fp-use" hidden>Use</button>';
   el.append(touchUI);
   const knob = touchUI.querySelector('.fp-stick i'), stickEl = touchUI.querySelector('.fp-stick'), useBtn = touchUI.querySelector('.fp-use');
   useBtn.addEventListener('click', (e) => { e.stopPropagation(); interactEdge = true; onInteract?.(); });
 
   const isTouch = () => matchMedia('(hover: none)').matches || 'ontouchstart' in window;
+  // on a touch screen a faint stick waits in the lower left, so the left thumb knows where to go
+  const rest = () => { stickEl.style.left = 'max(84px, calc(env(safe-area-inset-left, 0px) + 72px))'; stickEl.style.top = '68%'; };
+  const showRest = () => stickEl.classList.toggle('rest', enabled && isTouch() && !touchStick);
+  rest(); showRest();
 
   const kd = (e) => {
     const k = e.code;
@@ -65,10 +69,10 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   const ts = (e) => {
     if (!enabled) return;
     for (const t of e.changedTouches) {
-      if (t.target.closest('button, .fp-panel, .fp-menu, input, select')) continue;
+      if (t.target.closest('button, a, .fp-panel, .fp-menu, .fp-logbook, .fp-choice, .ph-bar, input, select')) continue; // UI, not the view
       if (!touchStick && t.clientX < innerWidth * 0.42 && t.clientY > innerHeight * 0.35) {
         touchStick = { id: t.identifier, x: t.clientX, y: t.clientY };
-        stickEl.style.left = `${t.clientX}px`; stickEl.style.top = `${t.clientY}px`; stickEl.classList.add('on');
+        stickEl.style.left = `${t.clientX}px`; stickEl.style.top = `${t.clientY}px`; stickEl.classList.add('on'); stickEl.classList.remove('rest');
       } else if (!touchLook) touchLook = { id: t.identifier, x: t.clientX, y: t.clientY };
     }
   };
@@ -87,7 +91,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
   };
   const te = (e) => {
     for (const t of e.changedTouches) {
-      if (touchStick && t.identifier === touchStick.id) { touchStick = null; stickVec = { forward: 0, right: 0, run: false }; knob.style.transform = ''; stickEl.classList.remove('on'); }
+      if (touchStick && t.identifier === touchStick.id) { touchStick = null; stickVec = { forward: 0, right: 0, run: false }; knob.style.transform = ''; stickEl.classList.remove('on'); rest(); showRest(); }
       if (touchLook && t.identifier === touchLook.id) touchLook = null;
     }
   };
@@ -146,7 +150,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     /** Look speed, run mode, smoothing and the bindings, from the player's settings. */
     setSettings(s) { SENS = s.sens; runMode = s.runMode; smoothing = !!s.smoothing; if (runMode === 'hold') runOn = false; if (!smoothing) { smX = 0; smY = 0; } rebuild(); },
     get running() { return runOn; },
-    setEnabled(v) { enabled = v; if (!v) { keys.clear(); runOn = false; rawDX = rawDY = smX = smY = 0; touchStick = null; stickVec = { forward: 0, right: 0, run: false }; stickEl.classList.remove('on'); if (document.pointerLockElement === el) document.exitPointerLock?.(); } },
+    setEnabled(v) { enabled = v; showRest(); if (!v) { keys.clear(); runOn = false; rawDX = rawDY = smX = smY = 0; touchStick = null; stickVec = { forward: 0, right: 0, run: false }; knob.style.transform = ''; stickEl.classList.remove('on'); rest(); if (document.pointerLockElement === el) document.exitPointerLock?.(); } },
     showUse(label) { useBtn.hidden = !label || !isTouch(); if (label) useBtn.textContent = label; },
     unlock() { if (document.pointerLockElement === el) document.exitPointerLock?.(); },
     get locked() { return document.pointerLockElement === el; },
