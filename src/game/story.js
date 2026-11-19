@@ -22,7 +22,13 @@ const consolePos = (g, id) => g.ship.interactables.find((i) => i.id === id).pos.
 export async function runStory(g, cp) {
   const at = Math.max(0, ORDER.indexOf(cp));
   // starting partway (continue or chapter select): unlock what earlier acts would have
-  if (at >= 2) Object.assign(g.flags, { beaconDone: true, mapUnlocked: true });
+  if (at >= 2) {
+    Object.assign(g.flags, { beaconDone: true, mapUnlocked: true });
+    // the map plots the last fall: a save from later in the story still shows K-1's, already over
+    const k1 = createRun(g, 'beacon', { ago: 400 });
+    k1.signals = Array.from({ length: 9 }, (_, i) => ({ tau: (i + 1) * 10 }));
+    g.lastRun = k1;
+  }
   if (at >= 3) Object.assign(g.flags, { inesHome: true, rescueIntro: true });
   if (at >= 4) Object.assign(g.flags, { helmUnlocked: true });
   g.flags.stats = g.flags.stats || {};
@@ -206,6 +212,9 @@ async function dream(g) {
   if (!skipped) g.hud.fade(0, 3);
   await Promise.race([g.wait(2), g.until(() => skipped)]);
   if (!skipped) g.say('YOU', '(Falling. No wind, no sound.)', { style: { fontStyle: 'italic' } });
+  // a line in the long first stretch, so the dream never seems to stall (the fall starts slowly)
+  await g.until(() => f.rOfTau(tau) < 18.5 || skipped);
+  if (!skipped) g.say('YOU', '(Below you, a perfect black disk in the stars. You are falling toward it.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 14 || skipped);
   if (!skipped) g.say('YOU', '(It grows. The stars around its edge are bending, crowding into a ring.)', { style: { fontStyle: 'italic' } });
   await g.until(() => f.rOfTau(tau) < 7 || skipped);

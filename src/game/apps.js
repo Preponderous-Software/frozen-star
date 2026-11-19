@@ -13,8 +13,8 @@ import { HOLE, SEC_PER_M, R_STATION, shipPosition } from './world.js';
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 
 // ---------- physics runs ----------
-export function createRun(g, kind) {
-  const f = new Infall(R_STATION), t0 = g.physicsNow();
+export function createRun(g, kind, { ago = 0 } = {}) {
+  const f = new Infall(R_STATION), t0 = g.physicsNow() - ago; // ago: a run that started that long before now (M)
   const run = {
     kind, f, t0, log: [], fired: null,
     S: () => Math.max(0, g.physicsNow() - t0),
@@ -348,11 +348,13 @@ export function helmApp(body, g, { onTarget }) {
   const sR = stat('Altitude now', '–', 'in horizon radii; 1 rₛ is the horizon'), sGain = stat('Relay clock ahead of yours', '–', 'gained since you woke');
   const sField = stat('Field strength', '–', 'what holds the ship up; nobody aboard feels it'), sTide = stat('Stretch across the hull', '–', 'pull at the bow minus pull at the stern, 40 m apart');
   const up = h('button#fp-home', { onclick: () => { target.value = Math.log10(9); onTarget(R_STATION); } }, 'Return to 10 rₛ');
+  // one-press marks for the clock rates the story asks for: dragging a log slider to an exact rate is fiddly
+  const rateBtn = (k) => { const r = 0.997 * 2 / (1 - 1 / (k * k)); return h('button.fp-rate-btn', { type: 'button', onclick: () => { target.value = Math.log10(r / 2 - 1); onTarget(r); }, title: `Hold where far-away clocks run ${k} times as fast` }, `×${k} · ${(r / 2).toFixed(2)} rₛ`); };
   const rearC = h('canvas.fp-feed', { hidden: true }); rearC.width = 640; rearC.height = 360;
   const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this view; the bright ring is the inner edge of the accretion disk, which now surrounds the ship.');
   body.append(h('p.eyebrow', 'Helm · station-keeping field'),
     h('section.fp-sec', rateHero.el, rateMeter.el),
-    h('div.fp-action', target.el, up),
+    h('div.fp-action', target.el, h('div.fp-action-row', up, ' ', rateBtn(2), ' ', rateBtn(4))),
     h('div.stats', sR.el, sGain.el, sField.el, sTide.el), rearC, rearNote,
     h('p.fine', 'The field pushes every atom aboard equally, so nobody feels it. Pushing everything at once is indistinguishable from standing still: that is the equivalence principle. The field cannot hold the ship below about 1.03 rₛ.'));
   return loop(() => {
