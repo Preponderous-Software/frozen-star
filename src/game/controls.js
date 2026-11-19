@@ -3,13 +3,15 @@
 // Which key or button does what comes from settings.js (the player can change them).
 import { stick, deadzone } from './walk.js';
 import { keysFor, padFor } from './settings.js';
+import { createHolds } from './holds.js';
 
 const LOOK_MOUSE = 0.0022, LOOK_TOUCH = 0.0055, LOOK_PAD = 2.4;
 let SENS = 1;
 const ANSWERS = ['answer1', 'answer2', 'answer3'];
 
 export function createControls(el, { onInteract, onBack, onSkip } = {}) {
-  const keys = new Set();
+  // held keys, timed in real time: a tap between two slow frames still counts, and a hold lasts as long as it was held
+  const keys = createHolds();
   let lookDX = 0, lookDY = 0, interactEdge = false, backEdge = false;
   let touchStick = null, touchLook = null, stickVec = { forward: 0, right: 0, run: false };
   let enabled = true, padPrev = {};
@@ -51,9 +53,9 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     if (is(k, 'use') && !(k === 'Enter' && e.target.closest?.('button, a'))) { interactEdge = true; onInteract?.(); }
     if (is(k, 'run') && !e.repeat) runKeyEdge = true;
     if (byCode.has(k) && !e.target.closest?.('button, a')) e.preventDefault();
-    keys.add(k);
+    keys.press(k);
   };
-  const ku = (e) => keys.delete(e.code);
+  const ku = (e) => keys.release(e.code);
   const mm = (e) => { if (document.pointerLockElement === el && enabled) { rawDX += e.movementX * LOOK_MOUSE * SENS; rawDY += e.movementY * LOOK_MOUSE * SENS; } };
   const click = (e) => {
     if (!enabled || isTouch() || e.target !== el.querySelector('canvas.fp-three')) return;
@@ -89,18 +91,24 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
       if (touchLook && t.identifier === touchLook.id) touchLook = null;
     }
   };
-  addEventListener('keydown', kd); addEventListener('keyup', ku); addEventListener('blur', () => keys.clear());
+  const onBlur = () => keys.clear();
+  addEventListener('keydown', kd); addEventListener('keyup', ku); addEventListener('blur', onBlur);
   document.addEventListener('mousemove', mm);
   el.addEventListener('click', click);
   el.addEventListener('touchstart', ts, { passive: false }); el.addEventListener('touchmove', tm, { passive: false });
   el.addEventListener('touchend', te); el.addEventListener('touchcancel', te);
 
   function read(dt) {
-    const k = (a) => keysFor(a).some((c) => keys.has(c));
-    let forward = (k('forward') ? 1 : 0) - (k('backward') ? 1 : 0);
-    let right = (k('right') ? 1 : 0) - (k('left') ? 1 : 0);
-    let turn = (k('turnRight') ? 1 : 0) - (k('turnLeft') ? 1 : 0);
-    let run = k('run');
+    // each action: the share of the time since the last frame that one of its keys was down (0..1), and
+    // that time in seconds. Walking scales by the share; keyboard turning turns for exactly as long as the key
+    // was held (capped at half a second a frame, so a long hitch never spins the view).
+    const hs = keys.sample();
+    const k = (a) => { let f = 0; for (const c of keysFor(a)) f = Math.max(f, hs.frac(c)); return f; };
+    const kHeld = (a) => { let s = 0; for (const c of keysFor(a)) s = Math.max(s, hs.held(c)); return Math.min(0.5, s); };
+    let forward = k('forward') - k('backward');
+    let right = k('right') - k('left');
+    const turnSec = dt > 0 ? kHeld('turnRight') - kHeld('turnLeft') : 0;
+    let run = k('run') > 0;
     if (runMode === 'toggle') { if (runKeyEdge) runOn = !runOn; run = runOn; }
     runKeyEdge = false;
     if (touchStick) { forward = stickVec.forward; right = stickVec.right; run = stickVec.run; }
@@ -127,7 +135,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
       lookDX += smX * dt; lookDY += smY * dt;
     } else { lookDX += rawDX; lookDY += rawDY; }
     rawDX = 0; rawDY = 0;
-    const out = { forward: enabled ? forward : 0, right: enabled ? right : 0, run, lookDX: lookDX + turn * 1.8 * dt, lookDY, interact: interactEdge, back: backEdge };
+    const out = { forward: enabled ? forward : 0, right: enabled ? right : 0, run, lookDX: lookDX + turnSec * 1.8, lookDY, interact: interactEdge, back: backEdge };
     lookDX = 0; lookDY = 0; interactEdge = false; backEdge = false;
     return out;
   }
@@ -144,7 +152,7 @@ export function createControls(el, { onInteract, onBack, onSkip } = {}) {
     get locked() { return document.pointerLockElement === el; },
     isTouch,
     dispose() {
-      removeEventListener('keydown', kd); removeEventListener('keyup', ku); document.removeEventListener('mousemove', mm);
+      removeEventListener('keydown', kd); removeEventListener('keyup', ku); removeEventListener('blur', onBlur); document.removeEventListener('mousemove', mm);
       el.removeEventListener('click', click); el.removeEventListener('touchstart', ts); el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te); el.removeEventListener('touchcancel', te); touchUI.remove();
       if (document.pointerLockElement === el) document.exitPointerLock?.();

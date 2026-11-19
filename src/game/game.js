@@ -16,6 +16,8 @@ import { loadSettings, applyDisplay, keyHtml, keyText } from './settings.js';
 import { settingsForm, controlsForm } from './settings-ui.js';
 import { padNav } from '../ui/padnav.js';
 import { createPhoto } from './photo.js';
+import { readStorySave, writeStorySave } from './save.js';
+import { reportError } from '../ui/oops.js';
 import { watchGame, noteUse, onUnlock, discoveriesView } from './discoveries.js';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]debug\b/.test(location.search);
@@ -102,7 +104,7 @@ export function mountGame(root, { checkpoint } = {}) {
   g.unlockDoor = (id, on = true) => { const d = ship.doors.find((x) => x.id === id); if (d) d.locked = !on; };
   g.inRoom = (id) => { const r = ship.rooms.find((x) => x.id === id); if (!r) return false; const [x0, z0, x1, z1] = r.box; return g.me.x > x0 && g.me.x < x1 && g.me.z > z0 && g.me.z < z1; };
   g.addMarker = (fn) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); scene.add(s); const m = { fn, s }; markers.add(m); return () => { scene.remove(s); markers.delete(m); }; };
-  g.save = (cp) => { try { localStorage.setItem('frozen-star.fp.v1', JSON.stringify({ cp, flags: g.flags })); hud.toast('Progress saved'); } catch { /* storage off */ } };
+  g.save = (cp) => { if (writeStorySave(cp, g.flags)) hud.toast('Progress saved'); };
   g.physicsNow = () => g.physicsTime / SEC_PER_M; // in units of M
 
   // camera tweening for cutscenes and consoles
@@ -299,7 +301,7 @@ export function mountGame(root, { checkpoint } = {}) {
   const stopDisc = onUnlock((d) => hud.toast(`Discovery · ${d.title}`, { sub: d.fact, cls: 'disc-toast', sec: 5 }));
 
   let frameN = 0;
-  function frame(now) {
+  function frameBody(now) {
     if (!alive) return;
     if (frameN < 3) mark('frame ' + frameN); frameN++;
     // never negative: after a long synchronous start (shader link, ship build) the first rAF timestamp can
@@ -513,19 +515,38 @@ export function mountGame(root, { checkpoint } = {}) {
     }
     raf = requestAnimationFrame(frame);
   }
-  raf = requestAnimationFrame(frame);
-  document.body.dataset.ready = '1';
+  // one frame that throws must not stop the world: report it, then keep the loop going
+  function frame(now) {
+    try { frameBody(now); }
+    catch (e) { reportError(e, 'frame'); if (alive) { last = now; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); } }
+  }
 
   // ---- story ----
   let saved = null;
-  try { saved = JSON.parse(localStorage.getItem('frozen-star.fp.v1')); } catch { /* */ }
+  saved = readStorySave(); // null for no save, a broken one or one from an unknown build: never a crash
   const urlCp = new URLSearchParams(location.search).get('cp');
   const start = urlCp || checkpoint || saved?.cp || 'start';
   if (/[?&]debug\b/.test(location.search)) window.__fs = g;
   if (/[?&]probe\b/.test(location.search)) window.__fsGame = g;
   if (saved?.flags) Object.assign(g.flags, saved.flags);
   ship.bay.attach(g); // the capsule bay follows the story: Ines in pre-flight, out in the capsule, docked
-  runStory(g, start).catch((e) => { if (!g.aborted) console.error(e); });
+  // Warm the ship's shaders before the first frame. The first renderer.render used to link every program
+  // synchronously, freezing the page for seconds on a weak GPU (over 30 s in software rendering). compileAsync
+  // links them in the background where the driver can (KHR_parallel_shader_compile). World time and the story
+  // wait for it (so no voice line plays over a frozen frame), with a "warming up" line meanwhile. Capped at 8 s,
+  // so a slow driver never holds the game back.
+  const warmEl = h('div.fp-warm', { role: 'status' }, 'Warming up the ship\u2026');
+  el.append(warmEl);
+  let going = false;
+  const go = () => { if (going) return; going = true; warmEl.remove(); if (!alive) return; mark('shaders warm'); last = performance.now(); raf = requestAnimationFrame(frame); document.body.dataset.ready = '1'; };
+  let warm = null;
+  try { warm = renderer.compileAsync?.(scene, camera); } catch (e) { console.warn('shader warm-up failed', e); }
+  const warmed = warm ? Promise.race([warm, new Promise((r) => setTimeout(r, 8000))]).catch(() => {}) : Promise.resolve();
+
+  const story = () => runStory(g, start).catch((e) => { if (!g.aborted) reportError(e, 'story'); });
+  // the dream draws no ship: it starts at once while the ship's shaders finish in the background
+  if (start === 'start') { story(); go(); }
+  else warmed.then(() => { go(); if (alive) story(); });
 
   return () => {
     alive = false; g.aborted = true; cancelAnimationFrame(raf); ro.disconnect(); stopPad(); document.removeEventListener('pointerlockchange', onLockChange);
