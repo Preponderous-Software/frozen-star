@@ -327,6 +327,60 @@ function lockerTexture() {
     g.fillStyle = PAL.eng; g.font = `700 13px ${MONO}`; g.fillText('PULL', w / 2 - 10, 230);
   });
 }
+/** A sealed hatch: a two-leaf door in its room's colour, with a hazard band and a stencil, so a locked
+ *  door reads as a door from any angle, never as a blank grey slab. */
+function sealedDoorTexture(accent) {
+  return canvasTex(256, 512, (g, w, h) => {
+    g.fillStyle = '#9ea4b4'; g.fillRect(0, 0, w, h); grime(g, w, h, 21, 120);
+    g.fillStyle = '#6d7386'; g.fillRect(w / 2 - 3, 0, 6, h); // the two leaves meet here
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(w / 2 + 3, 0, 2, h);
+    g.strokeStyle = '#6d7386'; g.lineWidth = 6; g.strokeRect(14, 14, w - 28, h - 28);
+    // a hazard band across the middle, in the room's colour
+    g.save(); g.beginPath(); g.rect(0, h * 0.44, w, h * 0.12); g.clip();
+    g.fillStyle = '#1a1d28'; g.fillRect(0, h * 0.44, w, h * 0.12); g.fillStyle = accent;
+    for (let x = -80; x < w + 80; x += 40) { g.beginPath(); g.moveTo(x, h * 0.56); g.lineTo(x + 20, h * 0.56); g.lineTo(x + 80, h * 0.44); g.lineTo(x + 60, h * 0.44); g.closePath(); g.fill(); }
+    g.restore();
+    g.fillStyle = '#1a1d28'; g.fillRect(w / 2 - 70, h * 0.18 - 20, 140, 40); // above the door's status lamps
+    g.fillStyle = accent; g.font = `700 30px ${MONO}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('SEALED', w / 2, h * 0.18 + 1);
+    for (const y of [h * 0.7, h * 0.78]) { g.fillStyle = '#6d7386'; g.fillRect(36, y, w - 72, 4); } // vents
+    g.fillStyle = '#5b6274'; for (const x of [w / 2 - 20, w / 2 + 12]) g.fillRect(x, h * 0.62, 8, 34); // handles
+  });
+}
+/** The bunk's headboard: padded panels in navy fabric, buttoned, with a stitched seam and a cubby line. */
+function headboardTexture() {
+  return canvasTex(512, 200, (g, w, h) => {
+    g.fillStyle = '#2c3550'; g.fillRect(0, 0, w, h);
+    const cols = 5, pw = w / cols;
+    for (let k = 0; k < cols; k++) {
+      const x = k * pw;
+      const gr = g.createLinearGradient(x, 0, x + pw, h); gr.addColorStop(0, '#46527a'); gr.addColorStop(0.5, '#3a4568'); gr.addColorStop(1, '#283150');
+      g.fillStyle = gr; roundRect(g, x + 5, 8, pw - 10, h - 16, 16); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 2; g.setLineDash([5, 5]); roundRect(g, x + 13, 16, pw - 26, h - 32, 11); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#1b2135'; g.beginPath(); g.arc(x + pw / 2, h / 2, 4, 0, 7); g.fill();
+    }
+    grime(g, w, h, 31, 40, '0,0,0');
+  });
+}
+/** Console and cabinet bodies: dark pressed panels with an inset frame, vent slots and a maker's plate,
+ *  so no equipment box reads as a flat black block. Each box face maps the whole texture. */
+function consoleBodyTexture() {
+  return canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#353b52'; g.fillRect(0, 0, w, h); grime(g, w, h, 17, 90, '10,12,20');
+    g.strokeStyle = '#22263a'; g.lineWidth = 6; g.strokeRect(10, 10, w - 20, h - 20);
+    g.strokeStyle = 'rgba(255,255,255,0.08)'; g.lineWidth = 2; g.strokeRect(15, 15, w - 30, h - 30);
+    g.fillStyle = '#1d2133'; for (let k = 0; k < 6; k++) roundRect(g, 40, h - 76 + k * 9, w - 80, 4, 2), g.fill(); // vents
+    g.fillStyle = '#4a5170'; g.fillRect(28, 28, 52, 14); g.fillStyle = 'rgba(236,240,246,0.45)'; g.font = `600 9px ${MONO}`; g.fillText('TERN · D1', 31, 38);
+    g.fillStyle = '#22263a'; for (const [x, y] of [[22, 22], [w - 22, 22], [22, h - 22], [w - 22, h - 22]]) { g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); }
+  });
+}
+/** A cable tray seen from below: perforated sheet between two rails. */
+function trayTexture() {
+  return canvasTex(128, 128, (g, w, h) => {
+    g.fillStyle = '#4b5168'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#262a3a'; for (let y = 8; y < h; y += 12) for (let x = 14 + ((y / 12) % 2) * 6; x < w - 10; x += 12) g.fillRect(x, y, 6, 3);
+    g.fillStyle = '#6a7190'; g.fillRect(0, 0, w, 5); g.fillRect(0, h - 5, w, 5);
+  }, { repeat: true });
+}
 function consoleKeysTexture(accent) {
   return canvasTex(512, 128, (g, w, h) => {
     g.fillStyle = '#20243a'; g.fillRect(0, 0, w, h);
@@ -356,7 +410,9 @@ export function buildShip() {
     sheet: new THREE.MeshStandardMaterial({ color: 0xd8dbe4, roughness: 0.95 }),
     wood: new THREE.MeshStandardMaterial({ color: 0x6b5340, roughness: 0.7 }),
     door: new THREE.MeshStandardMaterial({ color: 0xb8bdca, roughness: 0.5, metalness: 0.3, map: panelTexture('#c2c7d3', '#8d93a3', 128, 256, 3, 1) }),
-    console: new THREE.MeshStandardMaterial({ color: 0x2b3044, roughness: 0.55, metalness: 0.35 }),
+    console: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.35, map: consoleBodyTexture() }),
+    frame: new THREE.MeshStandardMaterial({ color: 0x9aa0b2, roughness: 0.5, metalness: 0.2 }),
+    tray: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, metalness: 0.5, map: trayTexture() }),
     // accents: they glow, but they light nothing, so they cost no more than any other surface
     glowBlue: new THREE.MeshStandardMaterial({ color: 0x8fb8ff, emissive: 0x8fb8ff, emissiveIntensity: 1.1 }),
     glowTeal: new THREE.MeshStandardMaterial({ color: 0x5ed6c0, emissive: 0x5ed6c0, emissiveIntensity: 0.6 }),
@@ -371,6 +427,7 @@ export function buildShip() {
     hull: (() => { const t = panelTexture('#3c404c', '#2a2d36', 256, 256, 2, 2); return new THREE.MeshStandardMaterial({ color: 0x3a3e4a, roughness: 0.7, metalness: 0.5, map: t, emissive: 0x5a5f70, emissiveMap: t, emissiveIntensity: 1.5 }); })(), // lit faintly by the disk, so its panels read as hull, not a hole in the view
   };
   for (const m of Object.values(M)) m.dithering = true;
+  const skipMerge = new Set([M.glass, M.door]);
   M.cabinet = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.25, map: cabinetTexture() }); // soften the banding of point-light falloff
 
   const box = (w, h, d, mat, x, y, z, parent = group) => {
@@ -401,8 +458,10 @@ export function buildShip() {
         glass.renderOrder = 10; if (!o.interior) windows.push(glass); // an interior window looks into the ship, not at the sky
         // frame
         const f = 0.07;
+        // an interior window (into the bay) gets a light frame and sill, so it reads as a hatch in the wall, not a black tunnel
+        const fm = o.interior ? M.frame : M.trim;
         for (const [fw, fh, fx, fy] of [[w + f, f, cx, o.y0], [w + f, f, cx, o.y1], [f, hh, o.a, cy], [f, hh, o.b, cy]]) {
-          axis === 'x' ? box(fw, fh, T + 0.04, M.trim, fx, fy, at) : box(T + 0.04, fh, fw, M.trim, at, fy, fx);
+          axis === 'x' ? box(fw, fh, T + 0.04, fm, fx, fy, at) : box(T + 0.04, fh, fw, fm, at, fy, fx);
         }
         if (o.mullions) for (let k = 1; k < o.mullions; k++) {
           const mx = o.a + (w * k) / o.mullions;
@@ -411,7 +470,9 @@ export function buildShip() {
       } else if (o.type === 'door') {
         piece(o.a, o.b, 2.15, height, false);
         const w = o.b - o.a, cx = (o.a + o.b) / 2;
-        const panel = axis === 'x' ? box(w, 2.15, 0.06, M.door, cx, 1.075, at) : box(0.06, 2.15, w, M.door, at, 1.075, cx);
+        const mat = o.locked ? new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.3, map: sealedDoorTexture(o.accent || PAL.eng), dithering: true }) : M.door;
+        const panel = axis === 'x' ? box(w, 2.15, 0.06, mat, cx, 1.075, at) : box(0.06, 2.15, w, mat, at, 1.075, cx);
+        if (o.locked) skipMerge.add(mat); // it stays a door (doors are animated by game.js), not static wall
         const trimTop = axis === 'x' ? box(w + 0.1, 0.06, T + 0.05, M.amber, cx, 2.18, at) : box(T + 0.05, 0.06, w + 0.1, M.amber, at, 2.18, cx);
         trimTop.material = M.amber;
         for (const jx of [o.a - 0.035, o.b + 0.035]) axis === 'x' ? box(0.07, 2.15, T + 0.05, M.trim, jx, 1.075, at) : box(T + 0.05, 2.15, 0.07, M.trim, at, 1.075, jx); // jambs
@@ -462,10 +523,10 @@ export function buildShip() {
   wall('x', -5, -3.4, 3.4, 3.2, [{ type: 'door', id: 'bridge', a: -0.7, b: 0.7, label: 'Bridge' }]);
   // Corridor
   // the port wall's two windows look into the capsule bay; its hatch is sealed (the bay cycles to vacuum for launch)
-  wall('z', -1, -5, 8, 2.5, [{ type: 'door', id: 'lab', a: -1.6, b: -0.4, label: 'Lab' }, { type: 'door', id: 'bay', a: 1.85, b: 2.95, locked: true, label: 'Capsule bay' },
+  wall('z', -1, -5, 8, 2.5, [{ type: 'door', id: 'lab', a: -1.6, b: -0.4, label: 'Lab' }, { type: 'door', id: 'bay', a: 1.85, b: 2.95, locked: true, label: 'Capsule bay', accent: PAL.bay },
     { type: 'window', a: 3.2, b: 4.4, y0: 0.9, y1: 1.9, interior: true }, { type: 'window', a: 5.4, b: 6.6, y0: 0.9, y1: 1.9, interior: true }]);
   wall('z', 1, -5, 8, 2.5, [{ type: 'door', id: 'quarters', a: 3.5, b: 4.7, label: 'Quarters' }]);
-  wall('x', 8, -1, 1, 2.5, [{ type: 'door', id: 'engineering', a: -0.6, b: 0.6, locked: true, label: 'Engineering' }]);
+  wall('x', 8, -1, 1, 2.5, [{ type: 'door', id: 'engineering', a: -0.6, b: 0.6, locked: true, label: 'Engineering', accent: PAL.eng }]);
   // Quarters
   wall('x', 2, 1, 5, 2.5, [{ type: 'window', a: 3.5, b: 4.85, y0: 0.8, y1: 2.1 }], { exterior: true });
   wall('x', 6.5, 1, 5, 2.5);
@@ -504,7 +565,10 @@ export function buildShip() {
   box(2.9, 0.18, 0.95, M.sheet, 3.1, 0.52, 5.9, bunk);
   box(0.5, 0.12, 0.7, M.sheet, 4.25, 0.66, 5.9, bunk);
   box(1.9, 0.08, 0.98, M.fabric, 2.6, 0.64, 5.9, bunk);
-  box(3.1, 1.2, 0.08, M.wallDark, 3.1, 1.4, 6.42, bunk);
+  // the headboard: a padded panel only as tall as a sitting back, a wooden cap shelf, and a soft blanket fold
+  { const hb = box(3.0, 0.62, 0.08, new THREE.MeshStandardMaterial({ map: headboardTexture(), roughness: 0.95, dithering: true }), 3.1, 0.98, 6.42, bunk); hb.name = 'headboard';
+    box(3.1, 0.04, 0.18, M.wood, 3.1, 1.31, 6.37, bunk); box(3.1, 0.035, 0.04, M.trim, 3.1, 1.28, 6.27, bunk);
+    box(0.32, 0.12, 0.98, M.fabric, 3.55, 0.67, 5.9, bunk); } // the turned-back edge of the blanket
   // desk
   box(0.7, 0.05, 1.4, M.wood, 4.6, 0.76, 3.3);
   colliders.push([4.25, 2.6, 5, 4.0], [1.15, 2.08, 2.05, 2.62]);
@@ -593,7 +657,7 @@ export function buildShip() {
   colliders.push(aabbOf(term));
   const archWorld = new THREE.Vector3(); archScr.getWorldPosition(archWorld);
   interactables.push({ id: 'archive', pos: archWorld, radius: 1.9, label: 'Open the archive', console: true, focus: { pos: new THREE.Vector3(-3.7, 1.58, 0.1), look: archWorld } });
-  box(1.8, 0.8, 0.7, M.wallDark, -2.0, 0.4, -3.0); colliders.push([-2.9, -3.4, -1.1, -2.6]);
+  box(1.8, 0.76, 0.66, M.console, -2.0, 0.38, -3.0); box(1.86, 0.04, 0.72, M.wood, -2.0, 0.78, -3.0); colliders.push([-2.9, -3.4, -1.1, -2.6]); // the bench: a cabinet with a worktop
 
   // ---- detail ----
   const cyl = (r, len, mat, x, y, z, axis) => {
@@ -632,8 +696,8 @@ export function buildShip() {
   for (let i = 0; i < 9; i++) { const hgt = 0.18 + ((i * 37) % 7) * 0.012; box(0.16, hgt, 0.04, new THREE.MeshStandardMaterial({ color: bookCols[i % 6], roughness: 0.8 }), 4.86, 1.515 + hgt / 2, 2.95 + i * 0.075); }
   const rug = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.1), M.rug); rug.rotation.x = -Math.PI / 2; rug.position.set(3.2, 0.006, 4.4); group.add(rug);
   // bridge: overhead cable trays and floor plates
-  box(6.4, 0.05, 0.4, M.trim, 0, 3.1, -9);
-  box(0.4, 0.05, 7.6, M.trim, -2.9, 3.1, -9); box(0.4, 0.05, 7.6, M.trim, 2.9, 3.1, -9);
+  { const t1 = box(6.4, 0.05, 0.4, M.tray.clone(), 0, 3.1, -9); t1.material.map = M.tray.map.clone(); t1.material.map.needsUpdate = true; t1.material.map.repeat.set(16, 1);
+    for (const sx of [-2.9, 2.9]) { const t = box(0.4, 0.05, 7.6, M.tray.clone(), sx, 3.1, -9); t.material.map = M.tray.map.clone(); t.material.map.needsUpdate = true; t.material.map.center.set(0.5, 0.5); t.material.map.rotation = Math.PI / 2; t.material.map.repeat.set(19, 1); } }
 
 
   // ---- set dressing: lived-in detail, wayfinding and baked shading ----
@@ -716,7 +780,7 @@ export function buildShip() {
   // footlocker at the foot of the bunk; a reading light over the pillow
   box(0.42, 0.38, 0.8, M.navy, 1.36, 0.19, 5.9); box(0.44, 0.03, 0.82, M.trim, 1.36, 0.39, 5.9); box(0.02, 0.06, 0.12, M.rail, 1.57, 0.3, 5.9);
   colliders.push([1.12, 5.48, 1.6, 6.32]);
-  box(0.36, 0.05, 0.06, M.lamp, 4.15, 1.75, 6.36); box(0.42, 0.08, 0.1, M.trim, 4.15, 1.8, 6.38);
+  box(0.36, 0.05, 0.06, M.lamp, 4.15, 1.5, 6.36); box(0.42, 0.08, 0.1, M.trim, 4.15, 1.55, 6.38); // just above the headboard shelf
   // the travel poster, and a jacket on a hook by the door
   plane(0.5, 0.667, decalMat(posterTexture()), 1.065, 1.55, 5.75, Math.PI / 2);
   box(0.04, 0.04, 0.08, M.rail, 1.08, 1.86, 3.12);
@@ -783,7 +847,7 @@ export function buildShip() {
 
   const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30333f, 0.9); group.add(hemi);
 
-  mergeStatic(group, new Set([M.glass, M.door]), rooms);
+  mergeStatic(group, skipMerge, rooms);
   return { group, colliders, walls, windows, interactables, doors, rooms, screens, lights, blinkers, bay, materials: M };
 }
 
