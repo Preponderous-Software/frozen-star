@@ -114,7 +114,8 @@ export const defaults = () => ({ ...DEFAULTS, reduceFlash: reducedMotion(), head
 
 export function loadSettings() {
   let s = {};
-  try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { /* storage off */ }
+  try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { /* storage off, or a broken record */ }
+  if (typeof s !== 'object' || Array.isArray(s)) s = {}; // a record that isn't an object: start from the defaults
   const c = clean({ ...defaults(), ...s });
   setBindings(c);
   return c;
@@ -127,7 +128,8 @@ export function saveSettings(s) {
 
 const CODE = /^[A-Za-z][A-Za-z0-9]{0,24}$/;
 export function clean(s) {
-  const num = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
+  // a number, or a numeric string from an old save; null, '' and true are not numbers (+null is 0)
+  const num = (v, lo, hi, d) => ((typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
   const bool = (v, d) => (typeof v === 'boolean' ? v : d);
   const keys = {};
   if (s.keys && typeof s.keys === 'object') {

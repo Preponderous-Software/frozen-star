@@ -76,3 +76,11 @@ test('stride: the bob is small, eases away at rest, and is bigger at a run', asy
   for (let i = 0; i < 120; i++) { const q = stride(st, 0, 0, false, 1 / 60); st = q.st; y = q.y; }
   assert.ok(Math.abs(y) < 0.001, `rest offset ${y}`);
 });
+
+test('a partial key press (a tap shorter than the frame) moves less than a full one, and never more', () => {
+  const full = step({ x: 0, z: 5, yaw: 0 }, { forward: 1 }, 0.25, []);
+  const tap = step({ x: 0, z: 5, yaw: 0 }, { forward: 0.16 }, 0.25, []);
+  const moved = (m) => Math.hypot(m.x, m.z - 5);
+  assert.ok(moved(tap) > 0, 'a tap still moves');
+  assert.ok(moved(tap) < moved(full) * 0.3, `${moved(tap)} vs ${moved(full)}`);
+});

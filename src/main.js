@@ -18,6 +18,10 @@ import { loadSettings } from './game/settings.js';
 import { padNav } from './ui/padnav.js';
 import { DISCOVERIES, discoveriesView, foundCount, syncTraining, unlock, floatToast } from './game/discoveries.js';
 import { RESTORE_WAIT_MS } from './ui/view3d.js';
+import { installOops } from './ui/oops.js';
+import { readStorySave } from './game/save.js';
+
+installOops(); // an uncaught error shows a small notice; the game keeps running
 
 export const CHAPTERS = [twoClocks, lastWords, rescue, tides, hover, bendLight, intoTheDark, evaporation];
 const app = $('#app');
@@ -29,7 +33,7 @@ function starRow(n, of = 3) { return h('span.stars', { 'aria-label': `${n} of ${
 
 function updateTotal() { const el = $('#total'); if (el) el.textContent = `${totalStars()} / ${CHAPTERS.length * 3}`; }
 
-function readSave() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch { return null; } }
+function readSave() { return readStorySave(); } // a broken or odd save reads as none, never as a crash
 
 // ---- which input the player is using, so hints show the right buttons ----
 // body[data-input] is 'keys', 'mouse', 'touch' or 'pad' (padnav.js sets 'pad').
