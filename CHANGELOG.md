@@ -2,6 +2,15 @@
 
 Versions are bare tags (`0.1.0`). Each release's playtest evidence is in `docs/playtests/<version>/`, and the release process is in [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+Leftovers from the final 0.3.0 playtest (run-2):
+
+- The recall beam's Fire button sits first on the comms panel and stays exactly where it is when the panel scrolls, and it changes the moment it is clicked.
+- With a console open, discovery toasts and hints move into the view on the left instead of sitting over the panel.
+- The "click to look" pill gives way to the use bracket; prompts and markers no longer show through a question box or the logbook.
+- The bridge's floor stencil reads the right way up from inside the bridge.
+
 ## 0.3.0 (2026-11-19)
 
 A polish pass across the whole game, ending with two AI playtest rounds. The headline fix: the ship no longer flashes out of sight. Playtest evidence: [docs/playtests/0.3.0](docs/playtests/0.3.0).

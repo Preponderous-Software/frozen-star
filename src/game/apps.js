@@ -282,7 +282,7 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   const seenF = Object.create(r.f); seenF.seenAt = (S) => (r.saved && S >= r.saved.seenAt ? climbSeen(r.f, r.saved, S) : r.f.seenAt(S));
   const st = stationPanel(seenF, { title: 'Capsule · what you see', clockNote: 'ship clock', subject: 'Her', tag: 'Ines', hints: true });
   const after = h('p.fp-gap', { hidden: true });
-  const fire = h('button.danger.big#fp-fire', { onclick: () => { onFire(); fire.disabled = true; fire.textContent = 'Recall beam fired'; } }, 'Fire recall beam');
+  const fire = h('button.danger.big#fp-fire', { onclick: () => { fire.disabled = true; fire.textContent = 'Recall beam fired'; fire.classList.add('sent'); onFire(); } }, 'Fire recall beam');
   if (r.fired != null) { fire.disabled = true; fire.textContent = 'Recall beam fired'; }
   const msgs = h('div.fp-msgs');
   // the deadline is a calculation, not something you can see: show it as a plain clock and a fuse
@@ -291,8 +291,9 @@ export function commsApp(body, g, { run, onFire, showMap }) {
   const clock = h('p.fp-deadline');
   let diag = null, diagCanvas = null;
   // the Fire button, the fuse and her words stay in view together
-  body.append(h('p.eyebrow', 'Comms · capsule channel'),
-    h('div.fp-action', fire, fuse.el, clock),
+  // the action block comes first, right under the panel's header, so it is already where it sticks: it never
+  // slides under the pointer when the panel scrolls
+  body.append(h('div.fp-action', fire, fuse.el, clock), h('p.eyebrow', 'Comms · capsule channel'),
     after, h('p.who', 'Ines, as received'), msgs, glossary(), st.el);
   if (showMap) {
     diagCanvas = h('canvas.diagram.small'); diag = new SpacetimeDiagram(diagCanvas, r.f); diag.showDeadline = true; diag.names = { station: 'ship', faller: 'Ines' };

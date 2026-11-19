@@ -744,7 +744,7 @@ export function buildShip() {
   box(0.03, 0.02, 7.3, M.glowBlue, -2.9, 3.065, -9); box(0.03, 0.02, 7.3, M.glowBlue, 2.9, 3.065, -9); box(6.0, 0.02, 0.03, M.glowBlue, 0, 3.065, -9);
   // deck markings: the console line, and a stencil at the door
   floorMark(hazardTexture('#ffb45c', '#1a1d28'), 6.2, 0.14, 0, -10.3, 0);
-  floorMark(stencilTexture('DECK 1 · BRIDGE', 'keep the console line clear', 'rgba(143,184,255,0.55)'), 2.2, 0.55, 0, -5.75, 0);
+  floorMark(stencilTexture('DECK 1 · BRIDGE', 'keep the console line clear', 'rgba(143,184,255,0.55)'), 2.2, 0.55, 0, -5.75, Math.PI); // reads from inside the bridge, where you stand
 
   // -- corridor --
   { const bridgeArrow = floorArrowTexture('BRIDGE', PAL.bridge);
