@@ -44,7 +44,7 @@ export function settingsForm(settings, onChange, { onBack } = {}) {
   const LABELS = {
     'fp-sens': 'Look speed', 'fp-fov': 'Field of view', 'fp-vol': 'Volume', 'fp-invert': 'Invert look up and down', 'fp-subsize': 'Subtitle size', 'fp-quality': 'Graphics',
     'fp-smooth': 'Smooth mouse look', 'fp-runmode': 'Run key', 'fp-subbg': 'Subtitle background', 'fp-speakers': 'Colour speaker names',
-    'fp-paneltext': 'Console text size', 'fp-flash': 'Reduce flashing', 'fp-coloursafe': 'Colour-safe redshift',
+    'fp-paneltext': 'Console text size', 'fp-flash': 'Reduce flashing', 'fp-bob': 'Head bob while walking', 'fp-coloursafe': 'Colour-safe redshift',
   };
   const label = (id) => LABELS[id];
 
@@ -77,6 +77,8 @@ export function settingsForm(settings, onChange, { onBack } = {}) {
     group('Comfort and colour',
       toggle('fp-flash', 'reduceFlash'),
       h('p.fp-note', 'Steadies the red alarm light and the blinking lamps and markers. On by default when your system asks for less motion.'),
+      toggle('fp-bob', 'headBob'),
+      h('p.fp-note', 'A gentle rise and fall of the view as you walk. Off by default when your system asks for less motion.'),
       toggle('fp-coloursafe', 'colourSafe'),
       h('p.fp-note', 'Redshifted radio lines keep a plain colour and are labelled with how stretched their light is.')),
     group('Picture',

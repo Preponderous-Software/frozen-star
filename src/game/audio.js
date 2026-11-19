@@ -23,7 +23,10 @@ const ROOMS = {
   corridor: { hum: 0.75, air: 0.85, airLP: 950, elec: 0.3, elecLP: 650, ring: 1.3, thud: 1 },
   quarters: { hum: 0.4, air: 0.3, airLP: 300, elec: 0.1, elecLP: 380, ring: 0.15, thud: 0.6 },
   lab: { hum: 0.65, air: 0.6, airLP: 800, elec: 0.45, elecLP: 1400, ring: 1.1, thud: 0.9 },
+  // the capsule bay: a big, cold space next to the hull, thin air movement, bare plating that rings
+  bay: { hum: 0.9, air: 0.4, airLP: 420, elec: 0.15, elecLP: 500, ring: 1.5, thud: 1.1 },
 };
+const AMB_LEVEL = 0.8, AMB_UNDER_VOICE = 0.5; // the ambience bus, and how far it dips while someone speaks
 const ROOM_IDS = Object.keys(ROOMS);
 const VOWELS = [[800, 1200, 2500], [400, 2200, 2900], [320, 2500, 3200], [470, 850, 2600], [350, 700, 2450], [600, 1700, 2600]];
 const CHIRP_NOTES = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093]; // C6 pentatonic
@@ -37,7 +40,12 @@ export function createAudio(opts = {}) {
   let buses = null, amb = null, alarm = null, statics = null, lastUi = 0;
   const carriers = new Map(), last = new Map();
   let serial = 0;
-  const S = { room: null, hidden: false, depth: 0, shipT: null, relayT: null, nextChirp: 0, sceneAt: -1, ticks: { ship: 0, relay: 0 } };
+  const S = { room: null, hidden: false, depth: 0, shipT: null, relayT: null, nextChirp: 0, nextCreak: 0, sceneAt: -1, ticks: { ship: 0, relay: 0 }, events: [], talk: [] };
+  // a short log of the one-shot sounds, for the debug probe and tests (headless runs cannot listen)
+  const note = (name, extra) => { S.events.push({ name, t: ctx ? +ctx.currentTime.toFixed(2) : 0, ...extra }); if (S.events.length > 60) S.events.shift(); };
+  // spans of ctx time when someone is speaking (recorded or procedural); the ambience dips under them
+  const talking = (t0, end) => { S.talk.push([t0, end]); if (S.talk.length > 8) S.talk.shift(); };
+  const speaking = (now) => S.talk.some(([a, b]) => now > a - 0.15 && now < b + 0.25);
   try { muted = localStorage.getItem(KEY) === '1'; } catch { /* storage off */ }
 
   // ---------- context, mix and safety ----------
@@ -104,7 +112,7 @@ export function createAudio(opts = {}) {
     const verb = ctx.createConvolver(); verb.buffer = reverbBuffer(); verb.connect(gain(0.55, master));
     buses = {
       noise: noiseBuffer(2), brown: noiseBuffer(3, true), verb,
-      amb: gain(0.8, master), sfx: gain(1, master), ui: gain(1, master), sig: gain(1, master),
+      amb: gain(AMB_LEVEL, master), sfx: gain(1, master), ui: gain(1, master), sig: gain(1, master),
       warm: wave([0, 1, 0.32, 0.14, 0.06, 0.025]), // the carriers' timbre: soft overtones that move with the pitch
       organ: wave([0, 1, 0.5, 0.33, 0.2, 0.1, 0.05]),
     };
@@ -164,8 +172,16 @@ export function createAudio(opts = {}) {
     glide(amb.d1.frequency, 'd1', f0, 0.9); glide(amb.d2.frequency, 'd2', f0 * 1.003, 0.9); glide(amb.d3.frequency, 'd3', f0 / 2, 0.9);
     glide(amb.drLP.frequency, 'drLP', 900 - 650 * d, 0.9);
     glide(amb.grG.gain, 'gr', 0.025 * d * k, 0.8); glide(amb.grLG.gain, 'grL', 0.02 * d * k, 0.8); glide(amb.grBP.frequency, 'grBP', f0 * 1.5, 0.9);
+    // the ship's sounds step back while someone speaks, so every line sits clearly on top
+    const talk = speaking(now);
+    glide(buses.amb.gain, 'ambDuck', talk ? AMB_LEVEL * AMB_UNDER_VOICE : AMB_LEVEL, talk ? 0.12 : 0.5, 0.01);
+    // hull stress: the deeper the hold, the more often the frame creaks under the field (never at station)
+    if (d > 0.12 && !hidden && !talk) {
+      if (!S.nextCreak) S.nextCreak = now + 6 + Math.random() * 10;
+      else if (now > S.nextCreak) { S.nextCreak = now + (14 + Math.random() * 26) / (0.35 + d); creak(d); }
+    } else if (d <= 0.12) S.nextCreak = 0;
     // telemetry: an occasional soft chirp from the bridge consoles
-    if (R.chirps && !hidden && g.mode !== 'cutscene') {
+    if (R.chirps && !hidden && !talk && g.mode !== 'cutscene') {
       if (!S.nextChirp) S.nextChirp = now + 4 + Math.random() * 6;
       else if (now > S.nextChirp) { S.nextChirp = now + 9 + Math.random() * 14; chirp(); }
     }
@@ -183,6 +199,16 @@ export function createAudio(opts = {}) {
       if (rT !== S.relayT) S.ticks.relay++, tone({ f: 2350, a: 0.001, d: 0.05, vol: 0.022 * k, bus: buses.amb, pan: 0.3, send: 0.2 });
     }
     S.shipT = sT; S.relayT = rT;
+  }
+
+  // a long, low metallic groan of the frame taking the load, then a couple of small thermal ticks
+  function creak(d) {
+    const t = ctx.currentTime, j = 0.85 + Math.random() * 0.3, pan = (Math.random() * 2 - 1) * 0.7, v = 0.008 + 0.014 * d;
+    hiss({ f: 820 * j, to: 430 * j, q: 18, a: 0.25, d: 0.9 + 0.5 * d, vol: v, bus: buses.amb, pan, send: 0.5 });
+    hiss({ f: 260 * j, to: 180 * j, q: 9, at: t + 0.1, a: 0.2, d: 0.8, vol: v * 0.8, bus: buses.amb, pan, send: 0.3 });
+    const n = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) hiss({ f: 3200 + Math.random() * 1800, q: 6, at: t + 1.2 + i * (0.18 + Math.random() * 0.4), a: 0.001, d: 0.025, vol: 0.006 + 0.006 * d, bus: buses.amb, pan: -pan, send: 0.6 });
+    note('creak', { d: +d.toFixed(2) });
   }
 
   function chirp() {
@@ -274,6 +300,7 @@ export function createAudio(opts = {}) {
     }
     voice.gain.setTargetAtTime(0, t, 0.04 * s);
     const end = t + 0.3 * s;
+    talking(t0, end); note('radio', { z: +s.toFixed(2) });
     voice.connect(receiver(t0, end, s, lvl).input);
     for (const n of [src, breath]) { n.start(t0); n.stop(end + 0.3); }
   }
@@ -372,7 +399,7 @@ export function createAudio(opts = {}) {
       chain = { stop: (t) => { out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, 0.03); } };
     }
     src.start(t0); src.stop(end + 0.05);
-    return { end, stop: safe(() => { const t = ctx.currentTime; if (t < end) { chain.stop(t); src.stop(t + 0.15); if (V.busyUntil === end) V.busyUntil = t; } }) };
+    return { end, stop: safe(() => { const t = ctx.currentTime; if (t < end) { chain.stop(t); src.stop(t + 0.15); if (V.busyUntil === end) V.busyUntil = t; for (const sp of S.talk) if (sp[1] === end) sp[1] = t; } }) };
   }
 
   /**
@@ -399,7 +426,7 @@ export function createAudio(opts = {}) {
     // one voice at a time, Ines and WREN alike: a line that arrives while someone is talking waits its turn
     const now = ctx.currentTime, t0 = Math.max(now + (how === 'radio' ? 0.14 : 0.05), V.busyUntil + 0.15);
     const p = playRecorded(clip.buf, t0, how, req?.z);
-    V.busyUntil = p.end;
+    V.busyUntil = p.end; talking(t0, p.end);
     V.played.push({ who, key, how, z: req?.z ?? 1, at: +t0.toFixed(2), sec: +(p.end - t0).toFixed(2) }); if (V.played.length > 20) V.played.shift();
     return { dur: p.end - now + 0.25, stop: p.stop };
   }
@@ -460,7 +487,7 @@ export function createAudio(opts = {}) {
     get ready() { return !!ctx; },
     get muted() { return muted; },
     /** For tests and the debug probe: the context and the current room/depth. */
-    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks }, voice: { phase: V.phase, loaded: Object.fromEntries(Object.entries(BANKS).map(([w, B]) => [w, [...B.clips.values()].filter((c) => c.buf).length])), played: [...V.played] } }; },
+    get debug() { return { ctx, state: ctx?.state, room: S.room, depth: S.depth, ambLevel: buses ? +buses.amb.gain.value.toFixed(3) : null, speaking: ctx ? speaking(ctx.currentTime) : false, events: [...S.events], carriers: [...carriers.keys()], alarm: !!alarm, ticks: { ...S.ticks }, voice: { phase: V.phase, loaded: Object.fromEntries(Object.entries(BANKS).map(([w, B]) => [w, [...B.clips.values()].filter((c) => c.buf).length])), played: [...V.played] } }; },
     setMuted(m) { muted = !!m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch { /* */ } applyLevel(); },
     setVolume(v) { volume = Math.min(1, Math.max(0, +v || 0)); applyLevel(); },
     duck(on) { ducked = !!on; applyLevel(); },
@@ -469,26 +496,52 @@ export function createAudio(opts = {}) {
     /** Older entry point: hum level and pitch only. scene(g) supersedes it. */
     setHum(lv, pitch = 1) { if (!amb) return; glide(amb.humG.gain, 'hum', 0.05 * lv, 0.4); glide(amb.h1.frequency, 'h1', 48 * pitch, 0.6); glide(amb.h2.frequency, 'h2', 72.3 * pitch, 0.6); },
 
-    /** A footstep on the deck: heel thud, sole scuff and a faint ring of the plating (none on the quarters' rug). */
+    /** A footstep on the deck: heel thud, sole scuff and a faint ring of the plating (none on the quarters' rug).
+     * soft scales it (a slow step is quieter and duller than a run); a running step lands harder and brighter. */
     step(soft = 1) {
       if (!ctx) return;
-      const R = ROOMS[S.room] || ROOMS.corridor, side = (S.side = -(S.side || 0.12)), j = 0.9 + Math.random() * 0.2;
-      tone({ f: 105 * j, to: 52, a: 0.003, d: 0.09, vol: 0.09 * soft * R.thud, pan: side, lp: 400 });
-      hiss({ f: 900 * j, q: 0.9, a: 0.004, d: 0.05, vol: 0.022 * soft * R.thud, pan: side });
-      if (R.ring > 0.2) hiss({ f: 2600 * j, q: 14, a: 0.002, d: 0.16, vol: 0.016 * soft * R.ring, pan: side, send: 0.15 });
+      const R = ROOMS[S.room] || ROOMS.corridor, side = (S.side = -(S.side || 0.12)), j = 0.9 + Math.random() * 0.2, k = Math.min(1.3, Math.max(0.2, soft));
+      tone({ f: 105 * j, to: 52, a: 0.003, d: 0.07 + 0.02 * k, vol: 0.09 * k * R.thud, pan: side, lp: 280 + 160 * k });
+      hiss({ f: 900 * j, q: 0.9, a: 0.004, d: 0.05, vol: 0.022 * k * R.thud, pan: side });
+      if (R.ring > 0.2) hiss({ f: 2600 * j, q: 14, a: 0.002, d: 0.16, vol: 0.016 * k * R.ring, pan: side, send: 0.15 });
+      note('step', { k: +k.toFixed(2), room: S.room });
+    },
+    /** Coming to a stop: the trailing foot drawn in, a short sole scuff and a little weight settling. */
+    settle() {
+      if (!ctx) return;
+      const R = ROOMS[S.room] || ROOMS.corridor, side = -(S.side || 0.12);
+      hiss({ f: 700, to: 450, q: 0.8, a: 0.01, d: 0.09, vol: 0.012 * R.thud, pan: side });
+      tone({ f: 90, to: 60, a: 0.004, d: 0.06, vol: 0.03 * R.thud, pan: side, lp: 260 });
+      note('settle');
     },
     /** A pressure door: a hiss of air as it slides, a soft thump as it seats. */
     door() {
       if (!ctx) return; const t = ctx.currentTime;
       hiss({ f: 500, to: 1500, q: 0.7, a: 0.05, d: 0.4, vol: 0.045, send: 0.2 });
       tone({ f: 120, to: 70, type: 'triangle', at: t + 0.38, a: 0.004, d: 0.18, vol: 0.05, lp: 300 });
+      note('door');
     },
+    /** The same door sliding shut behind you: the air falls rather than rises, and a latch seats it. */
+    doorClose() {
+      if (!ctx) return; const t = ctx.currentTime;
+      hiss({ f: 1300, to: 450, q: 0.7, a: 0.04, d: 0.36, vol: 0.03, send: 0.2 });
+      tone({ f: 105, to: 62, type: 'triangle', at: t + 0.34, a: 0.004, d: 0.16, vol: 0.04, lp: 280 });
+      tone({ f: 1900, at: t + 0.36, a: 0.001, d: 0.025, vol: 0.008, send: 0.2 }); // the latch
+      note('doorClose');
+    },
+    /** A locked door: two low, polite beeps from its panel (no buzzer: it is not an error, just closed). */
+    denied() {
+      ui((t) => { tone({ f: 330, at: t, a: 0.004, d: 0.09, vol: 0.022, bus: buses.ui, lp: 1200 }); tone({ f: 262, at: t + 0.13, a: 0.004, d: 0.12, vol: 0.02, bus: buses.ui, lp: 1200 }); note('denied'); });
+    },
+    /** Something you can use comes under your gaze: the faintest glass tick, so the prompt is felt as well as read. */
+    focus() { ui((t) => { tone({ f: 2200, at: t, a: 0.002, d: 0.04, vol: 0.007, bus: buses.ui, send: 0.2 }); note('focus'); }); },
     /** A soft tick for a button. */
     tick() { ui((t) => { tone({ f: 1750, at: t, a: 0.002, d: 0.03, vol: 0.025, bus: buses.ui }); tone({ f: 880, at: t, a: 0.002, d: 0.04, vol: 0.015, bus: buses.ui }); }); },
     click() { api.tick(); },
     /** A console wakes: a rising two-note glass chime over a little power-up swish. */
     open() {
       ui((t) => {
+        note('open');
         tone({ f: 659.3, at: t, a: 0.006, d: 0.22, vol: 0.04, bus: buses.ui, send: 0.35 });
         tone({ f: 987.8, at: t + 0.075, a: 0.006, d: 0.3, vol: 0.035, bus: buses.ui, send: 0.35 });
         hiss({ f: 600, to: 3000, q: 0.8, at: t, a: 0.03, d: 0.18, vol: 0.012, bus: buses.ui });
@@ -497,6 +550,7 @@ export function createAudio(opts = {}) {
     /** A console sleeps: the same chime, falling, a little quieter. */
     close() {
       ui((t) => {
+        note('close');
         tone({ f: 987.8, at: t, a: 0.006, d: 0.16, vol: 0.03, bus: buses.ui, send: 0.3 });
         tone({ f: 659.3, at: t + 0.07, a: 0.006, d: 0.24, vol: 0.028, bus: buses.ui, send: 0.3 });
       });

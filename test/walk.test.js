@@ -44,3 +44,35 @@ test('stick and dead zones', () => {
   assert.ok(s.forward > 0.99 && s.run);
   assert.deepEqual(deadzone(0.1, 0.1), [0, 0]);
 });
+
+test('stride: one footfall per stride length, none standing still', async () => {
+  const { stride, strideStart, STRIDE } = await import('../src/game/walk.js');
+  let st = strideStart(), steps = 0;
+  for (let i = 0; i < 300; i++) { const r = stride(st, 2.2 / 60, 2.2, false, 1 / 60); st = r.st; if (r.step) steps++; } // 11 m at a walk
+  assert.ok(Math.abs(steps - 11 / STRIDE.walk) <= 1.5, `steps ${steps}`);
+  let none = 0;
+  for (let i = 0; i < 120; i++) { const r = stride(st, 0, 0, false, 1 / 60); st = r.st; if (r.step) none++; }
+  assert.equal(none, 0);
+});
+
+test('stride: the first step comes quickly from rest, and stopping settles once', async () => {
+  const { stride, strideStart } = await import('../src/game/walk.js');
+  let st = strideStart(), first = null;
+  for (let i = 0; i < 60 && first == null; i++) { const r = stride(st, 2.2 / 60, 2.2, false, 1 / 60); st = r.st; if (r.step) first = i; }
+  assert.ok(first != null && first < 20, `first step at frame ${first}`);
+  for (let i = 0; i < 10; i++) st = stride(st, 2.2 / 60, 2.2, false, 1 / 60).st; // part of a stride past it
+  let settles = 0;
+  for (let i = 0; i < 60; i++) { const r = stride(st, 0, 0, false, 1 / 60); st = r.st; if (r.settle) settles++; }
+  assert.equal(settles, 1);
+});
+
+test('stride: the bob is small, eases away at rest, and is bigger at a run', async () => {
+  const { stride, strideStart } = await import('../src/game/walk.js');
+  const peak = (speed, run) => { let st = strideStart(), m = 0; for (let i = 0; i < 240; i++) { const r = stride(st, speed / 60, speed, run, 1 / 60); st = r.st; m = Math.max(m, Math.abs(r.y)); } return { m, st }; };
+  const w = peak(2.2, false), r = peak(4, true);
+  assert.ok(w.m > 0.005 && w.m < 0.03, `walk bob ${w.m}`);
+  assert.ok(r.m > w.m);
+  let st = w.st, y = 1;
+  for (let i = 0; i < 120; i++) { const q = stride(st, 0, 0, false, 1 / 60); st = q.st; y = q.y; }
+  assert.ok(Math.abs(y) < 0.001, `rest offset ${y}`);
+});

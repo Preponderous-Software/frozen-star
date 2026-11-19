@@ -76,3 +76,38 @@ export function deadzone(x, y, dead = 0.18) {
   const k = Math.min(1, (m - dead) / (1 - dead)) / m;
   return [x * k, y * k];
 }
+
+// ---- stride: footsteps and head bob from the same phase ----
+// One footfall per half cycle of the phase (at phase = kπ the foot lands, and the eye is at its lowest);
+// the phase advances with distance walked, so steps match speed exactly and stop when you do.
+export const STRIDE = { walk: 0.75, run: 0.95 }; // metres per step
+const BOB = { walk: 0.022, run: 0.034 }; // eye rise mid-stride, metres
+
+/** A fresh stride state. */
+export const strideStart = () => ({ phase: 0, amp: 0, moving: false, sinceStep: 0 });
+
+/**
+ * Advance the stride by `dist` metres at `speed` m/s over dt seconds.
+ * Returns { st, step, settle, y, x }: step is a footfall's loudness (0 for none), settle is true on the
+ * frame you come to rest after walking, and y (up) / x (right) are the eye's offset in metres.
+ */
+export function stride(st, dist, speed, run, dt) {
+  const len = run ? STRIDE.run : STRIDE.walk;
+  let { phase, amp, moving, sinceStep } = st;
+  let step = 0, settle = false;
+  sinceStep += dist;
+  const going = speed > 0.35;
+  // from rest, the first foot lands soon, not a whole stride later
+  if (going && !moving) { phase = Math.floor(phase / Math.PI) * Math.PI + 0.55 * Math.PI; }
+  const before = Math.floor(phase / Math.PI);
+  phase += (dist / len) * Math.PI;
+  if (Math.floor(phase / Math.PI) > before) { step = run ? 1.2 : Math.min(1, 0.45 + 0.55 * (speed / WALK)); sinceStep = 0; }
+  // came to rest after real walking, and the last footfall was a while back: draw the trailing foot in
+  if (moving && speed < 0.15) { settle = sinceStep > 0.25 * len; moving = false; } else if (going) moving = true;
+  // the bob eases in and out with speed rather than switching
+  const want = Math.min(1, speed / WALK) * (run ? BOB.run : BOB.walk);
+  amp += (want - amp) * (1 - Math.exp(-8 * Math.max(0, dt)));
+  const y = amp * (Math.abs(Math.sin(phase)) - 0.35);
+  const x = amp * 0.45 * Math.sin(phase); // a slight sway toward the planted foot, once per two steps
+  return { st: { phase, amp, moving, sinceStep }, step, settle, y, x };
+}

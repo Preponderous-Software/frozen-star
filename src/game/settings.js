@@ -105,12 +105,12 @@ export function controlsHintHtml({ touch = false } = {}) {
 export const DEFAULTS = {
   sens: 1, invertY: false, fov: 70, volume: 0.8, subs: 'normal', quality: 'auto',
   // accessibility
-  subsBg: 0.7, speakerColours: true, reduceFlash: false, colourSafe: false, panelText: 'normal', runMode: 'hold', smoothing: false,
+  subsBg: 0.7, speakerColours: true, reduceFlash: false, headBob: true, colourSafe: false, panelText: 'normal', runMode: 'hold', smoothing: false,
   // bindings: only the actions the player changed
   keys: {}, pad: {},
 };
 /** Defaults for this player: reduce flashing follows the system's reduce-motion setting. */
-export const defaults = () => ({ ...DEFAULTS, reduceFlash: reducedMotion(), keys: {}, pad: {} });
+export const defaults = () => ({ ...DEFAULTS, reduceFlash: reducedMotion(), headBob: !reducedMotion(), keys: {}, pad: {} });
 
 export function loadSettings() {
   let s = {};
@@ -153,6 +153,7 @@ export function clean(s) {
     subsBg: num(s.subsBg, 0, 1, 0.7),
     speakerColours: bool(s.speakerColours, true),
     reduceFlash: bool(s.reduceFlash, reducedMotion()),
+    headBob: bool(s.headBob, !reducedMotion()),
     colourSafe: !!s.colourSafe,
     panelText: ['normal', 'large', 'larger'].includes(s.panelText) ? s.panelText : 'normal',
     runMode: ['hold', 'toggle'].includes(s.runMode) ? s.runMode : 'hold',
