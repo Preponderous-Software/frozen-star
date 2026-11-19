@@ -144,8 +144,8 @@ export async function haloAct(g, { logbook } = {}) {
   g.ticks.add(tick);
 
   g.objective('Optional: take the Tern down to the photon sphere, 1.5 rₛ (helm)', { hint: 'The helm is the low desk in the middle of the bridge. Lower the altitude to 1.500 rₛ and the field will lock there.' });
-  g.waypoint = { pos: helmIt.pos.clone(), label: 'Helm', near: 1.4 };
-  (async () => {
+  g.waypoint = { pos: helmIt.pos.clone(), label: 'Helm', near: 2.2 };
+  const intro = (async () => {
     await g.say('WREN', 'Doctor, one item is left on the survey plan, if you want it. It is optional. A ranging-laser test at the photon sphere.');
     await g.say('INES', 'The what sphere?');
     await g.say('WREN', 'One and a half horizon radii. At that height light can orbit Erebus. A beam fired sideways goes all the way round.');
@@ -155,6 +155,7 @@ export async function haloAct(g, { logbook } = {}) {
   g.waypoint = null;
   g.objective('Photon sphere reached. Listen to WREN, then log a prediction'); // the descent is done: its hint must not fire now
   stats.halo = { ...(stats.halo || {}) };
+  await intro; // a quick pilot gets there first: let the briefing finish, so the lines stay in order
   await g.say('WREN', 'Photon sphere. I have locked the field to it, to within a centimetre. You will see why that matters.');
   await g.say('WREN', `Look forward: the shadow now covers exactly half the sky, ${Math.round(shadowDeg(PHOTON_SPHERE))} degrees. Its edge is a circle at right angles to our nose: straight up, straight down, and straight out on either side of the hull.`);
   const pick = await g.hud.choice('Log a prediction: fired along the hull, when will the pulse come back round to the stern, by the ship\'s clock?', [
@@ -168,6 +169,7 @@ export async function haloAct(g, { logbook } = {}) {
   // the first pulse: once round, and home
   const fired = (kind) => new Promise((res) => { st.onFire = (k) => { if (k !== kind) return; const r0 = PHOTON_SPHERE + (kind === 'mast' ? MAST : LOCK); const p = launch(g, r0, kind); st.pulses = [p]; g.audio.whoosh(0.6); st.onFire = null; res(p); }; });
   const p1 = await fired('hull');
+  g.objective('Watch the pulse go round Erebus (helm panel)');
   g.say('WREN', 'Pulse away. Watch the plot on the helm panel.').catch(() => {});
   await g.until(() => p1.far() >= PHOTON_LAP.far);
   p1.stopAt = PHOTON_LAP.far; p1.live = false; // caught: it goes no further
@@ -189,6 +191,7 @@ export async function haloAct(g, { logbook } = {}) {
   g.objective('Fire a pulse from the mast, one metre further out (helm)', { hint: 'The second laser button on the helm panel fires from the dorsal mast, one metre further from Erebus.', after: 20 });
   await g.say('WREN', 'Now the reason for the centimetre. The dorsal mast has a laser too, one metre further out. Fire it and watch.');
   const p2 = await fired('mast');
+  g.objective('Watch the mast pulse (helm panel)');
   g.say('WREN', 'Mast pulse away.').catch(() => {});
   await g.until(() => p2.far() >= PHOTON_LAP.far);
   await g.say('WREN', `Lap one: it passed us ${Math.round(MAST_LAP1)} metres too high. It missed the stern.`);

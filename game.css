@@ -66,10 +66,10 @@ canvas.fp-feed { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius:
   -webkit-mask: linear-gradient(#000 0 0) top left/9px 9px no-repeat, linear-gradient(#000 0 0) top right/9px 9px no-repeat, linear-gradient(#000 0 0) bottom left/9px 9px no-repeat, linear-gradient(#000 0 0) bottom right/9px 9px no-repeat;
   mask: linear-gradient(#000 0 0) top left/9px 9px no-repeat, linear-gradient(#000 0 0) top right/9px 9px no-repeat, linear-gradient(#000 0 0) bottom left/9px 9px no-repeat, linear-gradient(#000 0 0) bottom right/9px 9px no-repeat; }
 .fp-track span { position: absolute; left: 22px; top: -14px; white-space: nowrap; font: 500 11.5px var(--mono); color: #cfe0ff; text-shadow: 0 1px 3px #000; line-height: 1.35; }
-.fp-way { position: absolute; left: 0; top: 0; pointer-events: none; }
+.fp-way { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; } /* over the subtitles, under panels */
 .fp-way i { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; background: var(--amber); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: 0 0 10px rgba(255,180,92,.8); }
 .fp-way.edge i { clip-path: polygon(0 15%, 100% 50%, 0 85%, 25% 50%); }
-.fp-way span { position: absolute; left: 12px; top: -8px; white-space: nowrap; font: 500 11.5px var(--mono); color: #ffd9a8; text-shadow: 0 1px 3px #000; }
+.fp-way span { position: absolute; left: 12px; top: -8px; white-space: nowrap; font: 500 11.5px var(--mono); color: #ffd9a8; text-shadow: 0 1px 3px #000; background: rgba(7,8,18,.55); padding: 1px 5px; border-radius: 4px; }
 .fp-touch .fp-use { bottom: auto; top: 58%; }
 @media (max-width: 600px) { .fp-subs .fp-line:nth-last-child(n+3) { display: none; } .fp-line { font-size: 14.5px; padding: 7px 11px; } }
 .fp-look { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; background: rgba(7,8,18,.72); border: 1px solid rgba(255,255,255,.18); font: 500 13px var(--mono); pointer-events: none; animation: fplook 2.4s ease-in-out infinite; }

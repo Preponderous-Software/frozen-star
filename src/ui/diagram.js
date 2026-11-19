@@ -26,10 +26,11 @@ export class SpacetimeDiagram {
     const pad = { l: 46 * d, r: 12 * d, t: (16 + (this.top || 0)) * d, b: 30 * d }; // top: room for a title
     const kr = (hh - pad.t - pad.b) / this.rMax;
     const spanEqual = (w - pad.l - pad.r) / kr;
-    const span = Math.max(50, Math.min(130, 2 * spanEqual));
-    const kt = (w - pad.l - pad.r) / span;
     const start = f.tTilde(0) - 4;
     const now = Math.max(nowProbe, nowStation);
+    // fitAll: a finished fall is squeezed to fit whole, from the release to now, instead of scrolling
+    const span = Math.max(50, Math.min(130, 2 * spanEqual), this.fitAll ? (now - start) * 1.08 : 0);
+    const kt = (w - pad.l - pad.r) / span;
     const t1 = Math.max(start + span, now + 0.12 * span), t0 = t1 - span;
     this.g = { w, h: hh, d, pad, kr, kt, t0, t1, nowStation, nowProbe };
     return c.getContext('2d');
@@ -96,8 +97,9 @@ export class SpacetimeDiagram {
     ctx.font = `${10 * d}px ${MONO}`;
     const stationEnd = pad.l + 6 * d + ctx.measureText(this.names.station).width + 6 * d;
     const nowMerged = !!this.names.station && ps[0] - 30 * d < stationEnd;
-    if (nowMerged) this._tag(ctx, `${this.names.station} · now`, pad.l + 6 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
-    else this._tag(ctx, 'now', ps[0] - 30 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
+    const nowText = this.nowLabel || 'now'; // the game's map stops scrolling once a fall is over: 'later →'
+    if (nowMerged) this._tag(ctx, `${this.names.station} · ${nowText}`, pad.l + 6 * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
+    else this._tag(ctx, nowText, ps[0] - (this.nowLabel ? 52 : 30) * d, ps[1] - 8 * d, 'rgba(143,184,255,.98)');
     ctx.restore();
     // the falling line has scrolled out of the window: say where it went
     if (pf[0] < pad.l) this._label(ctx, `◂ ${this.names.faller || 'the gold line'}: earlier, off the left edge`, pad.l + 6 * d, pad.t + 10 * d, 'rgba(255,200,130,.95)');

@@ -104,10 +104,23 @@ export function drawRunOnScreen(ctx, w, hh, run, title) {
 
 const diagrams = new WeakMap();
 const fallerName = (run) => (run.kind === 'capsule' ? 'Ines' : run.kind === 'orpheus' ? 'Orpheus' : 'K-1');
+/** The map's 'now' for a run: it stops scrolling a little after the run's last light has faded (or her climb
+ *  home is well under way), so an old fall stays on the map instead of sliding off the left edge. */
+export function mapNow(run) {
+  const key = run.saved ? 'saved' : 'fall';
+  if (run.mapEndKey !== key) {
+    run.mapEndKey = key;
+    const f = run.f;
+    if (run.saved) run.mapEnd = run.saved.seenAt + 60;
+    else { let lo = 0, hi = 4000; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (f.seenAt(m).lnz > 9) hi = m; else lo = m; } run.mapEnd = hi + 8; }
+  }
+  return Math.min(run.S(), run.mapEnd);
+}
+
 export function drawMap(ctx, w, hh, run) {
   let d = diagrams.get(ctx.canvas);
   if (!d || d.f !== run.f) { d = new SpacetimeDiagram(ctx.canvas, run.f); d.names = { station: 'ship', faller: fallerName(run) }; diagrams.set(ctx.canvas, d); }
-  d.S = run.S(); d.tau = run.tau(); d.cutTau = run.saved?.tau; d.signals = run.signals || []; d.rescues = run.fired != null ? [run.fired] : []; d.showDeadline = !!run.showDeadline;
+  d.S = mapNow(run); d.nowLabel = run.S() > d.S ? 'later →' : null; d.fitAll = !!d.nowLabel; d.tau = run.tau(); d.cutTau = run.saved?.tau; d.signals = run.signals || []; d.rescues = run.fired != null ? [run.fired] : []; d.showDeadline = !!run.showDeadline;
   d.top = 44; d.draw();
   ctx.fillStyle = 'rgba(255,200,130,.08)'; ctx.fillRect(0, 0, w, hh * 0.085);
   ctx.fillStyle = '#ffb45c'; ctx.fillRect(0, hh * 0.085, w, Math.max(2, hh * 0.004));
@@ -334,7 +347,7 @@ export function mapApp(body, g, { run }) {
       h('p', `Time runs to the right; height above the centre runs up. ${r.saved ? 'Her path stops where the recall beam reached her, and the dashed green line climbs home. ' : ''}The green lines are its signals: the closer to the horizon they start, the longer they hug it before escaping, which is why they reach you late.`),
       h('p', 'At the horizon the outward edge of each light cone lies flat: even light aimed straight up stays put. Inside, every direction leads down.')));
   return loop(() => {
-    d.S = r.S(); d.tau = r.tau(); d.cutTau = r.saved?.tau; d.signals = r.signals || []; d.rescues = r.fired != null ? [r.fired] : []; d.showDeadline = !!r.showDeadline; d.draw();
+    d.S = mapNow(r); d.nowLabel = r.S() > d.S ? 'later →' : null; d.fitAll = !!d.nowLabel; d.tau = r.tau(); d.cutTau = r.saved?.tau; d.signals = r.signals || []; d.rescues = r.fired != null ? [r.fired] : []; d.showDeadline = !!r.showDeadline; d.draw();
     if (d.showDeadline && !lastChance.isConnected) legend.append(lastChance);
   });
 }
@@ -349,7 +362,7 @@ export function helmApp(body, g, { onTarget }) {
   const sField = stat('Field strength', '–', 'what holds the ship up; nobody aboard feels it'), sTide = stat('Stretch across the hull', '–', 'pull at the bow minus pull at the stern, 40 m apart');
   const up = h('button#fp-home', { onclick: () => { target.value = Math.log10(9); onTarget(R_STATION); } }, 'Return to 10 rₛ');
   // one-press marks for the clock rates the story asks for: dragging a log slider to an exact rate is fiddly
-  const rateBtn = (k) => { const r = 0.997 * 2 / (1 - 1 / (k * k)); return h('button.fp-rate-btn', { type: 'button', onclick: () => { target.value = Math.log10(r / 2 - 1); onTarget(r); }, title: `Hold where far-away clocks run ${k} times as fast` }, `×${k} · ${(r / 2).toFixed(2)} rₛ`); };
+  const rateBtn = (k) => { const r = 0.997 * 2 / (1 - 1 / (k * k)); return h('button.fp-rate-btn', { type: 'button', onclick: () => { target.value = Math.log10(r / 2 - 1); onTarget(r); }, title: `Hold where far-away clocks run ${k} times as fast` }, `×${k} · ${(1 / (1 - 1 / (k * k))).toFixed(2)} rₛ`); };
   const rearC = h('canvas.fp-feed', { hidden: true }); rearC.width = 640; rearC.height = 360;
   const rearNote = h('p.fine', { hidden: true }, 'Rear camera, looking away from Erebus. Hovering this low, every star in the sky is squeezed into this view; the bright ring is the inner edge of the accretion disk, which now surrounds the ship.');
   body.append(h('p.eyebrow', 'Helm · station-keeping field'),

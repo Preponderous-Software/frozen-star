@@ -482,7 +482,7 @@ async function helmAct(g) {
   g.ticks.add(rearTick);
   // the objective comes first, so there is never a stretch with nothing to do; the talk runs alongside
   g.objective('Take the Tern down until the relay clock runs twice as fast (helm)', { hint: 'The helm is the low desk in the middle. Lower the altitude until the relay clock reads two times.' });
-  g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 1.4 };
+  g.waypoint = { pos: consolePos(g, 'helm'), label: 'Helm', near: 2.2 };
   (async () => {
     if (g.dockTalk) { await g.dockTalk; g.dockTalk = null; await g.wait(1); }
     await g.say('INES', 'I want to see that again. Without dying this time.');
@@ -612,6 +612,7 @@ async function epilogue(g, haloNow) {
   let wantHalo = haloNow;
   if (!haloNow) {
     g.save('epilogue');
+    if (g.mode === 'console') await g.closeApp(); // step back from the feed: the logbook should not sit over an open console
     await g.hud.card('Frozen Star', 'Thanks for playing. The Tern is yours to explore.', 4);
     if (first && (await logbook(g, { halo: !g.flags.haloDone })) === 'halo') wantHalo = true;
   }
