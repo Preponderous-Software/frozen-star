@@ -1,0 +1,7 @@
+{
+  "frozen-star.discoveries.v1": "{\"got\":{\"curious\":1795100400000,\"metronome\":1795100401000,\"called-it\":1795100402000,\"cutting-it-fine\":1795100403000,\"four-to-one\":1795100404000,\"it-fell-in\":1795100405000,\"frozen-star\":1795100406000,\"shutterbug\":1795100407000,\"lesson-two-clocks\":1795100408000,\"lesson-rescue\":1795100409000,\"lesson-hover\":1795100410000},\"props\":[\"datapad\",\"photo\",\"porthole\",\"log\",\"mug\",\"whiteboard\"]}",
+  "frozen-star.fp.v1": "{\"cp\":\"epilogue\",\"flags\":{\"stats\":{\"prediction\":\"right\",\"margin\":3.4,\"marginS\":3,\"seenAt\":1.62,\"metAt\":1.09,\"deepest\":1.05,\"lost\":41.7,\"frames\":9,\"rLast\":1.0004,\"answer\":\"fell in\",\"halo\":{\"prediction\":\"right\",\"lap\":11.1,\"mast\":true,\"done\":true}},\"mapUnlocked\":true,\"seenBridge\":true,\"beaconDone\":true,\"rescueTries\":2,\"rescueIntro\":true,\"inesHome\":true,\"helmUnlocked\":true,\"orpheusReady\":true,\"finished\":true,\"haloDone\":true}}",
+  "frozen-star.muted": "1",
+  "frozen-star.progress.v1": "{\"two-clocks\":3,\"last-words\":2,\"rescue\":3,\"tides\":1,\"hover\":3,\"bend-light\":2}",
+  "frozen-star.settings.v1": "{\"sens\":1.4,\"invertY\":true,\"fov\":80,\"volume\":0.5,\"subs\":\"large\",\"quality\":\"auto\",\"subsBg\":0.9,\"speakerColours\":true,\"reduceFlash\":true,\"headBob\":true,\"colourSafe\":false,\"panelText\":\"normal\",\"runMode\":\"toggle\",\"smoothing\":false,\"keys\":{\"forward\":[\"KeyZ\",\"ArrowUp\"],\"use\":[\"KeyF\"]},\"pad\":{}}"
+}
