@@ -11,6 +11,11 @@ Leftovers from the final 0.3.0 playtest (run-2):
 - The "click to look" pill gives way to the use bracket; prompts and markers no longer show through a question box or the logbook.
 - The bridge's floor stencil reads the right way up from inside the bridge.
 
+Release groundwork (nothing a player sees):
+
+- Pushing a version tag now builds the downloads and creates the release, so releases can be made by the fleet's release automation. The arcade still deploys every push to `main`.
+- Saves have a format version (`SAVE_VERSION` in `src/game/save.js`) and real save fixtures in `test/fixtures/saves/`, which every build must keep loading.
+
 ## 0.3.0 (2026-11-19)
 
 A polish pass across the whole game, ending with two AI playtest rounds. The headline fix: the ship no longer flashes out of sight. Playtest evidence: [docs/playtests/0.3.0](docs/playtests/0.3.0).

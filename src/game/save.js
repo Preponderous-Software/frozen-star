@@ -5,6 +5,14 @@
 // earlier build loads as it was, and a broken one (bad JSON, a wrong type, a checkpoint this build doesn't
 // know) reads as "no save" or loses only the broken part. It is never thrown at the game.
 
+// The save format version. Contract (checked before every release):
+//   - Bump SAVE_VERSION when anything the game stores in localStorage changes shape: this record, or the
+//     other keys in test/fixtures/saves/ (progress, discoveries, settings, mute).
+//   - Add a migration on load, so a save in every earlier format still loads as it did.
+//   - Add a new fixture test/fixtures/saves/v<SAVE_VERSION>-<name>.json and list it in
+//     test/save-fixtures.test.js. Released fixtures never change.
+export const SAVE_VERSION = 1;
+
 export const SAVE_KEY = 'frozen-star.fp.v1';
 /** The checkpoints, in story order (story.js's ORDER; test/save.test.js checks they agree). */
 export const CHECKPOINTS = ['start', 'bridge', 'probe-done', 'rescue-done', 'helm-done', 'epilogue', 'halo'];

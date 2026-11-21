@@ -1,11 +1,42 @@
 # Releasing Frozen Star
 
-Releases are GitHub releases with bare version tags (`0.1.0`, no "v"). Publishing one runs the
-`Release` workflow ([`.github/workflows/release.yml`](../.github/workflows/release.yml)), which
-builds the downloads and attaches them to the release. The arcade (https://frozen-star.play.danielstephenson.dev)
-is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `version.txt`.
+Releases are GitHub releases with bare version tags (`0.1.0`, no "v"). They are made by the fleet's
+release automation: it sets the version in a pull request, checks the merged commit (saves, CI, a dry
+run of the release workflow) and pushes the tag. The tag push runs the `Release` workflow
+([`.github/workflows/release.yml`](../.github/workflows/release.yml)), which builds the downloads,
+creates the release if it does not exist yet, and attaches the downloads to it. The arcade
+(https://frozen-star.play.danielstephenson.dev) is separate and unchanged: CI deploys every push to
+`main`, stamped `<version>+g<sha>` in `version.txt`.
 
-## Cutting a release
+## Versions
+
+The version lives in three files, which must always agree (`test/version.test.js` and the workflow check):
+
+| File | Field |
+| --- | --- |
+| `package.json` | `"version"`: the web build, and the `<version>` in `version.txt` |
+| `desktop/package.json` | `"version"`: the desktop app |
+| `src/version.js` | `export const VERSION = "x.y.z";` (exactly this form, one line): the version on the About panel and reported to the playtest probe |
+
+## Saves
+
+Players' progress lives in localStorage: the story save (`frozen-star.fp.v1`), training stars
+(`frozen-star.progress.v1`), discoveries (`frozen-star.discoveries.v1`), settings
+(`frozen-star.settings.v1`) and mute (`frozen-star.muted`). `SAVE_VERSION` in
+[`src/game/save.js`](../src/game/save.js) is the format version of all of them.
+
+- `test/fixtures/saves/v<N>-<name>.json` are real saves: what localStorage held after the game's own
+  save code wrote them ([`tools/save-fixtures.mjs`](../tools/save-fixtures.mjs)), as key -> stored string.
+- [`test/save-fixtures.test.js`](../test/save-fixtures.test.js) lists every fixture by file name, fails
+  on an unlisted file, and loads each one through the game's read paths.
+- Released fixtures never change. A change to what is stored bumps `SAVE_VERSION`, adds a migration on
+  load (older saves keep loading as they did) and adds a `v<SAVE_VERSION>-<name>.json` fixture, listed
+  in the test. The release automation refuses a release that edits a released fixture, lowers
+  `SAVE_VERSION`, or lacks a fixture for a format.
+
+## Cutting a release by hand
+
+The release automation does steps 2, 4 and 5 itself; the playtest evidence (step 1) is still required.
 
 1. **Playtest the build.** Run [playtester](https://github.com/Preponderous-Software/playtester)
    with `tools/playtest/frozen-star.json` and commit the evidence under `docs/playtests/<version>/`,
@@ -16,7 +47,7 @@ is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `ver
 2. **Set the version.** On a branch, set the same version in three places and open a pull request:
    - `package.json` (`version`): the web build, and the `<version>` in `version.txt`;
    - `desktop/package.json` (`version`): the desktop app;
-   - `src/version.js` (`export const VERSION`): the version shown on the About panel and reported to the playtest probe.
+   - `src/version.js` (`export const VERSION = "x.y.z";`): the version shown on the About panel and reported to the playtest probe.
 
    Add the release's entry to [`CHANGELOG.md`](../CHANGELOG.md) in the same pull request. The
    workflow fails if the three versions differ, or if the tag does not match them.
@@ -52,7 +83,7 @@ is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `ver
 
 ## What the workflow checks
 
-- The tag is a bare version, and `package.json`, `desktop/package.json` and `src/version.js`
+- A pushed tag, a published release or a run with a tag: the tag is a bare version, and `package.json`, `desktop/package.json` and `src/version.js`
   all say it.
 - `docs/playtests/<version>/` exists and is not empty.
 - `npm test` passes.
@@ -63,6 +94,9 @@ is separate: CI deploys every push to `main`, stamped `<version>+g<sha>` in `ver
 - The Windows zip has the expected layout. The Linux runner cannot run the Windows executable.
 - The web zip is unzipped, served and passes `tools/smoke.cjs` (menu, ship and a lesson load with
   no errors).
+- On a tag: the release is created if it does not exist ("Frozen Star <version>", notes from
+  `docs/release-notes/<version>.md` when present), and the zips and `.sha256` files are uploaded with
+  `--clobber`.
 
 To check the desktop app on a Windows PC before publishing, unzip it and run its hidden self-test:
 
